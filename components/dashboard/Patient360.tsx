@@ -27,10 +27,10 @@ export default function Patient360({
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+        <div className="p-6 border-b border-gray-200 bg-linear-to-r from-blue-50 to-cyan-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-xl bg-linear-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
                 <svg
                   className="w-8 h-8 text-white"
                   fill="none"
@@ -339,8 +339,11 @@ export default function Patient360({
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Query Breakdown */}
+          {/* Query Breakdown & Additional Statistics - Separate row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column: Query Breakdown */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <svg
@@ -359,95 +362,75 @@ export default function Patient360({
                 Query Breakdown
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {subject.queriesDM > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Data Management</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesDM}
-                    </p>
-                  </div>
-                )}
-                {subject.queriesClinical > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Clinical</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesClinical}
-                    </p>
-                  </div>
-                )}
-                {subject.queriesMedical > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Medical</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesMedical}
-                    </p>
-                  </div>
-                )}
-                {subject.queriesSite > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Site</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesSite}
-                    </p>
-                  </div>
-                )}
-                {subject.queriesFieldMonitor > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Field Monitor</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesFieldMonitor}
-                    </p>
-                  </div>
-                )}
-                {subject.queriesCoding > 0 && (
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600">Coding</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {subject.queriesCoding}
-                    </p>
-                  </div>
+                {[
+                  { label: "Data Management", value: subject.queriesDM },
+                  { label: "Clinical", value: subject.queriesClinical },
+                  { label: "Medical", value: subject.queriesMedical },
+                  { label: "Site", value: subject.queriesSite },
+                  {
+                    label: "Field Monitor",
+                    value: subject.queriesFieldMonitor,
+                  },
+                  { label: "Coding", value: subject.queriesCoding },
+                ].map(
+                  (q, i) =>
+                    q.value > 0 && (
+                      <div
+                        key={i}
+                        className="p-3 bg-white rounded-lg border border-gray-200"
+                      >
+                        <p className="text-xs text-gray-600">{q.label}</p>
+                        <p className="text-lg font-bold text-gray-900">
+                          {q.value}
+                        </p>
+                      </div>
+                    ),
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Additional Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Pages Entered
-              </p>
-              <p className="text-xl font-bold text-gray-900">
-                {subject.pagesEntered}
-              </p>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                CRFs Signed
-              </p>
-              <p className="text-xl font-bold text-gray-900">
-                {subject.crfsSigned}
-              </p>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Overdue 90 Days
-              </p>
-              <p
-                className={`text-xl font-bold ${subject.crfsOverdue90Days > 0 ? "text-red-600" : "text-emerald-600"}`}
-              >
-                {subject.crfsOverdue90Days}
-              </p>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Uncoded Terms
-              </p>
-              <p
-                className={`text-xl font-bold ${subject.uncodedTerms > 0 ? "text-amber-600" : "text-emerald-600"}`}
-              >
-                {subject.uncodedTerms}
-              </p>
+            {/* Right Column: 4 Stat Boxes */}
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  label: "Pages Entered",
+                  value: subject.pagesEntered,
+                  color: "text-gray-900",
+                },
+                {
+                  label: "CRFs Signed",
+                  value: subject.crfsSigned,
+                  color: "text-gray-900",
+                },
+                {
+                  label: "Overdue 90 Days",
+                  value: subject.crfsOverdue90Days,
+                  color:
+                    subject.crfsOverdue90Days > 0
+                      ? "text-red-600"
+                      : "text-emerald-600",
+                },
+                {
+                  label: "Uncoded Terms",
+                  value: subject.uncodedTerms,
+                  color:
+                    subject.uncodedTerms > 0
+                      ? "text-amber-600"
+                      : "text-emerald-600",
+                },
+              ].map((stat, i) => (
+                <div
+                  key={i}
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col justify-center"
+                >
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
+                    {stat.label}
+                  </p>
+                  <p className={`text-2xl font-bold ${stat.color}`}>
+                    {stat.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
