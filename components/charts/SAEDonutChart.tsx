@@ -63,7 +63,7 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
   const totalSAEs = data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-gray-900">
           Serious Adverse Events
@@ -72,7 +72,7 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
           Safety Review Status Distribution
         </p>
       </div>
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={450}>
         <PieChart>
           <Pie
             data={data}

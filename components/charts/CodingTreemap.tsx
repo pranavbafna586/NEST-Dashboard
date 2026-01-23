@@ -170,7 +170,7 @@ export default function CodingTreemap({ data }: CodingTreemapProps) {
     totalTerms > 0 ? Math.round((totalCoded / totalTerms) * 100) : 0;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1">
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>

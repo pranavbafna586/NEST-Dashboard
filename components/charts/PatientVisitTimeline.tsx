@@ -28,33 +28,33 @@ const CustomTooltip = ({
   if (active && payload && payload.length) {
     const visit = payload[0].payload;
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 shadow-xl">
-        <p className="text-sm font-semibold text-white mb-2">
+      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-xl">
+        <p className="text-sm font-semibold text-gray-900 mb-2">
           {visit.visitName}
         </p>
-        <p className="text-xs text-slate-400 mb-1">
-          Date: <span className="text-white">{visit.projectedDate}</span>
+        <p className="text-xs text-gray-600 mb-1">
+          Date: <span className="text-gray-900">{visit.projectedDate}</span>
         </p>
-        <p className="text-xs text-slate-400 mb-1">
+        <p className="text-xs text-gray-600 mb-1">
           Status:{" "}
           <span
             className={`font-medium ${
               visit.status === "Completed"
-                ? "text-emerald-400"
+                ? "text-emerald-600"
                 : visit.status === "Missing"
-                  ? "text-red-400"
+                  ? "text-red-600"
                   : visit.status === "Overdue"
-                    ? "text-amber-400"
-                    : "text-blue-400"
+                    ? "text-amber-600"
+                    : "text-blue-600"
             }`}
           >
             {visit.status}
           </span>
         </p>
         {visit.daysOutstanding && (
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-600">
             Outstanding:{" "}
-            <span className="text-red-400 font-medium">
+            <span className="text-red-600 font-medium">
               {visit.daysOutstanding} days
             </span>
           </p>
@@ -87,7 +87,7 @@ const CustomDot = (props: {
         cy={cy}
         r={6}
         fill={fill}
-        stroke="#1e293b"
+        stroke="#ffffff"
         strokeWidth={2}
       />
       {payload.status === "Missing" && (
@@ -121,29 +121,27 @@ export default function PatientVisitTimeline({
   const upcomingCount = data.filter((v) => v.status === "Upcoming").length;
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-base font-semibold text-gray-900">
               Patient Visit Timeline
             </h3>
-            <p className="text-sm text-slate-400 mt-1">Subject: {subjectId}</p>
+            <p className="text-sm text-gray-600 mt-1">Subject: {subjectId}</p>
           </div>
           <div className="flex gap-4 text-xs">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-              <span className="text-slate-400">
-                Completed: {completedCount}
-              </span>
+              <span className="text-gray-600">Completed: {completedCount}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-slate-400">Missing: {missingCount}</span>
+              <span className="text-gray-600">Missing: {missingCount}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-slate-400">Upcoming: {upcomingCount}</span>
+              <span className="text-gray-600">Upcoming: {upcomingCount}</span>
             </div>
           </div>
         </div>
@@ -153,11 +151,11 @@ export default function PatientVisitTimeline({
           data={chartData}
           margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis
             dataKey="visitName"
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
-            axisLine={{ stroke: "#475569" }}
+            tick={{ fill: "#6b7280", fontSize: 10 }}
+            axisLine={{ stroke: "#d1d5db" }}
             angle={-45}
             textAnchor="end"
             height={80}
