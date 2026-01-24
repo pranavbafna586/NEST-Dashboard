@@ -1,36 +1,219 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CTIE - Clinical Trial Intelligence Engine
 
-## Getting Started
+> AI-powered clinical trial data harmonization and analytics platform
 
-First, run the development server:
+![CTIE Banner](./public/landing_page.png)
+
+## 📋 Problem Statement
+
+Clinical trials generate vast amounts of heterogeneous data from multiple sources, including:
+- **Electronic Data Capture (EDC) systems**
+- **Laboratory reports**
+- **Site operational metrics**
+- **Monitoring logs**
+
+However, these data streams often remain **siloed**, leading to:
+- Delayed identification of operational bottlenecks
+- Inconsistent data quality
+- Limited visibility for scientific decision-making
+
+Current processes rely heavily on **manual review** and **fragmented communication** between Clinical Trial Teams (CTT), Clinical Research Associates (CRAs), and investigational sites, which increases cycle times and operational risk.
+
+---
+
+## 🎯 Challenge Statement
+
+There is a critical need for an **integrated solution** that can:
+
+1. **Ingest and harmonize** clinical and operational data in near real-time
+2. **Apply advanced analytics** to generate actionable insights
+3. **Proactively detect** data quality issues and operational inefficiencies
+
+Furthermore, the solution should leverage **Generative and Agentic AI** capabilities to:
+- Enable intelligent collaboration
+- Automate routine tasks
+- Provide context-aware recommendations to stakeholders
+
+This accelerates trial execution and improves scientific outcomes.
+
+---
+
+## ✨ Features
+
+### Landing Page
+- Modern, professional UI with animated particles background
+- Interactive hero section with call-to-action
+- Bento-style feature grid showcasing capabilities
+- Dashboard preview section
+- AI-powered chatbot with voice input
+
+### Dashboard Insights
+
+The dashboard provides comprehensive real-time insights across multiple domains:
+
+#### 📊 KPI Cards
+- **Total Subjects** - Active trial participants
+- **Total Queries** - Data clarification requests
+- **SDV Records** - Source Data Verification count
+- **Site Count** - Active clinical sites
+- **Enrollment Rate** - Subject recruitment velocity
+- **Query Resolution Rate** - Efficiency metrics
+
+#### 📈 Data Visualizations
+
+| Chart | Description |
+|-------|-------------|
+| **Regional Stacked Bar Chart** | Data entry progress by region (North America, Europe, Asia Pacific, Latin America) |
+| **Country Composed Chart** | Country-level performance metrics with dual-axis visualization |
+| **SAE Donut Chart** | Serious Adverse Events distribution by category |
+| **Coding Treemap** | Medical coding categories visualization with hierarchical data |
+
+#### 🔬 Study Pulse Panel
+- Real-time study health monitoring
+- Key metrics at a glance
+- Alert indicators for issues requiring attention
+
+#### 📋 Data Tables
+- **Site Performance Table** - Detailed site-level metrics with click-through navigation
+- **Subject Table** - Individual subject data with risk indicators
+- **Patient 360 Modal** - Comprehensive patient view with:
+  - Visit timeline
+  - Missing visits tracking
+  - Lab results
+  - SAE history
+  - Data quality score
+
+---
+
+## 🖼️ Screenshots
+
+### Landing Page
+![Landing Page](./public/screenshots/landing_page.png)
+*Modern landing page with animated particles and glassmorphism design*
+
+### Dashboard Overview
+![Dashboard](./public/screenshots/dashboard.png)
+*Main dashboard with KPI cards and regional data visualization*
+
+### Dashboard Analytics
+![Analytics](./public/screenshots/dashboard_analytics.png)
+*SAE distribution and coding treemap visualizations*
+
+### Patient 360 View
+![Patient 360](./public/screenshots/patient360.png)
+*Comprehensive patient data modal with visit timeline*
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm/yarn/pnpm/bun
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd nest
+
+# Install dependencies
+npm install
+# or
+pnpm install
+```
+
+### Development
 
 ```bash
 npm run dev
 # or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Project Structure
 
-## Learn More
+```
+nest/
+├── app/
+│   ├── page.tsx              # Landing page
+│   └── dashboard/
+│       └── page.tsx          # Dashboard insights page
+├── components/
+│   ├── landing/              # Landing page components
+│   │   ├── Header.tsx
+│   │   ├── Hero.tsx
+│   │   ├── ParticlesBackground.tsx
+│   │   ├── BentoFeatures.tsx
+│   │   ├── DashboardPreview.tsx
+│   │   ├── Footer.tsx
+│   │   └── Chatbot.tsx
+│   ├── dashboard/            # Dashboard components
+│   │   ├── Sidebar.tsx
+│   │   ├── KPICards.tsx
+│   │   ├── StudyPulse.tsx
+│   │   ├── DataTable.tsx
+│   │   ├── Patient360.tsx
+│   │   └── UploadDialog.tsx
+│   └── charts/               # Data visualization components
+│       ├── RegionStackedBarChart.tsx
+│       ├── CountryComposedChart.tsx
+│       ├── SAEDonutChart.tsx
+│       ├── CodingTreemap.tsx
+│       └── PatientVisitTimeline.tsx
+├── data/
+│   └── mockData.ts           # Data processing and aggregation
+├── hooks/
+│   └── useSpeechRecognition.ts
+└── types/
+    └── index.ts
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: [Next.js 16](https://nextjs.org/) with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Charts**: Recharts
+- **AI Integration**: Google Gemini API
+- **Icons**: Lucide React
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📊 Data Sources
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The dashboard ingests and processes data from the following sources:
+- QC Anonymized Study Files (Excel datasets)
+- Subject demographics and enrollment
+- Query management records
+- Source Data Verification (SDV) logs
+- Serious Adverse Events (SAE) reports
+- Medical coding data
+
+---
+
+## 🤖 AI Capabilities
+
+- **Generative AI**: Powered by Google Gemini for intelligent insights
+- **Voice Input**: Speech recognition for chatbot interaction
+- **Context-Aware Recommendations**: Automated suggestions based on data patterns
+- **Natural Language Queries**: Ask questions about trial data in plain English
+
+---
+
+## 📄 License
+
+This project is proprietary software developed for clinical trial intelligence.
+
+---
+
+## 👥 Team
+
+Developed for the **Integrated Insight-Driven Data-Flow Model** challenge.
