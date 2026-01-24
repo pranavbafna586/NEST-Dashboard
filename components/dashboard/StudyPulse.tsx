@@ -19,6 +19,7 @@ interface StudyPulseProps {
 
 export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
 
   // Calculate total pages entered and total forms available
   const filteredMetrics =
@@ -122,6 +123,11 @@ export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
     );
   };
 
+  // Filter visible chart data
+  const visibleChartData = chartData.filter(
+    (item) => !hiddenEntries.has(item.name),
+  );
+
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
   };
@@ -147,24 +153,46 @@ export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
     return null;
   };
 
-  // Custom Legend
-  const CustomLegend = ({ payload }: any) => {
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Custom Legend - Always shows all entries, regardless of visibility
+  const CustomLegend = () => {
     return (
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
-        {payload.map((entry: any, index: number) => (
-          <div
-            key={`legend-${index}`}
-            className="flex items-center gap-2 cursor-pointer"
-            onMouseEnter={() => setActiveIndex(index)}
-            onMouseLeave={() => setActiveIndex(null)}
-          >
+        {chartData.map((entry, index) => {
+          const isHidden = hiddenEntries.has(entry.name);
+          return (
             <div
-              className="w-3 h-3 rounded-sm"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-xs text-gray-700">{entry.value}</span>
-          </div>
-        ))}
+              key={`legend-${index}`}
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => toggleEntry(entry.name)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: entry.fill,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <span
+                className={`text-xs text-gray-700 transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+              >
+                {entry.name}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -184,7 +212,7 @@ export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
           <PieChart>
             <Pie
               activeShape={renderActiveShape}
-              data={chartData}
+              data={visibleChartData}
               cx="50%"
               cy="50%"
               innerRadius={60}
@@ -195,7 +223,7 @@ export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
               stroke="#fff"
               strokeWidth={2}
             >
-              {chartData.map((entry, index) => (
+              {visibleChartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>

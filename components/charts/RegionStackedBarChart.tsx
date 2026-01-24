@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -53,6 +53,66 @@ export default function RegionStackedBarChart({
   data,
   syncId,
 }: RegionStackedBarChartProps) {
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
+
+  // Define bar configurations
+  const barConfigs = [
+    {
+      dataKey: "completedPages",
+      name: "Completed Pages",
+      fill: "#8ED9E2",
+    },
+    {
+      dataKey: "missingPages",
+      name: "Missing Pages",
+      fill: "#E57373",
+    },
+  ];
+
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Custom Legend - Always shows all entries
+  const CustomLegend = () => {
+    return (
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-5">
+        {barConfigs.map((bar, index) => {
+          const isHidden = hiddenEntries.has(bar.name);
+          return (
+            <div
+              key={`legend-${index}`}
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => toggleEntry(bar.name)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: bar.fill,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <span
+                className={`text-sm text-gray-700 transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+              >
+                {bar.name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex flex-col">
       <div className="mb-4">
@@ -82,26 +142,25 @@ export default function RegionStackedBarChart({
               tickFormatter={(value) => value.toLocaleString()}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend
-              wrapperStyle={{ paddingTop: 20 }}
-              formatter={(value) => (
-                <span className="text-gray-700 text-sm">{value}</span>
-              )}
-            />
-            <Bar
-              dataKey="completedPages"
-              name="Completed Pages"
-              stackId="a"
-              fill="#8ED9E2"
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey="missingPages"
-              name="Missing Pages"
-              stackId="a"
-              fill="#E57373"
-              radius={[4, 4, 0, 0]}
-            />
+            <Legend content={<CustomLegend />} />
+            {barConfigs.map((bar, index) => {
+              const isHidden = hiddenEntries.has(bar.name);
+              if (isHidden) return null;
+              return (
+                <Bar
+                  key={bar.dataKey}
+                  dataKey={bar.dataKey}
+                  name={bar.name}
+                  stackId="a"
+                  fill={bar.fill}
+                  radius={
+                    index === barConfigs.length - 1
+                      ? [4, 4, 0, 0]
+                      : [0, 0, 0, 0]
+                  }
+                />
+              );
+            })}
           </BarChart>
         </ResponsiveContainer>
       </div>

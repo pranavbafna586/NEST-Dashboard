@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   PieChart,
   Pie,
@@ -60,7 +60,55 @@ const renderCustomLabel = (props: any) => {
 };
 
 export default function SAEDonutChart({ data }: SAEDonutChartProps) {
-  const totalSAEs = data.reduce((sum, item) => sum + item.value, 0);
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
+
+  // Filter visible data
+  const visibleData = data.filter((item) => !hiddenEntries.has(item.name));
+  const totalSAEs = visibleData.reduce((sum, item) => sum + item.value, 0);
+
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Custom Legend - Always shows all entries
+  const CustomLegend = () => {
+    return (
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
+        {data.map((entry, index) => {
+          const isHidden = hiddenEntries.has(entry.name);
+          return (
+            <div
+              key={`legend-${index}`}
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => toggleEntry(entry.name)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: entry.color,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <span
+                className={`text-sm text-gray-700 transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+              >
+                {entry.name} ({entry.value})
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1">
@@ -75,7 +123,7 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
       <ResponsiveContainer width="100%" height={450}>
         <PieChart>
           <Pie
-            data={data}
+            data={visibleData}
             cx="50%"
             cy="50%"
             labelLine={false}
@@ -86,20 +134,12 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
             dataKey="value"
             paddingAngle={2}
           >
-            {data.map((entry, index) => (
+            {visibleData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            verticalAlign="bottom"
-            height={36}
-            formatter={(value, entry: any) => (
-              <span className="text-gray-700 text-sm">
-                {value} ({entry.payload?.value || 0})
-              </span>
-            )}
-          />
+          <Legend content={<CustomLegend />} />
           {/* Center Label */}
           <text
             x="50%"

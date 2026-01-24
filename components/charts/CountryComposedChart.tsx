@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   ComposedChart,
   Bar,
@@ -64,6 +64,62 @@ export default function CountryComposedChart({
   data,
   syncId,
 }: CountryComposedChartProps) {
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
+
+  // Define chart series
+  const chartSeries = [
+    { key: "openQueries", name: "Open Queries", color: "#7B74D1" },
+    {
+      key: "avgDaysOutstanding",
+      name: "Avg Days Outstanding",
+      color: "#8ED9E2",
+    },
+  ];
+
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Custom Legend - Always shows all entries
+  const CustomLegend = () => {
+    return (
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-5">
+        {chartSeries.map((series, index) => {
+          const isHidden = hiddenEntries.has(series.name);
+          return (
+            <div
+              key={`legend-${index}`}
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => toggleEntry(series.name)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: series.color,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <span
+                className={`text-sm text-gray-700 transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+              >
+                {series.name}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex flex-col">
       <div className="mb-4">
@@ -113,29 +169,28 @@ export default function CountryComposedChart({
               }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend
-              wrapperStyle={{ paddingTop: 20 }}
-              formatter={(value) => (
-                <span className="text-gray-700 text-sm">{value}</span>
-              )}
-            />
-            <Bar
-              yAxisId="left"
-              dataKey="openQueries"
-              name="Open Queries"
-              fill="#7B74D1"
-              radius={[4, 4, 0, 0]}
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="avgDaysOutstanding"
-              name="Avg Days Outstanding"
-              stroke="#8ED9E2"
-              strokeWidth={3}
-              dot={{ fill: "#8ED9E2", r: 5 }}
-              activeDot={{ r: 7 }}
-            />
+            <Legend content={<CustomLegend />} />
+            {!hiddenEntries.has("Open Queries") && (
+              <Bar
+                yAxisId="left"
+                dataKey="openQueries"
+                name="Open Queries"
+                fill="#7B74D1"
+                radius={[4, 4, 0, 0]}
+              />
+            )}
+            {!hiddenEntries.has("Avg Days Outstanding") && (
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="avgDaysOutstanding"
+                name="Avg Days Outstanding"
+                stroke="#8ED9E2"
+                strokeWidth={3}
+                dot={{ fill: "#8ED9E2", r: 5 }}
+                activeDot={{ r: 7 }}
+              />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>

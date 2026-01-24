@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 import { CodingCategoryData } from "@/types";
 
@@ -164,10 +164,27 @@ const CustomContent = (props: CustomContentProps) => {
 };
 
 export default function CodingTreemap({ data }: CodingTreemapProps) {
-  const totalTerms = data.reduce((sum, item) => sum + item.size, 0);
-  const totalCoded = data.reduce((sum, item) => sum + item.coded, 0);
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
+
+  // Filter visible data
+  const visibleData = data.filter((item) => !hiddenEntries.has(item.name));
+  const totalTerms = visibleData.reduce((sum, item) => sum + item.size, 0);
+  const totalCoded = visibleData.reduce((sum, item) => sum + item.coded, 0);
   const overallProgress =
     totalTerms > 0 ? Math.round((totalCoded / totalTerms) * 100) : 0;
+
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1">
@@ -191,7 +208,7 @@ export default function CodingTreemap({ data }: CodingTreemapProps) {
       </div>
       <ResponsiveContainer width="100%" height={350}>
         <Treemap
-          data={data as any}
+          data={visibleData as any}
           dataKey="size"
           aspectRatio={4 / 3}
           stroke="#1e293b"
@@ -202,25 +219,36 @@ export default function CodingTreemap({ data }: CodingTreemapProps) {
         </Treemap>
       </ResponsiveContainer>
       <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {data.map((category, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-200"
-          >
+        {data.map((category, index) => {
+          const isHidden = hiddenEntries.has(category.name);
+          return (
             <div
-              className="w-3 h-3 rounded-sm flex-shrink-0"
-              style={{ backgroundColor: category.color }}
-            />
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-gray-900 truncate">
-                {category.name}
-              </p>
-              <p className="text-xs text-gray-600">
-                {category.coded}/{category.size}
-              </p>
+              key={index}
+              className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-200 cursor-pointer select-none transition-opacity"
+              onClick={() => toggleEntry(category.name)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm flex-shrink-0 transition-opacity"
+                style={{
+                  backgroundColor: category.color,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <div className="min-w-0">
+                <p
+                  className={`text-xs font-medium text-gray-900 truncate transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+                >
+                  {category.name}
+                </p>
+                <p
+                  className={`text-xs text-gray-600 ${isHidden ? "line-through opacity-50" : ""}`}
+                >
+                  {category.coded}/{category.size}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

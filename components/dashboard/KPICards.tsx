@@ -153,6 +153,7 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           />
         </svg>
       ),
+      trend: { value: 3, isPositive: true },
     },
     uncodedTerms: {
       key: "uncodedTerms",
