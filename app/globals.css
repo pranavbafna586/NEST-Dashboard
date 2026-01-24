@@ -1,29 +1,57 @@
 @import "tailwindcss";
 
+/* ===== Light Mode Glassmorphism Color System ===== */
 :root {
+  /* Primary Colors - Blue to Cyan gradient (matching dashboard) */
+  --color-primary-blue: #2563eb;
+  --color-primary-indigo: #4f46e5;
+  --color-primary-cyan: #0891b2;
+  --color-primary-gradient: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+
+  /* Background - Light Gray */
   --background: #f8fafc;
   --foreground: #1e293b;
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+
+  /* Text Colors */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+
+  /* Accent Colors */
+  --color-accent-green: #10b981;
+  --color-accent-cyan: #06b6d4;
+
+  /* Glass Effect Colors (Light Mode) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.1);
+
+  /* Glow Effects */
+  --glow-blue: 0 4px 20px rgba(37, 99, 235, 0.25);
+  --glow-cyan: 0 4px 20px rgba(8, 145, 178, 0.25);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    var(--font-open-sans),
+    var(--font-inter),
     system-ui,
     -apple-system,
     sans-serif;
   min-height: 100vh;
 }
 
-/* Custom Scrollbar for Light Theme */
+/* ===== Custom Scrollbar for Light Theme ===== */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -40,4 +68,173 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* ===== Glassmorphism Utilities (Light Mode) ===== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Gradient Text ===== */
+.gradient-text {
+  background: var(--color-primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ===== Glow Effects ===== */
+.glow-blue {
+  box-shadow: var(--glow-blue);
+}
+
+.glow-cyan {
+  box-shadow: var(--glow-cyan);
+}
+
+/* ===== Pulsing Animation ===== */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  }
+
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 4px 25px rgba(37, 99, 235, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ===== Floating Animation ===== */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ===== Particle Drift Animation ===== */
+@keyframes drift {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(10px, -10px);
+  }
+
+  50% {
+    transform: translate(20px, 0);
+  }
+
+  75% {
+    transform: translate(10px, 10px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-drift {
+  animation: drift 20s ease-in-out infinite;
+}
+
+/* ===== Spotlight Card Effect (Light Mode) ===== */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  top: var(--mouse-y, 50%);
+  left: var(--mouse-x, 50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+/* ===== Magnetic Button Effect ===== */
+.magnetic-btn {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.magnetic-btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--color-primary-gradient);
+  border-radius: inherit;
+  opacity: 0;
+  filter: blur(15px);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.magnetic-btn:hover::after {
+  opacity: 0.4;
+}
+
+/* ===== Bento Grid ===== */
+.bento-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(200px, auto);
+}
+
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Scroll Progress ===== */
+.scroll-progress {
+  transform-origin: left;
+  background: var(--color-primary-gradient);
 }
