@@ -65,7 +65,7 @@ export default function CountryComposedChart({
   syncId,
 }: CountryComposedChartProps) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex flex-col">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-gray-900">
           Country Performance
@@ -74,69 +74,71 @@ export default function CountryComposedChart({
           Open Queries vs Average Resolution Time
         </p>
       </div>
-      <ResponsiveContainer width="100%" height={350}>
-        <ComposedChart
-          data={data}
-          syncId={syncId}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
-          <XAxis
-            dataKey="country"
-            tick={{ fill: "#6B7280", fontSize: 12 }}
-            axisLine={{ stroke: "#F0F0F0" }}
-          />
-          <YAxis
-            yAxisId="left"
-            tick={{ fill: "#6B7280", fontSize: 12 }}
-            axisLine={{ stroke: "#F0F0F0" }}
-            label={{
-              value: "Open Queries",
-              angle: -90,
-              position: "insideLeft",
-              fill: "#6B7280",
-              fontSize: 12,
-            }}
-          />
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            tick={{ fill: "#6B7280", fontSize: 12 }}
-            axisLine={{ stroke: "#F0F0F0" }}
-            label={{
-              value: "Avg Days",
-              angle: 90,
-              position: "insideRight",
-              fill: "#6B7280",
-              fontSize: 12,
-            }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ paddingTop: 20 }}
-            formatter={(value) => (
-              <span className="text-gray-700 text-sm">{value}</span>
-            )}
-          />
-          <Bar
-            yAxisId="left"
-            dataKey="openQueries"
-            name="Open Queries"
-            fill="#7B74D1"
-            radius={[4, 4, 0, 0]}
-          />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="avgDaysOutstanding"
-            name="Avg Days Outstanding"
-            stroke="#8ED9E2"
-            strokeWidth={3}
-            dot={{ fill: "#8ED9E2", r: 5 }}
-            activeDot={{ r: 7 }}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart
+            data={data}
+            syncId={syncId}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+            <XAxis
+              dataKey="country"
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              axisLine={{ stroke: "#F0F0F0" }}
+            />
+            <YAxis
+              yAxisId="left"
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              axisLine={{ stroke: "#F0F0F0" }}
+              label={{
+                value: "Open Queries",
+                angle: -90,
+                position: "insideLeft",
+                fill: "#6B7280",
+                fontSize: 12,
+              }}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fill: "#6B7280", fontSize: 12 }}
+              axisLine={{ stroke: "#F0F0F0" }}
+              label={{
+                value: "Avg Days",
+                angle: 90,
+                position: "insideRight",
+                fill: "#6B7280",
+                fontSize: 12,
+              }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{ paddingTop: 20 }}
+              formatter={(value) => (
+                <span className="text-gray-700 text-sm">{value}</span>
+              )}
+            />
+            <Bar
+              yAxisId="left"
+              dataKey="openQueries"
+              name="Open Queries"
+              fill="#7B74D1"
+              radius={[4, 4, 0, 0]}
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="avgDaysOutstanding"
+              name="Avg Days Outstanding"
+              stroke="#8ED9E2"
+              strokeWidth={3}
+              dot={{ fill: "#8ED9E2", r: 5 }}
+              activeDot={{ r: 7 }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

@@ -34,12 +34,71 @@ export type LabCategory =
   | "URINALYSIS";
 
 export type ResponsibleFunction =
-  | "Site/CRA"
-  | "DM"
-  | "CSE/CDD"
+  | "Investigator"
+  | "Site"
+  | "CRA"
   | "Coder"
+  | "DM"
   | "Safety Team"
-  | "Investigator";
+  | "CDMD"
+  | "CSE/CDD"
+  | "CD LF";
+
+// Role-based KPI configuration
+export interface RoleKPIConfig {
+  role: ResponsibleFunction;
+  primaryResponsibility: string;
+  criticalKPIs: string[];
+}
+
+// Define critical KPIs for each role
+export const ROLE_KPI_MAPPING: RoleKPIConfig[] = [
+  {
+    role: "Investigator",
+    primaryResponsibility: "Legal data verification and signing",
+    criticalKPIs: ["crfsOverdue90Days", "brokenSignatures", "pdsConfirmed"],
+  },
+  {
+    role: "Site",
+    primaryResponsibility: "Direct patient data entry and hospital tasks",
+    criticalKPIs: ["missingVisits", "missingPages", "queriesSite"],
+  },
+  {
+    role: "CRA",
+    primaryResponsibility: "On-site monitoring and source data verification",
+    criticalKPIs: ["crfsRequireVerification", "openLabIssues", "missingPages"],
+  },
+  {
+    role: "Coder",
+    primaryResponsibility: "Medical terminology translation",
+    criticalKPIs: ["uncodedMedDRA", "uncodedWHODrug", "queriesCoding"],
+  },
+  {
+    role: "DM",
+    primaryResponsibility: "Data quality and external reconciliation",
+    criticalKPIs: ["queriesDM", "openEDRRIssues", "saeDMReview"],
+  },
+  {
+    role: "Safety Team",
+    primaryResponsibility: "Medical safety and serious event tracking",
+    criticalKPIs: ["activeSAEs", "saeSafetyReview", "queriesSafety"],
+  },
+  {
+    role: "CDMD",
+    primaryResponsibility: "Medical oversight of efficacy/safety",
+    criticalKPIs: ["queriesMedical", "dualReviewConsistency"],
+  },
+  {
+    role: "CSE/CDD",
+    primaryResponsibility: "Clinical data expertise and deep review",
+    criticalKPIs: ["pagesNonConformant", "queriesClinical"],
+  },
+  {
+    role: "CD LF",
+    primaryResponsibility: "Lead Function oversight and study progress",
+    criticalKPIs: ["studyPulse", "regionalProgress", "overallCompletion"],
+  },
+];
 
 // File 1: CPID_EDC_Metrics - Master Report Card
 export interface SubjectMetric {
@@ -48,6 +107,7 @@ export interface SubjectMetric {
   siteName: string;
   country: string;
   region: Region;
+  studyId: string; // New: Study identifier (STUDY-01 to STUDY-25)
   projectName: string;
   status: SubjectStatus;
   latestVisit: string;
@@ -69,6 +129,7 @@ export interface SubjectMetric {
   // Visit & page status
   expectedVisits: number;
   pagesEntered: number;
+  totalFormsAvailable: number; // New: Total "Expected" forms for tracking workload
   pagesNonConformant: number;
   // Query tracking
   queriesDM: number;
@@ -108,6 +169,8 @@ export interface MissingVisit {
   id: string;
   subjectId: string;
   siteId: string;
+  studyId: string;
+  projectName: string;
   country: string;
   region: Region;
   visitName: string;
@@ -121,6 +184,8 @@ export interface LabIssue {
   id: string;
   subjectId: string;
   siteId: string;
+  studyId: string;
+  projectName: string;
   country: string;
   visitName: string;
   formName: string;
@@ -136,6 +201,7 @@ export interface LabIssue {
 // File 4: SAE Dashboard
 export interface SAERecord {
   id: string;
+  projectName: string;
   discrepancyId: string;
   studyId: string;
   subjectId: string;
@@ -156,6 +222,8 @@ export interface SAERecord {
 export interface InactivatedForm {
   id: string;
   subjectId: string;
+  studyId: string;
+  projectName: string;
   siteId: string;
   country: string;
   siteNumber: string;
@@ -167,10 +235,13 @@ export interface InactivatedForm {
   reason: string;
 }
 
-// File 6: Global Missing Pages Report
+// FileId: string;
+
 export interface MissingPage {
   id: string;
+  studyId: string;
   studyName: string;
+  projectName: string;
   subjectId: string;
   siteId: string;
   country: string;
@@ -188,6 +259,7 @@ export interface MissingPage {
 export interface EDRRIssue {
   id: string;
   studyId: string;
+  projectName: string;
   subjectId: string;
   siteId: string;
   totalOpenIssues: number;
@@ -197,6 +269,7 @@ export interface EDRRIssue {
 export interface MedDRACoding {
   id: string;
   studyId: string;
+  projectName: string;
   subjectId: string;
   siteId: string;
   dictionary: string;
@@ -211,10 +284,12 @@ export interface MedDRACoding {
   requireCoding: boolean;
 }
 
-// File 9: WHODrug Coding Report
+//projectName: string;
+//  File 9: WHODrug Coding Report
 export interface WHODrugCoding {
   id: string;
   studyId: string;
+  projectName: string;
   subjectId: string;
   siteId: string;
   dictionary: string;
@@ -233,10 +308,12 @@ export interface WHODrugCoding {
 
 // Dashboard filter state
 export interface FilterState {
+  studyId: string | "ALL"; // New: Study filter
   region: Region | "ALL";
   country: string | "ALL";
   siteId: string | "ALL";
   subjectId: string | "ALL";
+  role?: ResponsibleFunction; // New: Current user role for RBAC
 }
 
 // KPI Summary

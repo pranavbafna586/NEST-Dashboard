@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { FilterState } from "@/types";
 import Sidebar from "@/components/dashboard/Sidebar";
 import KPICards from "@/components/dashboard/KPICards";
+import StudyPulse from "@/components/dashboard/StudyPulse";
+import UploadDialog from "@/components/dashboard/UploadDialog";
 import {
   SitePerformanceTable,
   SubjectTable,
@@ -22,10 +24,12 @@ import {
   getCountryPerformance,
   filterMetrics,
   getSubjectDetails,
+  masterMetrics,
 } from "@/data/mockData";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState<FilterState>({
+    studyId: "ALL",
     region: "ALL",
     country: "ALL",
     siteId: "ALL",
@@ -37,6 +41,7 @@ export default function DashboardPage() {
     null,
   );
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   // Update timestamp only on client side to avoid hydration errors
   useEffect(() => {
@@ -82,7 +87,7 @@ export default function DashboardPage() {
       {/* Right Side Container */}
       <div className="flex-1 flex flex-col">
         {/* Header - Fixed at top */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-md flex-shrink-0 sticky top-0 z-50">
+        <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-md shrink-0 sticky top-0 z-50">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -93,6 +98,25 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setUploadDialogOpen(true)}
+                className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 transition-colors shadow-sm flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
+                </svg>
+                Upload
+              </button>
               <button className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 transition-colors shadow-sm">
                 Export Report
               </button>
@@ -110,7 +134,6 @@ export default function DashboardPage() {
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                Refresh
               </button>
             </div>
           </div>
@@ -121,25 +144,31 @@ export default function DashboardPage() {
           <div className="p-6 space-y-6">
             {/* KPI Cards */}
             <section>
-              <KPICards summary={kpiSummary} />
+              <KPICards summary={kpiSummary} role={filters.role} />
             </section>
 
-            {/* Region Level - Bar Chart */}
-            {filters.region === "ALL" && (
-              <section>
-                <RegionStackedBarChart data={regionStats} syncId="dashboard" />
-              </section>
-            )}
+            {/* 60/40 Split: Regional Chart (60%) + Study Pulse (40%) */}
+            <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
+              {/* Left: Regional Data Entry Progress - 60% */}
+              <div className="lg:col-span-3 h-full">
+                {filters.region === "ALL" ? (
+                  <RegionStackedBarChart
+                    data={regionStats}
+                    syncId="dashboard"
+                  />
+                ) : (
+                  <CountryComposedChart
+                    data={countryPerformance}
+                    syncId="dashboard"
+                  />
+                )}
+              </div>
 
-            {/* Country Level - Composed Chart */}
-            {filters.region !== "ALL" && filters.country === "ALL" && (
-              <section>
-                <CountryComposedChart
-                  data={countryPerformance}
-                  syncId="dashboard"
-                />
-              </section>
-            )}
+              {/* Right: Study Pulse Panel - 40% */}
+              <div className="lg:col-span-2 h-full">
+                <StudyPulse metrics={masterMetrics} studyId={filters.studyId} />
+              </div>
+            </section>
 
             {/* Charts Grid - 3 Column Layout */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
@@ -235,6 +264,12 @@ export default function DashboardPage() {
                     </span>
                   </div>
                 </div>
+
+                {/* Upload Dialog */}
+                <UploadDialog
+                  isOpen={uploadDialogOpen}
+                  onClose={() => setUploadDialogOpen(false)}
+                />
                 <span>Last updated: {lastUpdated || "Loading..."}</span>
               </div>
             </section>

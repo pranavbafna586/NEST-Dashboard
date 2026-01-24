@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { KPISummary } from "@/types";
+import { KPISummary, ResponsibleFunction, ROLE_KPI_MAPPING } from "@/types";
 
 interface KPICardsProps {
   summary: KPISummary;
+  role?: ResponsibleFunction;
 }
 
 interface KPICardProps {
@@ -80,92 +81,123 @@ function KPICard({ title, value, icon, color, trend }: KPICardProps) {
   );
 }
 
-export default function KPICards({ summary }: KPICardsProps) {
+export default function KPICards({ summary, role }: KPICardsProps) {
+  // If role is specified, filter KPIs based on ROLE_KPI_MAPPING
+  const roleConfig = role
+    ? ROLE_KPI_MAPPING.find((config) => config.role === role)
+    : null;
+
+  // KPI configuration mapping
+  const allKPIs = {
+    totalMissingVisits: {
+      key: "missingVisits",
+      title: "Total Missing Visits",
+      value: summary.totalMissingVisits,
+      color: "red" as const,
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      ),
+      trend: { value: 12, isPositive: false },
+    },
+    openQueries: {
+      key: "openQueries",
+      title: "Open Queries",
+      value: summary.openQueries,
+      color: "amber" as const,
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      ),
+      trend: { value: 5, isPositive: true },
+    },
+    seriousAdverseEvents: {
+      key: "activeSAEs",
+      title: "Active SAEs",
+      value: summary.seriousAdverseEvents,
+      color: "blue" as const,
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+      ),
+    },
+    uncodedTerms: {
+      key: "uncodedTerms",
+      title: "Uncoded Terms",
+      value: summary.uncodedTerms,
+      color: "purple" as const,
+      icon: (
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+          />
+        </svg>
+      ),
+      trend: { value: 8, isPositive: true },
+    },
+  };
+
+  // Filter KPIs based on role configuration
+  let displayKPIs = Object.values(allKPIs);
+  if (roleConfig) {
+    displayKPIs = Object.values(allKPIs).filter((kpi) =>
+      roleConfig.criticalKPIs.includes(kpi.key),
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <KPICard
-        title="Total Missing Visits"
-        value={summary.totalMissingVisits}
-        color="red"
-        icon={
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        }
-        trend={{ value: 12, isPositive: false }}
-      />
-      <KPICard
-        title="Open Queries"
-        value={summary.openQueries}
-        color="amber"
-        icon={
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        }
-        trend={{ value: 5, isPositive: true }}
-      />
-      <KPICard
-        title="Active SAEs"
-        value={summary.seriousAdverseEvents}
-        color="blue"
-        icon={
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-        }
-      />
-      <KPICard
-        title="Uncoded Terms"
-        value={summary.uncodedTerms}
-        color="purple"
-        icon={
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-            />
-          </svg>
-        }
-        trend={{ value: 8, isPositive: true }}
-      />
+      {displayKPIs.map((kpi) => (
+        <KPICard
+          key={kpi.key}
+          title={kpi.title}
+          value={kpi.value}
+          color={kpi.color}
+          icon={kpi.icon}
+          trend={kpi.trend}
+        />
+      ))}
     </div>
   );
 }

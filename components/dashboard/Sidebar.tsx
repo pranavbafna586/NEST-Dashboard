@@ -1,12 +1,18 @@
 "use client";
 
 import React from "react";
-import { FilterState, Region } from "@/types";
+import {
+  FilterState,
+  Region,
+  ResponsibleFunction,
+  ROLE_KPI_MAPPING,
+} from "@/types";
 import {
   getRegions,
   getCountries,
   getSites,
   getSubjects,
+  getStudies,
 } from "@/data/mockData";
 
 interface SidebarProps {
@@ -22,13 +28,26 @@ export default function Sidebar({
   collapsed = false,
   onToggle,
 }: SidebarProps) {
+  const studies = getStudies();
   const regions = getRegions();
   const countries = getCountries(filters.region);
   const sites = getSites(filters.country, filters.region);
   const subjects = getSubjects(filters.siteId);
 
+  const handleStudyChange = (studyId: string | "ALL") => {
+    onFilterChange({
+      studyId,
+      region: "ALL",
+      country: "ALL",
+      siteId: "ALL",
+      subjectId: "ALL",
+      role: filters.role,
+    });
+  };
+
   const handleRegionChange = (region: Region | "ALL") => {
     onFilterChange({
+      ...filters,
       region,
       country: "ALL",
       siteId: "ALL",
@@ -60,12 +79,21 @@ export default function Sidebar({
     });
   };
 
+  const handleRoleChange = (role: ResponsibleFunction | undefined) => {
+    onFilterChange({
+      ...filters,
+      role,
+    });
+  };
+
   const clearFilters = () => {
     onFilterChange({
+      studyId: "ALL",
       region: "ALL",
       country: "ALL",
       siteId: "ALL",
       subjectId: "ALL",
+      role: filters.role,
     });
   };
 
@@ -230,6 +258,109 @@ export default function Sidebar({
           >
             Clear All
           </button>
+        </div>
+
+        {/* Study Filter - NEW: At the top */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+            Study
+          </label>
+          <div className="relative">
+            <select
+              value={filters.studyId}
+              onChange={(e) => handleStudyChange(e.target.value as any)}
+              className="w-full px-4 py-2.5 pr-10 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+            >
+              <option value="ALL">All Studies ({studies.length})</option>
+              {studies.map((study) => (
+                <option key={study.studyId} value={study.studyId}>
+                  {study.studyId} - {study.projectName}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+              <svg
+                className="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+          {filters.studyId !== "ALL" && (
+            <div className="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700">
+                <span className="font-semibold">Selected:</span>{" "}
+                {
+                  studies.find((s) => s.studyId === filters.studyId)
+                    ?.projectName
+                }
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Role Filter - NEW */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
+            Your Role (RBAC)
+          </label>
+          <div className="relative">
+            <select
+              value={filters.role || ""}
+              onChange={(e) =>
+                handleRoleChange(
+                  e.target.value
+                    ? (e.target.value as ResponsibleFunction)
+                    : undefined,
+                )
+              }
+              className="w-full px-4 py-2.5 pr-10 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none"
+            >
+              <option value="">All Roles (No Filter)</option>
+              {ROLE_KPI_MAPPING.map((roleConfig) => (
+                <option key={roleConfig.role} value={roleConfig.role}>
+                  {roleConfig.role}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+              <svg
+                className="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+          {filters.role && (
+            <div className="mt-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
+              <p className="text-xs text-purple-700">
+                <span className="font-semibold">Responsibility:</span>{" "}
+                {
+                  ROLE_KPI_MAPPING.find((r) => r.role === filters.role)
+                    ?.primaryResponsibility
+                }
+              </p>
+              <p className="text-xs text-purple-600 mt-1">
+                KPIs filtered to show only critical metrics for this role
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Region Filter */}

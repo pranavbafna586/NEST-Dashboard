@@ -1,5 +1,6 @@
 // mockData.ts - Comprehensive Relational Mock Data for Clinical Trial Intelligence Engine
 // This file represents data from all 9 Excel files with proper relationships
+// Updated for multi-study environment (25 studies) with RBAC support
 
 import {
   SubjectMetric,
@@ -19,7 +20,46 @@ import {
   CodingCategoryData,
   KPISummary,
   FilterState,
+  ResponsibleFunction,
 } from "@/types";
+
+// Helper function to generate study IDs
+const generateStudyId = (num: number): string => {
+  return `STUDY-${String(num).padStart(2, "0")}`;
+};
+
+// Helper function to generate project names
+const generateProjectName = (num: number): string => {
+  const projectTypes = [
+    "Oncology Phase III",
+    "Cardiology Phase II",
+    "Neurology Phase III",
+    "Immunology Phase II",
+    "Diabetes Phase III",
+    "Rare Disease Phase II",
+    "COVID-19 Phase III",
+    "Alzheimer's Phase II",
+    "Pediatric Oncology Phase III",
+    "Gene Therapy Phase I/II",
+  ];
+  return `${projectTypes[num % projectTypes.length]} - Study ${num}`;
+};
+
+// Helper to rotate through responsible functions
+const getResponsibleFunction = (index: number): ResponsibleFunction => {
+  const functions: ResponsibleFunction[] = [
+    "Site",
+    "CRA",
+    "Investigator",
+    "Coder",
+    "DM",
+    "Safety Team",
+    "CDMD",
+    "CSE/CDD",
+    "CD LF",
+  ];
+  return functions[index % functions.length];
+};
 
 // ============================================
 // FILE 1: CPID_EDC_Metrics - Master Report Card
@@ -31,7 +71,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Hospital Central Madrid",
     country: "Spain",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "Screen Failure",
     latestVisit: "Screening",
     missingVisits: 0,
@@ -46,6 +87,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 1,
     pagesEntered: 9,
+    totalFormsAvailable: 15,
     pagesNonConformant: 0,
     queriesDM: 0,
     queriesClinical: 0,
@@ -71,7 +113,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 1,
     isHighRisk: false,
     dataQualityScore: 100,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Site",
   },
   {
     subjectId: "SUB-002",
@@ -79,7 +121,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Hospital Central Madrid",
     country: "Spain",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "Discontinued",
     latestVisit: "W8D1",
     missingVisits: 3,
@@ -94,6 +137,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 15,
     pagesEntered: 187,
+    totalFormsAvailable: 225,
     pagesNonConformant: 1,
     queriesDM: 4,
     queriesClinical: 2,
@@ -119,7 +163,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 8,
     isHighRisk: true,
     dataQualityScore: 78,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "CRA",
   },
   {
     subjectId: "SUB-003",
@@ -127,7 +171,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "University Hospital Paris",
     country: "France",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W12D1",
     missingVisits: 1,
@@ -142,6 +187,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 20,
     pagesEntered: 245,
+    totalFormsAvailable: 300,
     pagesNonConformant: 0,
     queriesDM: 2,
     queriesClinical: 1,
@@ -167,7 +213,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 15,
     isHighRisk: false,
     dataQualityScore: 92,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Investigator",
   },
   {
     subjectId: "SUB-004",
@@ -175,7 +221,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "University Hospital Paris",
     country: "France",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "Cycle 6 Week 1",
     missingVisits: 2,
@@ -190,6 +237,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 18,
     pagesEntered: 198,
+    totalFormsAvailable: 270,
     pagesNonConformant: 0,
     queriesDM: 3,
     queriesClinical: 2,
@@ -215,7 +263,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 18,
     isHighRisk: false,
     dataQualityScore: 85,
-    responsibleFunction: "DM",
+    responsibleFunction: "Coder",
   },
   {
     subjectId: "SUB-005",
@@ -223,7 +271,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Vienna Medical Center",
     country: "Austria",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W1D3",
     missingVisits: 19,
@@ -238,6 +287,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 25,
     pagesEntered: 45,
+    totalFormsAvailable: 375,
     pagesNonConformant: 0,
     queriesDM: 1,
     queriesClinical: 0,
@@ -263,7 +313,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 44,
     isHighRisk: true,
     dataQualityScore: 65,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Site",
   },
   {
     subjectId: "SUB-006",
@@ -271,7 +321,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Berlin Clinical Research",
     country: "Germany",
     region: "EMEA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "Follow-up Week 52",
     missingVisits: 0,
@@ -286,6 +337,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 26,
     pagesEntered: 312,
+    totalFormsAvailable: 390,
     pagesNonConformant: 0,
     queriesDM: 0,
     queriesClinical: 0,
@@ -311,7 +363,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 12,
     isHighRisk: false,
     dataQualityScore: 98,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "CRA",
   },
   {
     subjectId: "SUB-007",
@@ -319,7 +371,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Boston Medical Center",
     country: "USA",
     region: "AMERICA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "Follow-up Week 104",
     missingVisits: 21,
@@ -334,6 +387,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 2,
     expectedVisits: 29,
     pagesEntered: 408,
+    totalFormsAvailable: 435,
     pagesNonConformant: 0,
     queriesDM: 8,
     queriesClinical: 5,
@@ -367,7 +421,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Boston Medical Center",
     country: "USA",
     region: "AMERICA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W24D1",
     missingVisits: 5,
@@ -382,6 +437,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 30,
     pagesEntered: 285,
+    totalFormsAvailable: 450,
     pagesNonConformant: 1,
     queriesDM: 5,
     queriesClinical: 3,
@@ -407,7 +463,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 35,
     isHighRisk: true,
     dataQualityScore: 75,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Safety Team",
   },
   {
     subjectId: "SUB-009",
@@ -415,7 +471,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Chicago Research Institute",
     country: "USA",
     region: "AMERICA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "Cycle 8 Week 2",
     missingVisits: 4,
@@ -430,6 +487,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 3,
     expectedVisits: 28,
     pagesEntered: 320,
+    totalFormsAvailable: 420,
     pagesNonConformant: 2,
     queriesDM: 6,
     queriesClinical: 4,
@@ -455,7 +513,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 50,
     isHighRisk: true,
     dataQualityScore: 62,
-    responsibleFunction: "DM",
+    responsibleFunction: "CDMD",
   },
   {
     subjectId: "SUB-010",
@@ -463,7 +521,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "São Paulo Cancer Center",
     country: "Brazil",
     region: "AMERICA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W16D1",
     missingVisits: 2,
@@ -478,6 +537,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 4,
     expectedVisits: 22,
     pagesEntered: 178,
+    totalFormsAvailable: 330,
     pagesNonConformant: 0,
     queriesDM: 3,
     queriesClinical: 2,
@@ -503,7 +563,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 18,
     isHighRisk: false,
     dataQualityScore: 82,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "CSE/CDD",
   },
   {
     subjectId: "SUB-011",
@@ -511,7 +571,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Tokyo University Hospital",
     country: "Japan",
     region: "ASIA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W20D1",
     missingVisits: 1,
@@ -526,6 +587,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 24,
     pagesEntered: 267,
+    totalFormsAvailable: 360,
     pagesNonConformant: 0,
     queriesDM: 1,
     queriesClinical: 0,
@@ -551,7 +613,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 7,
     isHighRisk: false,
     dataQualityScore: 95,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "CD LF",
   },
   {
     subjectId: "SUB-012",
@@ -559,7 +621,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Tokyo University Hospital",
     country: "Japan",
     region: "ASIA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "Cycle 4 Week 3",
     missingVisits: 0,
@@ -574,6 +637,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 18,
     pagesEntered: 198,
+    totalFormsAvailable: 270,
     pagesNonConformant: 0,
     queriesDM: 0,
     queriesClinical: 1,
@@ -599,7 +663,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 8,
     isHighRisk: false,
     dataQualityScore: 94,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Site",
   },
   {
     subjectId: "SUB-013",
@@ -607,7 +671,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Seoul National Hospital",
     country: "South Korea",
     region: "ASIA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W8D1",
     missingVisits: 3,
@@ -622,6 +687,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 1,
     expectedVisits: 20,
     pagesEntered: 145,
+    totalFormsAvailable: 300,
     pagesNonConformant: 1,
     queriesDM: 4,
     queriesClinical: 2,
@@ -647,7 +713,7 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 15,
     isHighRisk: true,
     dataQualityScore: 78,
-    responsibleFunction: "DM",
+    responsibleFunction: "CRA",
   },
   {
     subjectId: "SUB-014",
@@ -655,7 +721,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Shanghai Medical Center",
     country: "China",
     region: "ASIA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "On Trial",
     latestVisit: "W12D1",
     missingVisits: 2,
@@ -670,6 +737,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 0,
     expectedVisits: 22,
     pagesEntered: 210,
+    totalFormsAvailable: 330,
     pagesNonConformant: 0,
     queriesDM: 4,
     queriesClinical: 2,
@@ -703,7 +771,8 @@ export const masterMetrics: SubjectMetric[] = [
     siteName: "Singapore General Hospital",
     country: "Singapore",
     region: "ASIA",
-    projectName: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     status: "Discontinued",
     latestVisit: "W4D1",
     missingVisits: 0,
@@ -718,6 +787,7 @@ export const masterMetrics: SubjectMetric[] = [
     saeSafetyReview: 1,
     expectedVisits: 8,
     pagesEntered: 85,
+    totalFormsAvailable: 120,
     pagesNonConformant: 0,
     queriesDM: 0,
     queriesClinical: 0,
@@ -743,9 +813,102 @@ export const masterMetrics: SubjectMetric[] = [
     crfsNeverSigned: 5,
     isHighRisk: false,
     dataQualityScore: 100,
-    responsibleFunction: "Site/CRA",
+    responsibleFunction: "Investigator",
   },
 ];
+
+// Generate additional subjects for studies 2-25
+for (let studyNum = 2; studyNum <= 25; studyNum++) {
+  const studyId = generateStudyId(studyNum);
+  const projectName = generateProjectName(studyNum);
+  const regionsPool: Region[] = ["EMEA", "ASIA", "AMERICA"];
+  const region = regionsPool[studyNum % 3];
+
+  // Add 3-5 subjects per study
+  const subjectsInStudy = 3 + (studyNum % 3);
+  for (let subj = 0; subj < subjectsInStudy; subj++) {
+    const subjectNum = 15 + (studyNum - 2) * 5 + subj + 1;
+    const siteNum = 10 + (studyNum % 15) + subj;
+
+    masterMetrics.push({
+      subjectId: `SUB-${String(subjectNum).padStart(3, "0")}`,
+      siteId: `SITE-${String(siteNum).padStart(2, "0")}`,
+      siteName:
+        region === "EMEA"
+          ? [
+              "Hospital Central Madrid",
+              "University Hospital Paris",
+              "Berlin Clinical Research",
+              "Vienna Medical Center",
+            ][subj % 4]
+          : region === "ASIA"
+            ? [
+                "Tokyo University Hospital",
+                "Seoul National Hospital",
+                "Shanghai Medical Center",
+                "Singapore General Hospital",
+              ][subj % 4]
+            : [
+                "Boston Medical Center",
+                "Chicago Research Institute",
+                "São Paulo Cancer Center",
+                "Toronto General Hospital",
+              ][subj % 4],
+      country:
+        region === "EMEA"
+          ? ["Spain", "France", "Germany", "Austria"][subj % 4]
+          : region === "ASIA"
+            ? ["Japan", "South Korea", "China", "Singapore"][subj % 4]
+            : ["USA", "USA", "Brazil", "Canada"][subj % 4],
+      region,
+      studyId,
+      projectName,
+      status: ["On Trial", "On Trial", "Discontinued", "Follow-Up"][
+        subj % 4
+      ] as any,
+      latestVisit: ["W8D1", "W12D1", "W16D1", "Cycle 4 Week 2"][subj % 4],
+      missingVisits: [1, 2, 0, 3][subj % 4],
+      missingPages: [5, 3, 0, 8][subj % 4],
+      codedTerms: [2, 3, 4, 1][subj % 4],
+      uncodedTerms: [1, 0, 2, 3][subj % 4],
+      openLabIssues: [0, 1, 0, 2][subj % 4],
+      openEDRRIssues: [0, 0, 1, 0][subj % 4],
+      inactivatedForms: [1, 0, 2, 1][subj % 4],
+      inputFiles: [2, 3, 2, 4][subj % 4],
+      saeDMReview: [0, 1, 0, 2][subj % 4],
+      saeSafetyReview: [0, 1, 0, 2][subj % 4],
+      expectedVisits: [18, 20, 15, 25][subj % 4],
+      pagesEntered: [180, 220, 150, 280][subj % 4],
+      totalFormsAvailable: [270, 300, 225, 375][subj % 4],
+      pagesNonConformant: [0, 1, 0, 2][subj % 4],
+      queriesDM: [2, 3, 1, 5][subj % 4],
+      queriesClinical: [1, 2, 0, 3][subj % 4],
+      queriesMedical: [0, 1, 0, 2][subj % 4],
+      queriesSite: [3, 4, 2, 6][subj % 4],
+      queriesFieldMonitor: [1, 0, 1, 2][subj % 4],
+      queriesCoding: [0, 1, 0, 2][subj % 4],
+      queriesSafety: [0, 0, 0, 1][subj % 4],
+      totalQueries: [7, 11, 4, 21][subj % 4],
+      crfsRequireVerification: [25, 40, 15, 60][subj % 4],
+      formsVerified: [155, 180, 135, 220][subj % 4],
+      crfsFrozen: [0, 1, 0, 2][subj % 4],
+      crfsNotFrozen: [180, 219, 150, 278][subj % 4],
+      crfsLocked: [0, 0, 0, 0][subj % 4],
+      crfsUnlocked: [0, 1, 0, 2][subj % 4],
+      pdsConfirmed: [0, 0, 1, 0][subj % 4],
+      pdsProposed: [0, 1, 0, 0][subj % 4],
+      crfsSigned: [170, 210, 145, 260][subj % 4],
+      crfsOverdue45Days: [3, 5, 2, 8][subj % 4],
+      crfsOverdue45to90Days: [4, 6, 3, 10][subj % 4],
+      crfsOverdue90Days: [2, 3, 1, 5][subj % 4],
+      brokenSignatures: [0, 1, 0, 2][subj % 4],
+      crfsNeverSigned: [10, 15, 8, 20][subj % 4],
+      isHighRisk: [false, true, false, true][subj % 4],
+      dataQualityScore: [92, 85, 95, 78][subj % 4],
+      responsibleFunction: getResponsibleFunction(subjectNum),
+    });
+  }
+}
 
 // ============================================
 // FILE 2: Visit Projection Tracker - Missing Visits
@@ -755,6 +918,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-001",
     subjectId: "SUB-007",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     region: "AMERICA",
     visitName: "Cycle 12 Week 1",
@@ -766,6 +931,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-002",
     subjectId: "SUB-007",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     region: "AMERICA",
     visitName: "Week 7 Visit",
@@ -777,6 +944,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-003",
     subjectId: "SUB-002",
     siteId: "SITE-14",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Spain",
     region: "EMEA",
     visitName: "Week 10 Visit",
@@ -788,6 +957,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-004",
     subjectId: "SUB-005",
     siteId: "SITE-05",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Austria",
     region: "EMEA",
     visitName: "W2D1",
@@ -799,6 +970,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-005",
     subjectId: "SUB-005",
     siteId: "SITE-05",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Austria",
     region: "EMEA",
     visitName: "W3D1",
@@ -810,6 +983,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-006",
     subjectId: "SUB-005",
     siteId: "SITE-05",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Austria",
     region: "EMEA",
     visitName: "W4D1",
@@ -821,6 +996,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-007",
     subjectId: "SUB-008",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     region: "AMERICA",
     visitName: "Cycle 5 Week 2",
@@ -832,6 +1009,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-008",
     subjectId: "SUB-009",
     siteId: "SITE-31",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     region: "AMERICA",
     visitName: "Week 12 Day 1",
@@ -843,6 +1022,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-009",
     subjectId: "SUB-003",
     siteId: "SITE-18",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "France",
     region: "EMEA",
     visitName: "30 Day Follow-Up",
@@ -854,6 +1035,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-010",
     subjectId: "SUB-013",
     siteId: "SITE-60",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "South Korea",
     region: "ASIA",
     visitName: "Cycle 3 Week 1",
@@ -865,6 +1048,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-011",
     subjectId: "SUB-014",
     siteId: "SITE-65",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "China",
     region: "ASIA",
     visitName: "Week 14 Visit",
@@ -876,6 +1061,8 @@ export const missingVisitsDetail: MissingVisit[] = [
     id: "MV-012",
     subjectId: "SUB-010",
     siteId: "SITE-42",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Brazil",
     region: "AMERICA",
     visitName: "Week 18 Visit",
@@ -893,6 +1080,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-001",
     subjectId: "SUB-003",
     siteId: "SITE-18",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "France",
     visitName: "W8D1",
     formName: "Chemistry - Local Lab Results",
@@ -908,6 +1097,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-002",
     subjectId: "SUB-003",
     siteId: "SITE-18",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "France",
     visitName: "W12D1",
     formName: "Hematology Panel",
@@ -923,6 +1114,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-003",
     subjectId: "SUB-004",
     siteId: "SITE-18",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "France",
     visitName: "Cycle 5 Week 3",
     formName: "Chemistry - Local Lab Results",
@@ -938,6 +1131,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-004",
     subjectId: "SUB-008",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     visitName: "W20D1",
     formName: "Coagulation Panel",
@@ -953,6 +1148,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-005",
     subjectId: "SUB-008",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     visitName: "W24D1",
     formName: "Chemistry - Local Lab Results",
@@ -968,6 +1165,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-006",
     subjectId: "SUB-008",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     visitName: "W24D1",
     formName: "Urinalysis",
@@ -983,6 +1182,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-007",
     subjectId: "SUB-010",
     siteId: "SITE-42",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Brazil",
     visitName: "W12D1",
     formName: "Hematology Panel",
@@ -998,6 +1199,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-008",
     subjectId: "SUB-013",
     siteId: "SITE-60",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "South Korea",
     visitName: "W4D1",
     formName: "Chemistry - Local Lab Results",
@@ -1013,6 +1216,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-009",
     subjectId: "SUB-013",
     siteId: "SITE-60",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "South Korea",
     visitName: "W8D1",
     formName: "Hematology Panel",
@@ -1028,6 +1233,8 @@ export const labIssues: LabIssue[] = [
     id: "LAB-010",
     subjectId: "SUB-014",
     siteId: "SITE-65",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "China",
     visitName: "W8D1",
     formName: "Chemistry - Local Lab Results",
@@ -1048,7 +1255,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-001",
     discrepancyId: "SAE-2025-001",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     country: "USA",
@@ -1065,7 +1273,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-002",
     discrepancyId: "SAE-2025-002",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     country: "USA",
@@ -1082,7 +1291,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-003",
     discrepancyId: "SAE-2025-003",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     country: "USA",
@@ -1099,7 +1309,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-004",
     discrepancyId: "SAE-2025-004",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     country: "USA",
@@ -1116,7 +1327,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-005",
     discrepancyId: "SAE-2025-005",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-010",
     siteId: "SITE-42",
     country: "Brazil",
@@ -1133,7 +1345,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-006",
     discrepancyId: "SAE-2025-006",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-010",
     siteId: "SITE-42",
     country: "Brazil",
@@ -1150,7 +1363,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-007",
     discrepancyId: "SAE-2025-007",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-013",
     siteId: "SITE-60",
     country: "South Korea",
@@ -1167,7 +1381,8 @@ export const saeRecords: SAERecord[] = [
   {
     id: "SAE-008",
     discrepancyId: "SAE-2025-008",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-015",
     siteId: "SITE-70",
     country: "Singapore",
@@ -1191,6 +1406,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-001",
     subjectId: "SUB-002",
     siteId: "SITE-14",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Spain",
     siteNumber: "014",
     folder: "Lab Results",
@@ -1204,6 +1421,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-002",
     subjectId: "SUB-002",
     siteId: "SITE-14",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Spain",
     siteNumber: "014",
     folder: "Vital Signs",
@@ -1217,6 +1436,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-003",
     subjectId: "SUB-005",
     siteId: "SITE-05",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Austria",
     siteNumber: "005",
     folder: "Adverse Events",
@@ -1230,6 +1451,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-004",
     subjectId: "SUB-007",
     siteId: "SITE-27",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     siteNumber: "027",
     folder: "Disposition",
@@ -1243,6 +1466,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-005",
     subjectId: "SUB-009",
     siteId: "SITE-31",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "USA",
     siteNumber: "031",
     folder: "Concomitant Medications",
@@ -1256,6 +1481,8 @@ export const inactivatedForms: InactivatedForm[] = [
     id: "IF-006",
     subjectId: "SUB-015",
     siteId: "SITE-70",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     country: "Singapore",
     siteNumber: "070",
     folder: "All",
@@ -1273,7 +1500,9 @@ export const inactivatedForms: InactivatedForm[] = [
 export const missingPages: MissingPage[] = [
   {
     id: "MP-001",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     country: "Spain",
@@ -1288,7 +1517,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-002",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     country: "Spain",
@@ -1303,7 +1534,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-003",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-003",
     siteId: "SITE-18",
     country: "France",
@@ -1318,7 +1551,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-004",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-004",
     siteId: "SITE-18",
     country: "France",
@@ -1333,7 +1568,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-005",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-005",
     siteId: "SITE-05",
     country: "Austria",
@@ -1348,7 +1585,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-006",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-008",
     siteId: "SITE-27",
     country: "USA",
@@ -1363,7 +1602,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-007",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     country: "USA",
@@ -1378,7 +1619,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-008",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-010",
     siteId: "SITE-42",
     country: "Brazil",
@@ -1393,7 +1636,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-009",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-013",
     siteId: "SITE-60",
     country: "South Korea",
@@ -1408,7 +1653,9 @@ export const missingPages: MissingPage[] = [
   },
   {
     id: "MP-010",
+    studyId: "STUDY-01",
     studyName: "Study 1",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-014",
     siteId: "SITE-65",
     country: "China",
@@ -1429,21 +1676,24 @@ export const missingPages: MissingPage[] = [
 export const edrrIssues: EDRRIssue[] = [
   {
     id: "EDRR-001",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-008",
     siteId: "SITE-27",
     totalOpenIssues: 1,
   },
   {
     id: "EDRR-002",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     totalOpenIssues: 2,
   },
   {
     id: "EDRR-003",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-013",
     siteId: "SITE-60",
     totalOpenIssues: 1,
@@ -1456,7 +1706,8 @@ export const edrrIssues: EDRRIssue[] = [
 export const meddraCoding: MedDRACoding[] = [
   {
     id: "MD-001",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-001",
     siteId: "SITE-14",
     dictionary: "MedDRA",
@@ -1472,7 +1723,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-002",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-001",
     siteId: "SITE-14",
     dictionary: "MedDRA",
@@ -1488,7 +1740,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-003",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     dictionary: "MedDRA",
@@ -1504,7 +1757,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-004",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     dictionary: "MedDRA",
@@ -1520,7 +1774,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-005",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     dictionary: "MedDRA",
@@ -1536,7 +1791,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-006",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-004",
     siteId: "SITE-18",
     dictionary: "MedDRA",
@@ -1552,7 +1808,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-007",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-004",
     siteId: "SITE-18",
     dictionary: "MedDRA",
@@ -1568,7 +1825,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-008",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     dictionary: "MedDRA",
@@ -1584,7 +1842,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-009",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     dictionary: "MedDRA",
@@ -1600,7 +1859,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-010",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     dictionary: "MedDRA",
@@ -1616,7 +1876,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-011",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     dictionary: "MedDRA",
@@ -1632,7 +1893,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-012",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-013",
     siteId: "SITE-60",
     dictionary: "MedDRA",
@@ -1648,7 +1910,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-013",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-014",
     siteId: "SITE-65",
     dictionary: "MedDRA",
@@ -1664,7 +1927,8 @@ export const meddraCoding: MedDRACoding[] = [
   },
   {
     id: "MD-014",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-014",
     siteId: "SITE-65",
     dictionary: "MedDRA",
@@ -1686,7 +1950,8 @@ export const meddraCoding: MedDRACoding[] = [
 export const whodrugCoding: WHODrugCoding[] = [
   {
     id: "WD-001",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-002",
     siteId: "SITE-14",
     dictionary: "WHODrug-Global-B3",
@@ -1701,7 +1966,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-002",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-003",
     siteId: "SITE-18",
     dictionary: "WHODrug-Global-B3",
@@ -1716,7 +1982,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-003",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-004",
     siteId: "SITE-18",
     dictionary: "WHODrug-Global-B3",
@@ -1731,7 +1998,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-004",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     dictionary: "WHODrug-Global-B3",
@@ -1746,7 +2014,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-005",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-007",
     siteId: "SITE-27",
     dictionary: "WHODrug-Global-B3",
@@ -1761,7 +2030,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-006",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-009",
     siteId: "SITE-31",
     dictionary: "WHODrug-Global-B3",
@@ -1776,7 +2046,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-007",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-011",
     siteId: "SITE-55",
     dictionary: "WHODrug-Global-B3",
@@ -1791,7 +2062,8 @@ export const whodrugCoding: WHODrugCoding[] = [
   },
   {
     id: "WD-008",
-    studyId: "Study 1",
+    studyId: "STUDY-01",
+    projectName: "Oncology Phase III - Study 1",
     subjectId: "SUB-012",
     siteId: "SITE-55",
     dictionary: "WHODrug-Global-B3",
@@ -2200,4 +2472,22 @@ export const calculateDataQuality = (subject: SubjectMetric): number => {
     (1 - (subject.totalQueries + subject.missingPages) / totalExpectedPages) *
     100;
   return Math.max(0, Math.min(100, Math.round(score)));
+};
+
+// Get unique studies for study filter dropdown
+export const getStudies = (): Array<{
+  studyId: string;
+  projectName: string;
+}> => {
+  const studyMap = new Map<string, string>();
+
+  masterMetrics.forEach((m) => {
+    if (!studyMap.has(m.studyId)) {
+      studyMap.set(m.studyId, m.projectName);
+    }
+  });
+
+  return Array.from(studyMap.entries())
+    .map(([studyId, projectName]) => ({ studyId, projectName }))
+    .sort((a, b) => a.studyId.localeCompare(b.studyId));
 };
