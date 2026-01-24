@@ -4,6 +4,7 @@ import ParticlesBackground from "@/components/landing/ParticlesBackground";
 import BentoFeatures from "@/components/landing/BentoFeatures";
 import DashboardPreview from "@/components/landing/DashboardPreview";
 import Footer from "@/components/landing/Footer";
+import Chatbot from "@/components/landing/Chatbot";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -47,6 +48,9 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Floating Chatbot */}
+      <Chatbot />
     </main>
   );
 }

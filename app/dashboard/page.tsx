@@ -11,6 +11,7 @@ import {
   SubjectTable,
 } from "@/components/dashboard/DataTable";
 import Patient360 from "@/components/dashboard/Patient360";
+import Chatbot from "@/components/landing/Chatbot";
 import RegionStackedBarChart from "@/components/charts/RegionStackedBarChart";
 import CountryComposedChart from "@/components/charts/CountryComposedChart";
 import SAEDonutChart from "@/components/charts/SAEDonutChart";
@@ -289,6 +290,9 @@ export default function DashboardPage() {
           onClose={() => setSelectedSubjectId(null)}
         />
       )}
+
+      {/* Floating Chatbot */}
+      <Chatbot />
     </div>
   );
 }
