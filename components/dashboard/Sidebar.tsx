@@ -7,13 +7,6 @@ import {
   ResponsibleFunction,
   ROLE_KPI_MAPPING,
 } from "@/types";
-import {
-  getRegions,
-  getCountries,
-  getSites,
-  getSubjects,
-  getStudies,
-} from "@/data/mockData";
 import SearchableDropdown from "./SearchableDropdown";
 
 interface SidebarProps {
@@ -63,7 +56,6 @@ export default function Sidebar({
         }
       } catch (error) {
         console.error("Error fetching studies:", error);
-        setStudies(getStudies().map((s) => ({ project_name: s.studyId })));
       } finally {
         setLoadingStudies(false);
       }
@@ -89,7 +81,6 @@ export default function Sidebar({
         }
       } catch (error) {
         console.error("Error fetching regions:", error);
-        setRegions(getRegions());
       } finally {
         setLoadingRegions(false);
       }
@@ -120,7 +111,6 @@ export default function Sidebar({
         }
       } catch (error) {
         console.error("Error fetching countries:", error);
-        setCountries(getCountries(filters.region));
       } finally {
         setLoadingCountries(false);
       }
@@ -154,11 +144,6 @@ export default function Sidebar({
         }
       } catch (error) {
         console.error("Error fetching sites:", error);
-        setSites(
-          getSites(filters.country, filters.region).map((s) => ({
-            site_id: s.siteId,
-          })),
-        );
       } finally {
         setLoadingSites(false);
       }
@@ -195,7 +180,6 @@ export default function Sidebar({
         }
       } catch (error) {
         console.error("Error fetching subjects:", error);
-        setSubjects(getSubjects(filters.siteId));
       } finally {
         setLoadingSubjects(false);
       }

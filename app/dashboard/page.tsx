@@ -16,11 +16,6 @@ import CountryComposedChart from "@/components/charts/CountryComposedChart";
 import SAEDonutChart from "@/components/charts/SAEDonutChart";
 import SignatureComplianceChart from "@/components/charts/SignatureComplianceChart";
 import SubjectPerformanceGrid from "@/components/charts/SubjectPerformanceGrid";
-import {
-  getKPISummary,
-  getStatsByRegion,
-  getCountryPerformance,
-} from "@/data/mockData";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState<FilterState>({
@@ -135,8 +130,6 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching KPI data:", error);
-        // Fallback to mock data
-        setKpiSummary(getKPISummary(filters));
       } finally {
         setLoadingKPI(false);
       }
@@ -177,8 +170,6 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching regional data entry:", error);
-        // Fallback to mock data
-        setRegionalDataEntry(getStatsByRegion());
       } finally {
         setLoadingRegionalData(false);
       }
@@ -260,8 +251,6 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching country performance:", error);
-        // Fallback to mock data
-        setCountryPerformanceData(getCountryPerformance(filters));
       } finally {
         setLoadingCountryPerformance(false);
       }
@@ -577,8 +566,6 @@ export default function DashboardPage() {
 
     fetchPatient360();
   }, [selectedSubjectId, filters.studyId]);
-
-  // Get all data based on current filters (keeping mock data for other components)
 
   const handleSubjectClick = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
