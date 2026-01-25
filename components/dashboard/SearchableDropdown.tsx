@@ -111,7 +111,7 @@ export default function SearchableDropdown({
               ? `Loading ${label?.toLowerCase() || "data"}...`
               : displayValue}
             {showCount && !loading && value === "ALL" && options.length > 0
-              ? ` (${options.length})`
+              ? ` (${options.length - 1})`
               : ""}
           </span>
           <svg

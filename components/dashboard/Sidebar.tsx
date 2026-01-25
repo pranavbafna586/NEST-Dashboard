@@ -72,12 +72,17 @@ export default function Sidebar({
     fetchStudies();
   }, []);
 
-  // Fetch regions (independent - loads on mount)
+  // Fetch regions (depends on study filter)
   useEffect(() => {
     const fetchRegions = async () => {
       try {
         setLoadingRegions(true);
-        const response = await fetch("/api/regions");
+        const url =
+          filters.studyId !== "ALL"
+            ? `/api/regions?study=${encodeURIComponent(filters.studyId)}`
+            : "/api/regions";
+
+        const response = await fetch(url);
         const data = await response.json();
         if (data.regions) {
           setRegions(data.regions);
@@ -91,18 +96,23 @@ export default function Sidebar({
     };
 
     fetchRegions();
-  }, []);
+  }, [filters.studyId]);
 
-  // Fetch countries (depends on region filter)
+  // Fetch countries (depends on study and region filters)
   useEffect(() => {
     const fetchCountries = async () => {
       try {
         setLoadingCountries(true);
-        const url =
-          filters.region !== "ALL"
-            ? `/api/countries?region=${encodeURIComponent(filters.region)}`
-            : "/api/countries";
+        const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+
+        const url = `/api/countries${params.toString() ? `?${params.toString()}` : ""}`;
         const response = await fetch(url);
         const data = await response.json();
         if (data.countries) {
@@ -117,15 +127,18 @@ export default function Sidebar({
     };
 
     fetchCountries();
-  }, [filters.region]);
+  }, [filters.studyId, filters.region]);
 
-  // Fetch sites (depends on region and country filters)
+  // Fetch sites (depends on study, region and country filters)
   useEffect(() => {
     const fetchSites = async () => {
       try {
         setLoadingSites(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }
@@ -152,15 +165,18 @@ export default function Sidebar({
     };
 
     fetchSites();
-  }, [filters.region, filters.country]);
+  }, [filters.studyId, filters.region, filters.country]);
 
-  // Fetch subjects (depends on site, region, and country filters)
+  // Fetch subjects (depends on study, site, region, and country filters)
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         setLoadingSubjects(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.siteId !== "ALL") {
           params.append("siteId", filters.siteId);
         }
@@ -186,7 +202,7 @@ export default function Sidebar({
     };
 
     fetchSubjects();
-  }, [filters.siteId, filters.region, filters.country]);
+  }, [filters.studyId, filters.siteId, filters.region, filters.country]);
 
   const handleStudyChange = (studyId: string | "ALL") => {
     onFilterChange({
