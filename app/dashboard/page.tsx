@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FilterState, KPISummary } from "@/types";
 import Sidebar from "@/components/dashboard/Sidebar";
 import KPICards from "@/components/dashboard/KPICards";
@@ -20,12 +19,9 @@ import SubjectPerformanceGrid from "@/components/charts/SubjectPerformanceGrid";
 import {
   getKPISummary,
   getStatsByRegion,
-  getSitePerformance,
-  getSAEChartData,
   getCountryPerformance,
   filterMetrics,
   getSubjectDetails,
-  masterMetrics,
 } from "@/data/mockData";
 
 export default function DashboardPage() {
@@ -91,6 +87,10 @@ export default function DashboardPage() {
   );
   const [loadingSignatureCompliance, setLoadingSignatureCompliance] =
     useState(true);
+
+  // Site Performance state
+  const [sitePerformanceData, setSitePerformanceData] = useState<any[]>([]);
+  const [loadingSitePerformance, setLoadingSitePerformance] = useState(true);
 
   // Update timestamp only on client side to avoid hydration errors
   useEffect(() => {
@@ -338,8 +338,8 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching SAE chart data:", error);
-        // Fallback to mock data
-        setSaeChartData(getSAEChartData(filters));
+        // Set empty array on error
+        setSaeChartData([]);
       } finally {
         setLoadingSAEChart(false);
       }
@@ -390,8 +390,41 @@ export default function DashboardPage() {
     fetchSignatureCompliance();
   }, [filters]);
 
+  // Fetch Site Performance data from API when filters change
+  useEffect(() => {
+    const fetchSitePerformance = async () => {
+      try {
+        setLoadingSitePerformance(true);
+        const params = new URLSearchParams();
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+
+        const response = await fetch(`/api/site-performance?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch site performance data");
+        }
+        const data = await response.json();
+        setSitePerformanceData(data);
+      } catch (error) {
+        console.error("Error fetching site performance data:", error);
+        setSitePerformanceData([]);
+      } finally {
+        setLoadingSitePerformance(false);
+      }
+    };
+
+    fetchSitePerformance();
+  }, [filters]);
+
   // Get all data based on current filters (keeping mock data for other components)
-  const sitePerformance = getSitePerformance(filters);
   const filteredSubjects = filterMetrics(filters);
 
   // Get patient 360 data if a subject is selected
@@ -561,12 +594,31 @@ export default function DashboardPage() {
             </section>
 
             {/* Site Performance Table */}
-            {filters.siteId === "ALL" && sitePerformance.length > 0 && (
+            {filters.siteId === "ALL" && (
               <section>
-                <SitePerformanceTable
-                  data={sitePerformance}
-                  onSiteClick={handleSiteClick}
-                />
+                {loadingSitePerformance ? (
+                  <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-4 mx-auto"></div>
+                      <div className="space-y-3">
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                ) : sitePerformanceData.length > 0 ? (
+                  <SitePerformanceTable
+                    data={sitePerformanceData}
+                    onSiteClick={handleSiteClick}
+                  />
+                ) : (
+                  <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
+                    <p className="text-gray-600">
+                      No sites with signature backlog found
+                    </p>
+                  </div>
+                )}
               </section>
             )}
 
