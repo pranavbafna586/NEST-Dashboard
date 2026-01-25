@@ -15,14 +15,13 @@ import Chatbot from "@/components/landing/Chatbot";
 import RegionStackedBarChart from "@/components/charts/RegionStackedBarChart";
 import CountryComposedChart from "@/components/charts/CountryComposedChart";
 import SAEDonutChart from "@/components/charts/SAEDonutChart";
-import CodingTreemap from "@/components/charts/CodingTreemap";
+import SignatureComplianceChart from "@/components/charts/SignatureComplianceChart";
 import SubjectPerformanceGrid from "@/components/charts/SubjectPerformanceGrid";
 import {
   getKPISummary,
   getStatsByRegion,
   getSitePerformance,
   getSAEChartData,
-  getCodingCategoryData,
   getCountryPerformance,
   filterMetrics,
   getSubjectDetails,
@@ -80,6 +79,17 @@ export default function DashboardPage() {
     [],
   );
   const [loadingSubjectPerformance, setLoadingSubjectPerformance] =
+    useState(true);
+
+  // SAE Chart state
+  const [saeChartData, setSaeChartData] = useState<any[]>([]);
+  const [loadingSAEChart, setLoadingSAEChart] = useState(true);
+
+  // Signature Compliance state
+  const [signatureComplianceData, setSignatureComplianceData] = useState<any[]>(
+    [],
+  );
+  const [loadingSignatureCompliance, setLoadingSignatureCompliance] =
     useState(true);
 
   // Update timestamp only on client side to avoid hydration errors
@@ -296,10 +306,92 @@ export default function DashboardPage() {
     fetchSubjectPerformance();
   }, [filters]);
 
+  // Fetch SAE Chart data from API when filters change
+  useEffect(() => {
+    const fetchSAEChart = async () => {
+      try {
+        setLoadingSAEChart(true);
+        const params = new URLSearchParams();
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/sae-chart${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.data) {
+          setSaeChartData(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching SAE chart data:", error);
+        // Fallback to mock data
+        setSaeChartData(getSAEChartData(filters));
+      } finally {
+        setLoadingSAEChart(false);
+      }
+    };
+
+    fetchSAEChart();
+  }, [filters]);
+
+  // Fetch Signature Compliance data from API when filters change
+  useEffect(() => {
+    const fetchSignatureCompliance = async () => {
+      try {
+        setLoadingSignatureCompliance(true);
+        const params = new URLSearchParams();
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/signature-compliance${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.data) {
+          setSignatureComplianceData(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching signature compliance data:", error);
+        // Set empty array on error
+        setSignatureComplianceData([]);
+      } finally {
+        setLoadingSignatureCompliance(false);
+      }
+    };
+
+    fetchSignatureCompliance();
+  }, [filters]);
+
   // Get all data based on current filters (keeping mock data for other components)
   const sitePerformance = getSitePerformance(filters);
-  const saeData = getSAEChartData(filters);
-  const codingData = getCodingCategoryData();
   const filteredSubjects = filterMetrics(filters);
 
   // Get patient 360 data if a subject is selected
@@ -445,12 +537,26 @@ export default function DashboardPage() {
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
               {/* SAE Donut Chart */}
               <div className="lg:col-span-1 flex">
-                <SAEDonutChart data={saeData} />
+                {loadingSAEChart ? (
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
+                    <p className="text-gray-500">Loading SAE data...</p>
+                  </div>
+                ) : (
+                  <SAEDonutChart data={saeChartData} />
+                )}
               </div>
 
-              {/* Coding Treemap */}
+              {/* Signature Compliance Chart - Spans 2 columns */}
               <div className="lg:col-span-2 flex">
-                <CodingTreemap data={codingData} />
+                {loadingSignatureCompliance ? (
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
+                    <p className="text-gray-500">
+                      Loading signature compliance...
+                    </p>
+                  </div>
+                ) : (
+                  <SignatureComplianceChart data={signatureComplianceData} />
+                )}
               </div>
             </section>
 

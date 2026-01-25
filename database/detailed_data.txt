@@ -1,0 +1,962 @@
+Complete In-Depth Column-by-Column
+Breakdown of All 9 Files
+FILE 1 CPID_EDC_METRICS  The Master Report Card
+1
+This is the biggest and most important file. It has 50+ columns tracking everything about each
+patient.
+IDENTIFICATION COLUMNS Who & Where)
+1. Project Name
+What it is: The name of the clinical trial
+Example: "Study 1"
+2
+Simple meaning: Like the name of your school project
+Why it matters: You might have 23 different studies - this tells you which one
+2. Region
+What it is: Big geographical area
+Possible values: EMEA Europe/Middle East/Africa), ASIA, AMERICA
+Simple meaning: Like dividing the world into continents
+2
+Why it matters: Different regions have different regulations and work speeds
+3. Country
+What it is: Specific country where hospital is located
+Examples: FRA France, USA, ESP Spain, CHN China, AUT Austria)
+Simple meaning: Exactly which country
+2
+Why it matters: Language barriers, regulatory differences, timezone coordination
+4. Site ID
+What it is: Unique code for each hospital/clinic
+Examples: Site 1, Site 2, Site 3... Site 27
+2
+Simple meaning: Like each McDonald's location has a store number
+Why it matters: Track which hospitals are performing well vs struggling
+5. Subject ID
+What it is: Unique code for each patient (kept anonymous for privacy)
+CURRENT STATUS COLUMNS
+6. Latest Visit SV
+Examples: Subject 1, Subject 2... Subject 98
+2
+Simple meaning: Like your student ID number instead of using your name
+Why it matters: Privacy protection - nobody knows the real patient names
+What it is: The most recent appointment the patient completed
+Examples: "Screening", "W1D3" Week 1 Day 3, "Follow-up_Week 104"
+Simple meaning: Last time they came to the hospital
+Why it matters: Shows how far along they are in the treatment
+Real examples from data:
+Subject 1 "Screening" = just started, failed screening
+Subject 7 "Follow-up_Week 104" = been in study 2 years!
+Subject 5 "W1D3" = Week 1 Day 3, very early in treatment
+7. Subject Status
+What it is: Current enrollment status
+Possible values:
+"On Trial" = Still actively receiving treatment
+2
+2
+2
+2
+"Discontinued" = Stopped early (side effects, moved away, chose to quit)
+"Screen Failure" = Didn't qualify to join the study
+"Blank/Empty" = Not yet started or data not entered
+2
+Simple meaning: Like school enrollment status Active Student vs Dropped Out vs Waitlisted)
+Real examples:
+Subject 7 "On Trial" with 408 pages entered = active participant
+Subject 1 "Screen Failure" with only 9 pages = didn't qualify
+2
+2
+Subject 24 Blank status with 1 page = just enrolled, barely started
+Why it matters: Only "On Trial" patients count toward final analysis
+2
+WORK PROGRESS METRICS
+8. Input Files
+What it is: Number of data entry forms submitted
+Simple meaning: How many forms the hospital filled out
+Not super important - this is an internal system metric
+9. Missing Visits
+What it is: Number of scheduled appointments the patient hasn't shown up for yet
+Examples:
+Subject 1 0 missing visits (completed everything required so far)
+Subject 5 19 missing visits WAY behind schedule!
+Subject 7 21 missing visits (very behind)
+Simple meaning: Like a student missing 19 out of 30 classes
+2
+2
+2
+Why it matters: Missing visits = missing data = can't analyze their results. Study coordinator
+needs to call them!
+10. Missing Page
+What it is: Number of required forms that haven't been filled out yet
+Examples:
+Subject 1 0 missing pages (all paperwork done)
+Subject 2 13 missing pages
+2
+Most subjects: 04 missing pages
+2
+Simple meaning: Like having 13 homework assignments not turned in
+Why it matters: Can't finalize data if forms are missing
+MEDICAL CODING STATUS
+11. # Coded Terms
+What it is: Number of medical terms that have been translated to standard codes
+Examples:
+Subject 14 4 coded terms
+2
+Most subjects: 0 coded terms (nothing to code yet)
+Simple meaning: Converting doctor's notes like "patient had severe stomach pain" 
+→
+ MedDRA
+code "Abdominal Pain Severe"
+Why it matters: Computers can't analyze "tummy ache" vs "stomach pain" vs "abdominal
+discomfort" unless they're all coded the same
+12. # Uncoded Terms
+What it is: Medical terms WAITING to be translated to standard codes
+Examples:
+Subject 47 10 uncoded terms
+Subject 83 9 uncoded terms
+2
+2
+Most subjects: 02 uncoded terms
+Simple meaning: Medical coder's to-do list
+Why it matters: Study can't be submitted until ALL terms are coded. This shows backlog.
+DATA QUALITY ISSUES
+13. # Open Issues in LNR Lab Normal Ranges)
+What it is: Lab tests missing "normal range" reference values
+Examples:
+Subject 75 5 open lab issues
+2
+Subject 80 10 open lab issues (the most!
+Most subjects: 0 lab issues
+2
+Simple meaning: Blood test shows "Glucose = 120" but doesn't say if normal is 70100 or 100
+140
+Why it matters: Can't tell if results are abnormal without knowing normal ranges
+14. # Open Issues in EDRR External Data Reconciliation)
+What it is: Mismatches between hospital's records and central lab's records
+Examples:
+Subject 45 4 EDRR issues
+2
+Subject 93 6 EDRR issues
+2
+Simple meaning: Hospital says patient visited on Jan 5th, but lab database says Jan 7th 
+which is correct?
+Why it matters: All data sources must match before submission
+15. Inactivated Forms and Folders
+What it is: Forms that were turned off/cancelled
+Examples:
+Subject 5 19 inactivated forms
+Subject 7 21 inactivated forms
+2
+2
+2
+Subject 44 21 inactivated forms
+Simple meaning: Like crossing out homework assignments that no longer apply
+Why it matters: Need documentation of WHY forms were cancelled (to prove they weren't just
+forgotten)
+SAFETY MONITORING
+16. # eSAE Dashboard Review for DM Data Management)
+What it is: Number of serious adverse events reviewed by data team
+Examples:
+Subject 9 2 SAE reviews by DM
+2
+Subject 10 5 SAE reviews by DM
+2
+Most subjects: 0 (no serious events)
+Simple meaning: Data manager checked reports of hospitalizations/deaths
+17. # eSAE Dashboard Review for Safety
+What it is: Number of serious adverse events reviewed by safety team
+Examples:
+Subject 88 5 SAE reviews by safety team
+Most subjects: 0
+2
+Simple meaning: Safety doctor reviewed the serious side effect
+Why both matter: Serious events need DUAL review (data quality + medical safety). If these
+numbers don't match, there's a problem.
+VISIT & PAGE STATUS METRICS
+18. # Expected Visits
+What it is: Total number of hospital appointments this patient should have
+Examples:
+Subject 1 1 expected visit (screening only)
+Subject 7 29 expected visits (long study!
+2
+2
+Subject 63 30 expected visits 2+ years of treatment)
+2
+Simple meaning: Total number of classes you're supposed to attend this semester
+Why it matters: Used to calculate completion percentage
+19. # Pages Entered
+What it is: Total forms completed and entered into computer
+Examples:
+Simple meaning: How many forms got filled out
+Subject 1 9 pages (minimal - screen failure)
+Subject 7 408 pages (most in whole study!
+Subject 67 458 pages (even more!
+2
+2
+2
+Why it matters: Shows workload and progress. 400+ pages = years of data collection
+20. # Pages with Non-Conformant Data
+What it is: Forms with data that breaks the rules
+Examples:
+Subject 2 1 non-conformant page
+2
+Subject 57 1 non-conformant page
+2
+Subject 62 2 non-conformant pages
+2
+Most subjects: 0 (all data follows rules)
+Simple meaning: Like turning in homework that doesn't follow the assignment instructions
+Examples of non-conformant data:
+Date entered as "20251345" (invalid date)
+Blood pressure "120" without units (missing mmHg)
+Wrote "N/A" in a required field
+Why it matters: Regulators reject data that doesn't follow protocol
+❓
+QUERY TRACKING Questions About Data)
+Think of queries as yellow sticky notes stuck on forms saying "Hey, this doesn't look right 
+please clarify!"
+21. # DM Queries Data Management)
+What it is: Questions raised by central data team
+Examples:
+Subject 14 4 DM queries
+2
+Subject 39 4 DM queries
+2
+Most subjects: 0 DM queries
+Simple meaning: Data manager noticed something odd and needs clarification
+Example query: "Form shows visit date as Feb 30th - this date doesn't exist. Please correct."
+22. # Clinical Queries
+What it is: Questions raised by clinical review team
+Examples:
+Subject 14 2 clinical queries
+2
+Subject 47 3 clinical queries
+2
+Simple meaning: Clinical expert noticed medical data that seems wrong
+Example: "Patient weighs 500 kg - is this a typo? Human adults typically weigh 50100 kg."
+23. # Medical Queries
+What it is: Questions from medical reviewers about safety/efficacy
+Examples:
+Subject 12 2 medical queries
+2
+Subject 45 4 medical queries
+2
+Example: "Patient reported heart attack but ECG is normal - please review diagnosis."
+24. # Site Queries
+What it is: Questions that the hospital staff raised
+Examples:
+Subject 5 19 site queries (they're confused!
+Subject 7 21 site queries
+2
+2
+Subject 9 31 site queries (asking lots of questions)
+2
+Simple meaning: Hospital asking central team for help/clarification
+Example: "Patient missed Week 3 visit but came in Week 4 - do we still fill out the Week 3
+form?"
+25. # Field Monitor Queries
+What it is: Questions from inspectors who visit hospitals
+Examples:
+Subject 9 2 field monitor queries
+2
+Subject 10 5 field monitor queries
+Subject 14 3 field monitor queries
+2
+2
+Simple meaning: Inspector visited hospital, found issues, wrote them down
+Example: "Source document (original hospital chart) says blood pressure was 140/90, but EDC
+shows 130/80. Which is correct?"
+26. # Coding Queries
+What it is: Questions about medical term translations
+Examples:
+Subject 36 3 coding queries
+Subject 83 8 coding queries
+2
+2
+Simple meaning: Medical coder can't figure out the right code
+Example: "Doctor wrote 'patient felt dizzy-like' - is this 'dizziness' or 'vertigo'?"
+27. # Safety Queries
+What it is: Questions about serious side effects
+Examples:
+Very rare - only Subject 10 has any 0 for most)
+2
+Simple meaning: Safety team needs more info about a dangerous side effect
+28. # Total Queries
+What it is: Sum of ALL query types above
+Examples:
+Subject 1 0 queries (perfectly clean)
+Subject 2 13 queries
+2
+2
+Subject 9 38 queries (needs a lot of fixing!
+Subject 80 14 queries
+2
+2
+Simple meaning: Total number of sticky notes asking "Please fix this"
+Why it matters: Can't finalize data until ALL queries are answered. Subject 9 with 38 open
+queries is blocking progress.
+✅
+DATA VERIFICATION STATUS
+29. # CRFs Require Verification SDV  Source Data Verification)
+What it is: Forms that need an inspector to check against original hospital records
+Examples:
+Subject 9 190 CRFs need verification (huge backlog!
+Subject 80 109 CRFs need verification
+Subject 44 86 CRFs need verification
+2
+2
+2
+Simple meaning: Like a teacher saying "I need to check your math homework against the
+textbook to make sure you didn't cheat"
+Why it matters: Regulations require inspectors to verify a sample of data matches original
+hospital charts
+30. # Forms Verified
+What it is: Forms that already passed verification
+Examples:
+Subject 2 215 forms verified
+2
+Subject 6 287 forms verified
+2
+Subject 63 353 forms verified
+2
+Simple meaning: Inspector checked and confirmed "Yep, this matches the hospital chart"
+FORM LOCK STATUS
+Think of these as different levels of "finalizing" the data, like the stages of publishing a book.
+31. # CRFs Frozen
+What it is: Forms temporarily locked for review (but can be unfrozen)
+Simple meaning: Like putting document in "read-only" mode temporarily
+Most subjects: 03 frozen forms
+32. # CRFs Not Frozen
+What it is: Forms still editable
+2
+Examples: Most forms are "not frozen" = still actively being worked on
+33. # CRFs Locked
+What it is: Forms permanently finalized (can't edit without special permission)
+Simple meaning: Like submitting your final thesis - no more changes allowed
+Most subjects: 0 locked (study still ongoing)
+34. # CRFs Unlocked
+What it is: Forms still open for editing
+Examples:
+Subject 2 2 unlocked CRFs
+Subject 3 2 unlocked CRFs
+PROTOCOL DEVIATIONS
+2
+2
+35. # PDs Confirmed Protocol Deviations Confirmed)
+What it is: Officially documented times when the hospital didn't follow the study rules
+Examples:
+Subject 57 1 confirmed deviation
+2
+2
+Subject 25 1 confirmed deviation
+Most subjects: 0 deviations
+Simple meaning: Breaking the rules (even accidentally)
+Real examples of deviations:
+Patient was supposed to come Week 4 but came Week 5 instead
+Lab test wasn't done fasting (should have been)
+Doctor gave a dose of 100mg instead of required 50mg
+Why it matters: Too many deviations = data is unreliable, study might be rejected
+36. # PDs Proposed
+What it is: Potential rule-breaks that need investigation
+Simple meaning: "We think this might be a deviation, but we're not sure yet"
+Most subjects: 0
+2
+✍ 
+SIGNATURE STATUS
+37. # CRFs Signed
+What it is: Forms the doctor Principal Investigator) has officially signed
+Examples:
+Subject 1 8 signed
+2
+Subject 2 216 signed
+Subject 7 291 signed
+2
+2
+Simple meaning: Doctor's signature = "I confirm this data is accurate"
+Why it matters: Unsigned forms are not legally valid for regulatory submission
+38. CRFs Overdue for Signs Within 45 Days
+What it is: Forms that need signature but have been waiting 145 days
+Examples:
+Subject 7 13 forms overdue
+Subject 9 49 forms overdue
+2
+2
+Subject 78 49 forms overdue
+2
+Simple meaning: Doctor is 16 weeks behind on signing paperwork
+Why it matters: Mild delay - not critical yet but needs attention
+39. CRFs Overdue 4590 Days
+What it is: Forms waiting 1.53 months for signature
+Examples:
+2
+Subject 7 66 forms overdue
+Subject 87 37 forms overdue
+2
+Simple meaning: Moderately serious delay
+40. CRFs Overdue Beyond 90 Days
+What it is: Forms waiting 3+ months for signature
+Examples:
+Subject 7 6 forms overdue 90+ days
+2
+Subject 83 21 forms overdue 90+ days
+2
+Simple meaning: CRITICAL DELAY - doctor has ignored these for 3+ months
+Why it matters: Regulators see this as data integrity issue
+41. Broken Signatures
+What it is: Electronic signatures that became invalid (system glitch or security issue)
+Examples:
+Subject 7 3 broken signatures
+2
+Subject 9 20 broken signatures
+2
+TOTAL STUDY 165 broken signatures
+2
+Simple meaning: Like a PDF signature that got corrupted
+Why it matters: Need to re-sign all these forms
+42. CRFs Never Signed
+What it is: Forms that were supposed to be signed but doctor never did
+Examples:
+Subject 5 44 never signed
+2
+Subject 7 82 never signed HUGE problem!
+Subject 22 60 never signed
+2
+2
+Simple meaning: Doctor completely forgot to sign these
+Why it matters: These forms are legally invalid until signed
+RESPONSIBILITY ASSIGNMENT
+43. Responsible LF for Action Lead Function)
+What it is: Shows who is responsible for fixing each type of issue
+Values:
+Site/CRA Hospital or Clinical Research Associate handles it
+DM Data Management team handles it
+CSE/CDD Clinical Data expert handles it
+Coder: Medical coding specialist handles it
+Safety Team: Safety reviewers handle it
+Investigator: Doctor must handle it
+1
+Simple meaning: Like a chore chart showing who's responsible for each task
+Why it matters: Without clear ownership, problems don't get fixed
+FILE 2 VISIT PROJECTION TRACKER  The Attendance Sheet
+This file lists only the missed appointments.
+Column-by-Column Breakdown:
+1. Country
+What it is: Where the hospital is located
+1
+Examples: AUT Austria), KOR South Korea), ESP Spain, USA
+Why it matters: Track which countries have worst attendance problems
+2. Site
+What it is: Which hospital
+Examples: Site 5, Site 12, Site 14
+Why it matters: Identify problem hospitals
+3. Subject
+What it is: Which patient missed appointment
+Examples: Subject 11, Subject 22, Subject 26
+Why it matters: Know exactly who to follow up with
+4. Visit
+What it is: Name of the missed appointment
+Examples:
+"Cycle12Week1"
+"Week 7 Visit"
+"30Day Follow-Up"
+Simple meaning: Which specific appointment they missed
+5. Projected Date
+What it is: When they were SUPPOSED to come
+Examples: "20251015", "20251101"
+Simple meaning: The scheduled date on the calendar
+6. # Days Outstanding
+What it is: How many days ago they missed it
+Examples from guidance: 9 days, 16 days, 32 days
+1
+Simple meaning: If today is Nov 20 and they were supposed to come Nov 1, that's 19 days
+outstanding
+Why this file matters: Study coordinator calls patients: "You missed your appointment 32 days
+ago - can you come in ASAP?"
+FILE 3 MISSING_LAB_NAME_AND_MISSING_RANGES  The Incomplete Lab Report
+This file lists every lab test that's missing critical info.
+Column-by-Column Breakdown:
+1. Country
+Example: USA, France, Spain
+1
+Why: Track which countries have most lab problems
+2. Site Number
+Example: Site 14, Site 18
+Why: Identify which hospitals keep forgetting lab details
+3. Subject
+Example: Subject 26, Subject 42
+Why: Know which patient's data is incomplete
+4. Visit
+Example: "30 Day Safety", "Cycle 5 Week 5"
+Simple meaning: Which appointment had the incomplete lab
+5. Form Name
+Example: "Chemistry - Local Lab Results", "Hematology Panel"
+Simple meaning: Which lab form is incomplete
+Why: Different forms track different tests (blood chemistry vs blood count vs urine)
+6. Lab Category
+Possible values:
+CHEMISTRY Tests for liver/kidney function, electrolytes
+HEMATOLOGY Blood cell counts
+COAGULATION Blood clotting tests
+URINALYSIS Urine tests
+Simple meaning: Type of lab test
+7. Lab Name
+What it is: Name of the laboratory facility that ran the test
+Examples: "Quest Diagnostics", "LabCorp", "Hospital Central Lab"
+Simple meaning: Which lab company processed the sample
+Why critical: Need to know where test was done for audit trail
+8. Lab Date
+What it is: Date the test was performed
+Example: "20251015"
+Why matters: Timeline tracking
+9. Test Name
+What it is: Short code for the test
+Examples:
+ALT (liver enzyme)
+CK (muscle damage marker)
+HGB (hemoglobin - blood health)
+Simple meaning: Abbreviation for what was tested
+10. Test Description
+What it is: Full name of the test
+Examples:
+"Alanine aminotransferase" (liver function)
+"Creatine Kinase" (muscle damage)
+"Hemoglobin" (oxygen-carrying protein in blood)
+Simple meaning: Plain English name for the test
+11. Issue
+Possible values:
+"Ranges/Units not entered" = Missing normal reference range
+"Missing Lab name" = Didn't write which lab did the test
+Simple meaning: What's wrong with this lab entry
+12. Comments
+Possible values:
+"Action for CRA" = Inspector needs to go to hospital and get the info
+"Action for Site" = Hospital needs to enter the missing data
+Simple meaning: Who needs to fix it
+Real-world example:
+Subject 42 at Site 15 in Spain
+Visit: Week 7 Day 1
+Test: HGB (Hemoglobin)
+Result entered: "12.5"
+Problem: Missing units (g/dL or g/L?) and missing normal range
+Issue: "Ranges/Units not entered"
+Action: CRA needs to get this from hospital chart
+Why this matters: Can't tell if "12.5" hemoglobin is dangerously low or perfectly normal without
+knowing:
+Units (g/dL vs g/L makes a 10x difference!
+Normal range (is 12.5 within 1216 or outside 1317?
+FILE 4 SAE DASHBOARD  The Emergency Alert System
+1
+SAE  Serious Adverse Event = really bad side effects like hospitalization, death, permanent
+disability.
+This file has TWO tabs - one for Data Management team, one for Safety team.
+TAB 1 SAE Dashboard_DM Data Management View)
+1. Discrepancy ID
+What it is: Unique tracking number for each safety issue
+Example: "SAE2024001", "SAE2024002"
+Simple meaning: Like a case number for each investigation
+2. Study ID
+What it is: Which clinical trial
+Example: "Study 1"
+Why: Company might have 20 studies running - need to know which one
+3. Country
+Example: USA, France
+Why: Geographic tracking
+4. Site
+Example: Site 18
+Why: Identify which hospital had the serious event
+5. Patient ID
+Example: Subject 63
+Why: Which patient experienced the serious event
+6. Form Name
+Example: "Serious Adverse Event Report Form"
+Simple meaning: Which form has the discrepancy
+7. Discrepancy Created Timestamp
+What it is: Date and time when someone noticed a problem
+Example: "202511 14 092345"
+Simple meaning: When the alarm bell rang
+Why timestamp matters: Regulators track how quickly safety issues are reported. Must report
+deaths within 24 hours!
+8. Review Status
+Possible values:
+"Review Completed" = Data manager finished checking it
+"Pending for Review" = Still waiting for someone to look at it
+Simple meaning: Has anyone checked this yet?
+9. Action Status
+Possible values:
+"No action required" = False alarm or already resolved
+"Pending" = Still needs work
+"Action taken" = Fixed
+Simple meaning: What's the current status?
+TAB 2 SAE Dashboard_Safety Safety Team View)
+Same columns as above, except:
+Case Status (replaces "Country" in this tab)
+Possible values:
+"Closed" = Investigation complete, all paperwork done
+"Locked" = Finalized and can't be changed
+"Open" = Still investigating
+Simple meaning: Is this case finished or still active?
+Why two tabs?
+Data Management checks: "Is the form filled out correctly?"
+Safety Team checks: "Is this event related to the drug? Is it dangerous?"
+Both teams must review independently = dual-check system for safety
+FILE 5 INACTIVATED FORMS AND LOGLINES  The "Cancelled Homework" Log
+This is an audit trail showing every time a form was turned off.
+Column-by-Column Breakdown:
+1. Country
+Example: France, USA
+Why: Geographic tracking
+2. Site
+Example: "Site 3", "Hospital Central"
+Why: Which hospital made the change
+3. Study Site Number
+Example: "003", "018"
+Simple meaning: Numeric code for the site
+4. Subject
+Example: Subject 26
+Why: Which patient's form was inactivated
+5. Folder
+What it is: Category/module in the database system
+Examples:
+"Adverse Events"
+"Disposition" (enrollment/withdrawal status)
+"Lab Results"
+"Medical History"
+Simple meaning: Which section of the electronic binder
+6. Form
+What it is: Specific form that was inactivated
+1
+Examples:
+"Adverse Events Form"
+"Disposition Form"
+"Blood Pressure Form"
+Simple meaning: Exact form name
+7. Data on Form/Record
+Possible values:
+Y Yes = Data was entered before inactivating it
+N No = Form was blank when inactivated
+Simple meaning: Was there actual data on this form or was it empty?
+Why this matters:
+Y = needs explanation - why delete form with data?
+N = normal - turning off blank/unnecessary form is routine
+8. RecordPosition
+What it is: If form has multiple entries (like logging multiple medications), which entry
+number was inactivated
+Examples: 1, 2, 3, 4
+Simple meaning: Line number in a repeating form
+Example: Patient takes 5 medications - you have 5 records. If you inactivate record #3,
+RecordPosition = 3
+9. Audit Action
+What it is: Exact description of what happened
+Examples:
+"DataPage inactivated with code reason: Not Applicable"
+"DataPage inactivated with code reason: Not Done"
+"Record Inactivated: Subject Withdrew"
+"DataPage inactivated with code reason: Duplicate Entry"
+Simple meaning: Why was this turned off?
+Common reasons:
+"Not Applicable" = Patient didn't need this (e.g., pregnancy test for male patient)
+"Not Done" = Doctor decided to skip this test
+"Duplicate Entry" = Accidentally entered twice
+"Subject Withdrew" = Patient quit the study
+Real-world example:
+Country: USA
+Site: Site 18
+Subject: Subject 64
+Folder: Adverse Events
+Form: Serious Adverse Event Form
+Data on Form: Y
+RecordPosition: 2
+Audit Action: "DataPage inactivated with code reason: Data Entered in Error"
+Translation: At Site 18 in USA, someone accidentally entered a serious side effect for Su
+Why this file matters: Regulators audit this to make sure data wasn't deleted fraudulently.
+Every deletion must be justified.
+FILE 6 GLOBAL_MISSING_PAGES_REPORT  The "Incomplete Homework" List
+This lists EVERY missing form for EVERY patient at EVERY visit.
+Column-by-Column Breakdown:
+1. Study Name
+Example: "Study 1"
+Why: Track which trial
+2. SiteGroupName CountryName)
+What it is: Country or region grouping
+Examples: "France", "USA", "Spain"
+Why: Group sites by geography for regional managers
+3. SiteNumber
+Example: Site 14, Site 18
+Why: Specific hospital
+4. SubjectName
+Example: Subject 26
+Why: Specific patient
+5. Overall Subject Status
+Possible values:
+"Survival" = Patient completed follow-up, still alive
+"Discontinued" = Stopped early
+"Follow-Up" = In long-term monitoring phase
+1
+"On Trial" = Actively receiving treatment
+Simple meaning: What's their current enrollment status?
+6. Visit Level Subject Status
+What it is: Status specifically at this visit (might differ from overall)
+Example: Patient might be "Discontinued" overall but at Visit 5 they were "On Trial"
+Why: Historical tracking
+7. FolderName
+Examples:
+"Screening"
+"Adverse Events"
+"Lab Results"
+"Vital Signs"
+Simple meaning: Which category of forms
+8. Visit Date
+What it is: Date of the appointment when form should have been filled
+Example: "20251015"
+Simple meaning: When did patient come in?
+9. Form Type Summary or Visit)
+Possible values:
+"Visit" = Form specific to one appointment (like "Week 3 Blood Pressure")
+"Summary" = Form that summarizes multiple visits (like "Overall Treatment Summary")
+Simple meaning: Is this a one-time form or a summary document?
+10. FormName
+What it is: Exact name of the missing form
+Examples:
+"Vital Signs"
+"Concomitant Medications"
+"ECG Results"
+"Physical Examination"
+Simple meaning: Which specific form wasn't filled out
+11. No. #Days Page Missing
+What it is: How many days it's been since the visit date
+Examples: 2 days, 32 days, 218 days
+Simple meaning: How overdue is this form?
+Real-world example:
+Study: Study 1
+Country: Spain
+Site: Site 14
+Subject: Subject 26
+Overall Status: On Trial
+Visit Date: 2025-09-30
+Form Type: Visit
+Form Name: Blood Pressure Form
+Days Missing: 45
+Translation: Subject 26 at Site 14 in Spain came in for an appointment on Sept 30, but th
+Why this matters: This file tells you EXACTLY which forms to chase down. CRA can say: "Site
+14 - you're missing the Blood Pressure form from Subject 26's Sept 30 visit. Please complete it
+ASAP."
+FILE 7 COMPILED_EDRR  The "External Data Issues" Summary
+1
+EDRR  External Data Reconciliation Report = when outside data sources don't match internal
+records.
+This is the simplest file - only 3 columns!
+Column-by-Column Breakdown:
+1. Study
+Example: "Study 1"
+Why: Which trial
+2. Subject
+Example: Subject 42, Subject 93
+Why: Which patient has mismatches
+3. Total Open Issue Count per Subject
+What it is: Number of unresolved discrepancies between internal and external data
+Examples from data:
+Subject 93 6 open issues
+Subject 45 4 open issues
+Subject 42 1 open issue
+2
+Most subjects: 0 open issues
+Simple meaning: How many times does external data NOT match our records?
+Real-world examples of EDRR issues:
+Example 1 Central Lab Mismatch
+Hospital EDC says: "Blood drawn on Oct 15"
+Central Lab database says: "Sample received Oct 17"
+Issue: 2-day discrepancy - which date is correct?
+Example 2 Pharmacy Mismatch
+Hospital says: "Patient received Drug X at 10am"
+Pharmacy database says: "Drug X dispensed at 2pm"
+Issue: 4-hour discrepancy
+Example 3 Third-Party ECG
+Hospital says: "ECG performed, no abnormalities"
+External ECG company says: "No ECG received for this subject"
+Issue: Missing data at external vendor
+Why this matters: All data sources must be reconciled before database lock. Subject with 6
+open issues needs data manager to investigate and resolve all 6 mismatches.
+FILE 8 GLOBALCODINGREPORT_MEDDRA  The Medical Dictionary Translation
+1
+MedDRA  Medical Dictionary for Regulatory Activities = international standard for medical
+terms.
+Column-by-Column Breakdown:
+1. MedDRA Coding Report
+What it is: Header identifying this as a MedDRA report
+Value: Always says "MedDRA Coding Report"
+Why: File type identifier
+2. Study
+Example: "Study 1"
+Why: Which trial
+3. Dictionary
+Example: "MedDRA"
+Why: Confirms which coding system is used
+4. Dictionary Version Number
+Example: "v28.1" MedDRA version 28.1
+Simple meaning: Like software version numbers
+Why critical: Different versions have different codes. Must document which version was
+used for reproducibility.
+5. Subject
+Example: Subject 47, Subject 80
+Why: Which patient's medical terms are being coded
+6. Form
+What it is: Which form contains the terms to be coded
+Possible values:
+"Adverse Events" = side effects that happened during study
+"Medical History" = pre-existing conditions before study started
+"Prior Medications" = drugs patient was taking before joining study
+Simple meaning: Where did this medical term come from?
+7. Form OID Object Identifier)
+What it is: System tracking code for the form
+Example: "FORM_AE_001"
+Simple meaning: Internal database ID (technical detail, not important for understanding)
+8. Logline
+What it is: Line number if form has multiple entries
+Example: 1, 2, 3
+Simple meaning: If patient reported 5 side effects, these would be loglines 15
+9. Field OID
+What it is: System tracking code for the specific field being coded
+Example: "AETERM" Adverse Event Term)
+Simple meaning: Technical database reference
+10. Supplement Term Value1
+What it is: Additional information that helps with coding
+Examples:
+If main term is "pain", supplement might be "severe" or "mild"
+If main term is "rash", supplement might be "itchy" or "red"
+Simple meaning: Extra descriptive words
+11. Coding Status
+Possible values:
+"Coded Term" = Translation complete! 
+✓
+"UnCoded Term" = Still waiting for coder to translate 
+Simple meaning: Is this done or still pending?
+Why this matters:
+"Coded Term" = Good! No further work needed
+"UnCoded Term" = Bottleneck! Medical coder needs to process this
+12. Require Coding
+Possible values:
+"Yes" = This term MUST be coded
+"No" = Already coded or doesn't need coding
+Simple meaning: Does someone need to work on this?
+Real-world coding examples:
+Example 1 Adverse Event
+What doctor wrote: "Patient complained of severe stomach ache after taking pill"
+What coder translates to: MedDRA Code 10000081 "Abdominal pain upper" + Severity: Grade 3
+Example 2 Medical History
+What doctor wrote: "Patient had heart attack 3 years ago"
+What coder translates to: MedDRA Code 10001982 "Myocardial infarction"
+Example 3 Ambiguous Term
+What doctor wrote: "Patient felt dizzy-like"
+Problem: Is this "Dizziness" or "Vertigo"? Coder needs clarification → Status: UnCoded
+Why MedDRA coding matters:
+Different doctors describe same symptom 100 different ways
+Computer analysis requires standardized terms
+Regulatory agencies require MedDRA coding
+Allows cross-study comparisons
+FILE 9 GLOBALCODINGREPORT_WHODRUG  The Medicine Name Translator
+1
+WHODrug = World Health Organization Drug Dictionary = international standard for
+medication names.
+Column-by-Column Breakdown:
+1. WHODrug Coding Report
+What it is: Header identifying this as a WHODrug report
+Value: Always says "WHODrug Coding Report"
+Why: File type identifier
+2. Study
+Example: "Study 1"
+Why: Which trial
+3. Dictionary
+Example: "WHODrug-Global-B3"
+Simple meaning: Which version of the WHO Drug dictionary
+Why: Different countries use different drug classification systems
+4. Dictionary Version Number
+Example: "v202509" September 2025 version)
+Why: Drug databases update quarterly with new medications
+5. Subject
+Example: Subject 62, Subject 96
+Why: Which patient's medications are being coded
+6. Form
+Possible values:
+"Antineoplastic Medications" = Cancer treatment drugs
+"Prior or Concomitant Medications" = Other drugs patient is taking alongside study
+drug
+"Medical History - Medications" = Drugs patient took before study
+Simple meaning: Which form listed these medications
+7. Form OID
+What it is: System tracking code (technical detail)
+8. Logline
+What it is: Line number for multiple medication entries
+Simple meaning: If patient takes 8 medications, these are lines 18
+9. Field OID
+What it is: System tracking code for the field (technical detail)
+10. Trade Name
+What it is: Brand name of the medication (if provided)
+Examples:
+"Tylenol" (brand) vs "Acetaminophen" (generic)
+"Advil" (brand) vs "Ibuprofen" (generic)
+"Lipitor" (brand) vs "Atorvastatin" (generic)
+Simple meaning: The commercial product name
+11. Coding Status
+Possible values:
+"Coded Term" = Successfully translated to standard drug code 
+✓
+"UnCoded Term" = Coder can't figure it out yet 
+12. Require Coding
+Possible values:
+"Yes" = Needs coding
+"No" = Already coded or doesn't need coding
+Real-world drug coding examples:
+Example 1 Brand to Generic
+What doctor wrote: "Patient takes Tylenol 500mg twice daily"
+What coder translates to: WHO Drug Code X123456 "ACETAMINOPHEN"
+Example 2 International Names
+What doctor wrote (France): "Paracétamol 500mg"
+What coder translates to: WHO Drug Code X123456 "ACETAMINOPHEN"
+Same drug, different countries call it different names!
+Example 3 Ambiguous Entry
+What doctor wrote: "Patient on BP med"
+Problem: Which blood pressure medication? Hundreds exist!
+Status: UnCoded - coder needs to contact site for clarification
+Example 4 Misspelled
+What doctor wrote: "Metformin"
+What doctor actually meant: "Metformin" (diabetes drug)
+Coder must verify spelling and match to correct WHO code
+Why WHO Drug coding matters:
+Same drug has different brand names in each country
+Same chemical has different generic names globally
+Need to identify drug interactions across studies
+Regulators require standardized drug codes
+Analysis: "Did patients taking Drug X have more side effects than those taking Drug Y?"
+HOW ALL 9 FILES CONNECT
+Think of them as different views of the same reality:
+File 1 CPID_EDC_Metrics) = Master Dashboard showing totals
+Says "Subject 5 has 19 missing visits"
+File 2 Visit Projection Tracker) = Details of those 19 missing visits
+Lists each of the 19 visits by name and how overdue each one is
+File 1 = Says "Subject 26 has 4 uncoded terms"
+File 8 MedDRA or File 9 WHO Drug) = Details of those 4 terms
+Lists exactly which 4 medical/drug terms need coding
+File 1 = Says "Subject 42 has 1 open EDRR issue"
+File 7 Compiled_EDRR = Summary of all EDRR issues
+Subject 42 shows 1 open issue in summary
+File 1 = Says "Subject 7 has 21 inactivated forms"
+File 5 Inactivated Forms) = Details of all 21
+Lists each form with reason for inactivation
+File 1 = Says "Subject 9 has 38 open queries"
+File 1 also has Query Report tab = Details of all 38 queries
+Shows who asked the question, what field, how long it's been open
+This interconnected system allows you to:
+See the big picture File 1 totals)
+Drill down into details Files 29
+Take action Call sites, assign tasks, track progress)
+Hope this detailed breakdown helps! Let me know if you want me to explain any specific section
+in even more detail.
+⁂
+Dataset-Guidance-Document.docx
+Study-1_CPID_EDC_Metrics_URSV2.0_14NOV2025_updated.xlsx
+Study 1_Compiled_EDRR_updated.xlsx
+User Requirements_Document.docx
+Study 1_Visit Projection Tracker_14NOV2025_updated.xlsx
+Study 1_Missing_Pages_Report_URSV3.0_14 NOV 2025_updated.xlsx
+Study 1_Missing_Lab_Name_and_Missing_Ranges_14NOV2025_updated.xlsx
+Study 1_Inactivated Forms, Folders and Records Report_updated.xlsx
+Study 1_GlobalCodingReport_WHODD_updated.xlsx
+Study 1_GlobalCodingReport_MedDRA_updated.xlsx
+Study 1_eSAE Dashboard_Standard DM_Safety Report_updated.xlsx

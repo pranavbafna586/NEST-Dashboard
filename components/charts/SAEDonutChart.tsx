@@ -36,28 +36,8 @@ const CustomTooltip = ({
   return null;
 };
 
-const renderCustomLabel = (props: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent, name } = props;
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  if (percent < 0.05) return null;
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="#1F2937"
-      textAnchor={x > cx ? "start" : "end"}
-      dominantBaseline="central"
-      className="text-xs font-semibold"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
+// Removed percentage labels for cleaner appearance
+const renderCustomLabel = () => null;
 
 export default function SAEDonutChart({ data }: SAEDonutChartProps) {
   const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
@@ -143,7 +123,7 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
           {/* Center Label */}
           <text
             x="50%"
-            y="45%"
+            y="41%"
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-gray-600 text-sm font-medium"
@@ -152,7 +132,7 @@ export default function SAEDonutChart({ data }: SAEDonutChartProps) {
           </text>
           <text
             x="50%"
-            y="52%"
+            y="47%"
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-gray-900 text-2xl font-bold"
