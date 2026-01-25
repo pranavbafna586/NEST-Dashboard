@@ -10,6 +10,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# database files
+database/*.db
+database/*.db-shm
+database/*.db-wal
+
 # testing
 /coverage
 

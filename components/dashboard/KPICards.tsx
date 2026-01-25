@@ -64,13 +64,6 @@ function KPICard({ title, value, icon, color, trend }: KPICardProps) {
             <span className={`text-3xl font-bold ${classes.valueText}`}>
               {value.toLocaleString()}
             </span>
-            {trend && (
-              <span
-                className={`text-xs font-medium ${trend.isPositive ? "text-emerald-600" : "text-red-600"}`}
-              >
-                {trend.isPositive ? "↓" : "↑"} {Math.abs(trend.value)}%
-              </span>
-            )}
           </div>
         </div>
         <div className={`${classes.iconBg} ${classes.iconText} p-3 rounded-lg`}>
@@ -109,7 +102,6 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           />
         </svg>
       ),
-      trend: { value: 12, isPositive: false },
     },
     openQueries: {
       key: "openQueries",
@@ -131,7 +123,6 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           />
         </svg>
       ),
-      trend: { value: 5, isPositive: true },
     },
     seriousAdverseEvents: {
       key: "activeSAEs",
@@ -153,7 +144,6 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           />
         </svg>
       ),
-      trend: { value: 3, isPositive: true },
     },
     uncodedTerms: {
       key: "uncodedTerms",
@@ -175,7 +165,6 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           />
         </svg>
       ),
-      trend: { value: 8, isPositive: true },
     },
   };
 
@@ -196,7 +185,6 @@ export default function KPICards({ summary, role }: KPICardsProps) {
           value={kpi.value}
           color={kpi.color}
           icon={kpi.icon}
-          trend={kpi.trend}
         />
       ))}
     </div>

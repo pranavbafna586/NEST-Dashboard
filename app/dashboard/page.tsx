@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FilterState } from "@/types";
+import { FilterState, KPISummary } from "@/types";
 import Sidebar from "@/components/dashboard/Sidebar";
 import KPICards from "@/components/dashboard/KPICards";
 import StudyPulse from "@/components/dashboard/StudyPulse";
@@ -44,14 +44,103 @@ export default function DashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
+  // KPI state
+  const [kpiSummary, setKpiSummary] = useState<KPISummary>({
+    totalMissingVisits: 0,
+    openQueries: 0,
+    seriousAdverseEvents: 0,
+    uncodedTerms: 0,
+  });
+  const [loadingKPI, setLoadingKPI] = useState(true);
+
+  // Regional Data Entry Progress state
+  const [regionalDataEntry, setRegionalDataEntry] = useState<any[]>([]);
+  const [loadingRegionalData, setLoadingRegionalData] = useState(true);
+
   // Update timestamp only on client side to avoid hydration errors
   useEffect(() => {
     setLastUpdated(new Date().toLocaleString());
   }, []);
 
-  // Get all data based on current filters
-  const kpiSummary = getKPISummary(filters);
-  const regionStats = getStatsByRegion();
+  // Fetch KPI data from API when filters change
+  useEffect(() => {
+    const fetchKPIData = async () => {
+      try {
+        setLoadingKPI(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/kpi${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data && data.summary) {
+          setKpiSummary(data.summary);
+        }
+      } catch (error) {
+        console.error("Error fetching KPI data:", error);
+        // Fallback to mock data
+        setKpiSummary(getKPISummary(filters));
+      } finally {
+        setLoadingKPI(false);
+      }
+    };
+
+    fetchKPIData();
+  }, [filters]);
+
+  // Fetch Regional Data Entry Progress from API when filters change
+  useEffect(() => {
+    const fetchRegionalDataEntry = async () => {
+      try {
+        setLoadingRegionalData(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/regional-data-entry${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.data) {
+          setRegionalDataEntry(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching regional data entry:", error);
+        // Fallback to mock data
+        setRegionalDataEntry(getStatsByRegion());
+      } finally {
+        setLoadingRegionalData(false);
+      }
+    };
+
+    fetchRegionalDataEntry();
+  }, [filters]);
+
+  // Get all data based on current filters (keeping mock data for other components)
   const sitePerformance = getSitePerformance(filters);
   const saeData = getSAEChartData(filters);
   const codingData = getCodingCategoryData();
@@ -152,14 +241,18 @@ export default function DashboardPage() {
             <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
               {/* Left: Regional Data Entry Progress - 60% */}
               <div className="lg:col-span-3 h-full">
-                {filters.region === "ALL" ? (
+                {loadingRegionalData ? (
+                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
+                    <p className="text-gray-500">Loading regional data...</p>
+                  </div>
+                ) : filters.region === "ALL" ? (
                   <RegionStackedBarChart
-                    data={regionStats}
+                    data={regionalDataEntry}
                     syncId="dashboard"
                   />
                 ) : (
                   <CountryComposedChart
-                    data={countryPerformance}
+                    data={regionalDataEntry}
                     syncId="dashboard"
                   />
                 )}

@@ -1,0 +1,340 @@
+1) Where to get the missing data from (if missing) (for every subject):
+Latest Visit - filled from SV tab
+Subject Status - filled from SV tab
+
+Missing Visits - present in Visit_Projection_Tracker
+Missing Page - present in Missing_Pages_Report
+
+Coded Terms - count from GlobalCodingReport_WHODD + GlobalCodingReport_MedDRA
+Uncoded Terms - count from GlobalCodingReport_WHODD + GlobalCodingReport_MedDRA
+Open issues in LNR - count from Missing_Lab_Name_and_Missing_Ranges
+Open Issues reported for 3rd party reconciliation in EDRR - count from Compiled_EDRR
+
+Inactivated forms and folders - present in Inactivated_Forms_Folders_Records_Report
+
+eSAE dashboard review for DM - count from eSAE_Dashboard_Standard_DM_Safety_Report
+eSAE dashboard review for safety - count from eSAE_Dashboard_Standard_DM_Safety_Report
+
+Total CRFs with queries & Non-Conformant data -
+	1) Forms in Non conformant tab 
+	2) Forms in Query Report - Cumulative
+	Total count = Forms present in both (1) and (2)
+	
+Total CRFs without queries & Non-Conformant data -	
+	1) Forms in Non conformant tab 
+	2) Forms in Query Report - Cumulative
+	Total count = Forms present in both (1) but not in (2)
+	
+Shortcut -> (Total CRFs with queries & Non-Conformant data) + (Total CRFs without queries & Non-Conformant data) = Pages with Non-Conformant data
+
+% Clean Entered CRF = (Pages Entered - Pages with Non-Conformant data)*100 / (Pages Entered)
+
+Previous Visits of subject present in SV tab
+
+2) Data Validation and Data Mapping :
+
+Expected Visits - count of visits from SV tab which does not have Screening or Unplanned Visit as Folder Name + count of visits from Visit_Projection_Tracker
+Pages with Non-Conformant data - Page count from Non conformant tab
+
+DM Queries - Queries under "DM Review" OR "DM from System" in Query Report - Cumulative tab
+Clinical Queries - Queries under "Clinical Review" in Query Report - Cumulative tab
+Medical Queries - Queries under "Medical Review" in Query Report - Cumulative tab
+Site Queries - count of queries in Query Report - Site Action or Queries under "Site Review" in Query Report - Cumulative tab
+Field Monitor Queries - count of queries in Query Report - CRA Action or Queries under "Field Monitor Review" in Query Report - Cumulative tab
+Coding Queries - count of uncoded terms 
+Safety Queries - Queries under "Safety Review" in Query Report - Cumulative tab
+
+CRFs Require Verification (SDV) - count CRFs in SDV tab having Verification Status as "Require Verification"
+Forms Verified - count CRFs in SDV tab having Verification Status as "Verifed"
+CRFs Frozen - count of CRFs in CRF Freeze tab
+CRFs Not Frozen - count of CRFs in CRF UnFreeze tab
+CRFs Locked - count of CRFs in CRF Locked tab
+CRFs Unlocked - count of CRFs in CRF UnLocked tab
+
+PDs Confirmed - count of PDs having PD Status as PD Confirmed in Protocol Deviation tab
+PDs Proposed - count of PDs having PD Status as PD proposed in Protocol Deviation tab
+
+CRFs Signed - 
+CRFs overdue for signs within 45 days of Data entry	- count of CRFs having "No. of days" less than 45
+CRFs overdue for signs between 45 to 90 days of Data entry - count of CRFs having "No. of days" between 45 and 90
+CRFs overdue for signs beyond 90 days of Data entry	- count of CRFs having "No. of days" more than 90
+Broken Signatures - count of CRFs having "Page Require Signature" value as "Yes - Broken Signature"
+CRFs Never Signed - count of CRFs having "Page Require Signature" value as "Yes - Never Signed"
+
+Column Names : 
+Workbook = CPID_EDC_Metrics.xlsx
+1) Subject Level Metrics
+Project Name
+Region
+Country	
+Site ID	
+Subject ID	
+Latest Visit (SV)
+Subject Status
+Missing Visits	
+Missing Page	
+Coded terms	
+Uncoded Terms	
+Open issues in LNR	
+Open Issues reported for 3rd party reconciliation in EDRR
+Inactivated forms and folders	
+eSAE dashboard review for DM	
+eSAE dashboard review for safety
+Expected Visits
+Pages Entered	
+Pages with Non-Conformant data	
+Total CRFs with queries & Non-Conformant data	
+Total CRFs without queries & Non-Conformant data	
+Percentage Clean Entered CRF
+DM Queries	
+Clinical Queries	
+Medical Queries	
+Site Queries	
+Field Monitor Queries	
+Coding Queries	
+Safety Queries	
+Total Queries
+CRFs Require Verification (SDV)	
+Forms Verified	
+CRFs Frozen	
+CRFs Not Frozen	
+CRFs Locked	
+CRFs Unlocked	
+PDs Confirmed	
+PDs Proposed
+CRFs Signed	
+CRFs overdue for signs within 45 days of Data entry	
+CRFs overdue for signs between 45 to 90 days of Data entry	
+CRFs overdue for signs beyond 90 days of Data entry	
+Broken Signatures	
+CRFs Never Signed
+
+2) Query Report - Cumulative
+Study	
+Region	
+Country	
+Site Number	
+Subject Name	
+Folder Name	
+Form	
+Field OID	
+Log
+Visit Date	
+Query Status	
+Action Owner	
+Marking Group Name	
+Query Open Date	
+Query Response Date	
+Days Since Open	
+Days Since Response
+
+3) Non conformant
+Study	
+Region	
+Country	
+Study 
+Site	
+Subject Name	
+Folder Name	Page	
+Log	
+Field OID	
+Audit Time	
+Visit date
+
+4) PI Signature Report
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Visit Name	
+Data Page Name	
+Page Require Signature	
+Audit Action	
+Visit Date	
+Date page entered/ Date last PI Sign	
+No. of days	
+Pending since/ PI signed since
+
+5) SDV
+Project Name	
+Region	
+Country	Site	
+Subject Name	
+Folder Name	
+Data Page Name	
+Visit Date	
+Verification Status
+
+6) Protocol Deviation
+Study	
+Region	
+Country	
+Site ID	
+Subject Name	
+Folder Name	
+Data Page Name	
+Log 	
+PD Status	
+Visit date
+
+7) CRF Freeze
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Data Page Name	
+Freeze	
+Visit date
+
+8) CRF UnFreeze
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Data Page Name	
+UnFreeze	
+Visit date
+
+9) CRF Locked
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Data Page Name	
+Lock and Unlock	
+Audit User	
+Visit date
+
+10) CRF UnLocked
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Data Page Name	
+Lock and Unlock	
+Audit User	
+Visit date
+
+11) SV
+Project Name	
+Region	
+Country	
+Site ID	
+Subject Name	
+Folder Name	
+Visit date
+
+Workbook = Compiled_EDRR
+1) OpenIssuesSummary
+Study	
+Subject	
+Total Open issue Count per subject
+
+Workbook = eSAE_Dashboard_Standard_DM_Safety_Report
+1) SAE Dashboard_DM
+Discrepancy ID	
+Study ID	
+Country	
+Site	
+Patient ID	
+Form Name	
+Discrepancy Created Timestamp in Dashboard	
+Review Status	
+Action Status
+
+2) SAE Dashboard_Safety
+Discrepancy ID	
+Study ID	
+Site	
+Patient ID	
+Case Status	
+Discrepancy Created Timestamp in Dashboard	
+Review Status	
+Action Status
+
+Workbook = GlobalCodingReport_MedDRA
+1) GlobalCodingReport_MedDRA
+MedDRA Coding Report	
+Study	
+Dictionary	
+Dictionary Version number	
+Subject	
+Form OID	
+Logline	
+Field OID	
+Coding Status	
+Require Coding
+
+Workbook = GlobalCodingReport_WHODD
+1) GlobalCodingReport_WHODD
+WHODrug Coding Report	
+Study	
+Dictionary	
+Dictionary Version number	
+Subject	
+Form OID	
+Logline	
+Field OID	
+Coding Status	
+Require Coding
+
+Workbook = Inactivated_Forms_Folders_Records_Report
+1) _______
+Country	
+Study Site Number	
+Subject	
+Folder	
+Form 	
+Data on Form/Record    
+RecordPosition	
+Audit Action
+
+Workbook = Missing_Lab_Name_and_Missing_Ranges
+1) Missing_Lab_Name_and_Missing
+Country	
+Site number	
+Subject	
+Visit	
+Form Name	
+Lab category	
+Lab Date	
+Test Name	
+Test description	
+Issue
+
+Workbook = Missing_Pages_Report
+1) All Pages Missing
+Form Details	
+Country	
+Site Number	
+Subject Name	
+Visit Name	
+Page Name	
+Visit date	
+Subject Status	
+# of Days Missing
+
+2) Visit Level Pages Missing
+Form Details	
+Country	
+Site Number	
+Subject Name	
+Visit Name	
+Page Name	
+Visit date	
+Subject Status	
+# of Days Missing
+
+Workbook = Visit_Projection_Tracker
+1) Missing Visits
+Country	
+Site	
+Subject	
+Visit	
+Projected Date	
+# Days Outstanding

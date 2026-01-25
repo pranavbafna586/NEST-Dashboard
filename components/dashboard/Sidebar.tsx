@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   FilterState,
   Region,
@@ -14,6 +14,7 @@ import {
   getSubjects,
   getStudies,
 } from "@/data/mockData";
+import SearchableDropdown from "./SearchableDropdown";
 
 interface SidebarProps {
   filters: FilterState;
@@ -22,17 +23,170 @@ interface SidebarProps {
   onToggle?: () => void;
 }
 
+interface Study {
+  project_name: string;
+}
+
+interface Site {
+  site_id: string;
+}
+
 export default function Sidebar({
   filters,
   onFilterChange,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
-  const studies = getStudies();
-  const regions = getRegions();
-  const countries = getCountries(filters.region);
-  const sites = getSites(filters.country, filters.region);
-  const subjects = getSubjects(filters.siteId);
+  // State for all dropdowns
+  const [studies, setStudies] = useState<Study[]>([]);
+  const [regions, setRegions] = useState<string[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [subjects, setSubjects] = useState<string[]>([]);
+
+  // Loading states
+  const [loadingStudies, setLoadingStudies] = useState(true);
+  const [loadingRegions, setLoadingRegions] = useState(true);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingSites, setLoadingSites] = useState(false);
+  const [loadingSubjects, setLoadingSubjects] = useState(false);
+
+  // Fetch studies (independent - loads on mount)
+  useEffect(() => {
+    const fetchStudies = async () => {
+      try {
+        setLoadingStudies(true);
+        const response = await fetch("/api/studies");
+        const data = await response.json();
+        if (data.studies) {
+          setStudies(data.studies);
+        }
+      } catch (error) {
+        console.error("Error fetching studies:", error);
+        setStudies(getStudies().map((s) => ({ project_name: s.studyId })));
+      } finally {
+        setLoadingStudies(false);
+      }
+    };
+
+    fetchStudies();
+  }, []);
+
+  // Fetch regions (independent - loads on mount)
+  useEffect(() => {
+    const fetchRegions = async () => {
+      try {
+        setLoadingRegions(true);
+        const response = await fetch("/api/regions");
+        const data = await response.json();
+        if (data.regions) {
+          setRegions(data.regions);
+        }
+      } catch (error) {
+        console.error("Error fetching regions:", error);
+        setRegions(getRegions());
+      } finally {
+        setLoadingRegions(false);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  // Fetch countries (depends on region filter)
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        setLoadingCountries(true);
+        const url =
+          filters.region !== "ALL"
+            ? `/api/countries?region=${encodeURIComponent(filters.region)}`
+            : "/api/countries";
+
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.countries) {
+          setCountries(data.countries);
+        }
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setCountries(getCountries(filters.region));
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, [filters.region]);
+
+  // Fetch sites (depends on region and country filters)
+  useEffect(() => {
+    const fetchSites = async () => {
+      try {
+        setLoadingSites(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+
+        const url = `/api/sites${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.sites) {
+          setSites(data.sites);
+        }
+      } catch (error) {
+        console.error("Error fetching sites:", error);
+        setSites(
+          getSites(filters.country, filters.region).map((s) => ({
+            site_id: s.siteId,
+          })),
+        );
+      } finally {
+        setLoadingSites(false);
+      }
+    };
+
+    fetchSites();
+  }, [filters.region, filters.country]);
+
+  // Fetch subjects (depends on site, region, and country filters)
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        setLoadingSubjects(true);
+        const params = new URLSearchParams();
+
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+
+        const url = `/api/subjects${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.subjects) {
+          setSubjects(data.subjects);
+        }
+      } catch (error) {
+        console.error("Error fetching subjects:", error);
+        setSubjects(getSubjects(filters.siteId));
+      } finally {
+        setLoadingSubjects(false);
+      }
+    };
+
+    fetchSubjects();
+  }, [filters.siteId, filters.region, filters.country]);
 
   const handleStudyChange = (studyId: string | "ALL") => {
     onFilterChange({
@@ -265,43 +419,26 @@ export default function Sidebar({
           <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">
             Study
           </label>
-          <div className="relative">
-            <select
-              value={filters.studyId}
-              onChange={(e) => handleStudyChange(e.target.value as any)}
-              className="w-full px-4 py-2.5 pr-10 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer appearance-none"
-            >
-              <option value="ALL">All Studies ({studies.length})</option>
-              {studies.map((study) => (
-                <option key={study.studyId} value={study.studyId}>
-                  {study.studyId} - {study.projectName}
-                </option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-              <svg
-                className="w-4 h-4 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
+          <SearchableDropdown
+            value={filters.studyId}
+            onChange={handleStudyChange}
+            options={[
+              { value: "ALL", label: "All Studies" },
+              ...studies.map((study) => ({
+                value: study.project_name,
+                label: study.project_name,
+              })),
+            ]}
+            placeholder="All Studies"
+            disabled={loadingStudies}
+            loading={loadingStudies}
+            showCount={true}
+          />
           {filters.studyId !== "ALL" && (
             <div className="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs text-blue-700">
                 <span className="font-semibold">Selected:</span>{" "}
-                {
-                  studies.find((s) => s.studyId === filters.studyId)
-                    ?.projectName
-                }
+                {filters.studyId}
               </p>
             </div>
           )}
@@ -364,8 +501,22 @@ export default function Sidebar({
         </div>
 
         {/* Region Filter */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <SearchableDropdown
+          value={filters.region}
+          onChange={(value) => handleRegionChange(value as Region | "ALL")}
+          options={[
+            { value: "ALL", label: "All Regions" },
+            ...regions.map((region) => ({
+              value: region,
+              label: region,
+            })),
+          ]}
+          placeholder="All Regions"
+          disabled={loadingRegions}
+          loading={loadingRegions}
+          label="Region"
+          showCount={true}
+          icon={
             <svg
               className="w-4 h-4"
               fill="none"
@@ -379,27 +530,26 @@ export default function Sidebar({
                 d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"
               />
             </svg>
-            Region
-          </label>
-          <select
-            value={filters.region}
-            onChange={(e) =>
-              handleRegionChange(e.target.value as Region | "ALL")
-            }
-            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="ALL">All Regions</option>
-            {regions.map((region) => (
-              <option key={region} value={region}>
-                {region}
-              </option>
-            ))}
-          </select>
-        </div>
+          }
+        />
 
         {/* Country Filter */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <SearchableDropdown
+          value={filters.country}
+          onChange={handleCountryChange}
+          options={[
+            { value: "ALL", label: "All Countries" },
+            ...countries.map((country) => ({
+              value: country,
+              label: country,
+            })),
+          ]}
+          placeholder="All Countries"
+          disabled={loadingCountries || countries.length === 0}
+          loading={loadingCountries}
+          label="Country"
+          showCount={true}
+          icon={
             <svg
               className="w-4 h-4"
               fill="none"
@@ -413,26 +563,26 @@ export default function Sidebar({
                 d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
               />
             </svg>
-            Country
-          </label>
-          <select
-            value={filters.country}
-            onChange={(e) => handleCountryChange(e.target.value)}
-            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={countries.length === 0}
-          >
-            <option value="ALL">All Countries</option>
-            {countries.map((country) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </select>
-        </div>
+          }
+        />
 
         {/* Site Filter */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <SearchableDropdown
+          value={filters.siteId}
+          onChange={handleSiteChange}
+          options={[
+            { value: "ALL", label: "All Sites" },
+            ...sites.map((site) => ({
+              value: site.site_id,
+              label: site.site_id,
+            })),
+          ]}
+          placeholder="All Sites"
+          disabled={loadingSites || sites.length === 0}
+          loading={loadingSites}
+          label="Site"
+          showCount={true}
+          icon={
             <svg
               className="w-4 h-4"
               fill="none"
@@ -446,26 +596,26 @@ export default function Sidebar({
                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
               />
             </svg>
-            Site
-          </label>
-          <select
-            value={filters.siteId}
-            onChange={(e) => handleSiteChange(e.target.value)}
-            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={sites.length === 0}
-          >
-            <option value="ALL">All Sites</option>
-            {sites.map((site) => (
-              <option key={site.siteId} value={site.siteId}>
-                {site.siteId} - {site.siteName}
-              </option>
-            ))}
-          </select>
-        </div>
+          }
+        />
 
         {/* Subject Filter */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <SearchableDropdown
+          value={filters.subjectId}
+          onChange={handleSubjectChange}
+          options={[
+            { value: "ALL", label: "All Subjects" },
+            ...subjects.map((subject) => ({
+              value: subject,
+              label: subject,
+            })),
+          ]}
+          placeholder="All Subjects"
+          disabled={loadingSubjects || subjects.length === 0}
+          loading={loadingSubjects}
+          label="Subject"
+          showCount={true}
+          icon={
             <svg
               className="w-4 h-4"
               fill="none"
@@ -479,22 +629,8 @@ export default function Sidebar({
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            Subject
-          </label>
-          <select
-            value={filters.subjectId}
-            onChange={(e) => handleSubjectChange(e.target.value)}
-            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={subjects.length === 0}
-          >
-            <option value="ALL">All Subjects</option>
-            {subjects.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
-            ))}
-          </select>
-        </div>
+          }
+        />
 
         {/* Active Filters Display */}
         {(filters.region !== "ALL" ||

@@ -31,18 +31,24 @@ const CustomTooltip = ({
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg">
         <p className="text-sm font-semibold text-gray-900 mb-2">{label}</p>
-        {payload.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <div
-              className="w-3 h-3 rounded-sm"
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-600">{entry.name}:</span>
-            <span className="text-gray-900 font-medium">
-              {entry.value.toLocaleString()}
-            </span>
-          </div>
-        ))}
+        {payload.map((entry, index) => {
+          // Multiply completedPages by 100 to show actual value
+          const actualValue =
+            entry.name === "Completed Pages" ? entry.value * 100 : entry.value;
+
+          return (
+            <div key={index} className="flex items-center gap-2 text-sm">
+              <div
+                className="w-3 h-3 rounded-sm"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-gray-600">{entry.name}:</span>
+              <span className="text-gray-900 font-medium">
+                {Math.round(actualValue).toLocaleString()}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   }

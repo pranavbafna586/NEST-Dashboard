@@ -1,0 +1,18 @@
+Tables =
+1) Subject Level Metrics
+2) Query Report
+3) Non conformant 
+4) PI Signature Report
+5) SDV
+6) Protocol Deviation
+7) CRF Freeze UnFreeze
+8) CRF Lock UnLocked
+9) Completed Visits - from SV
+10) EDDR Issues
+11) SAE Issues - extra column with "Responsible LF for action" which has either DM or Safety
+12) Global Coding Report - combined MedDRA and WHODD in column "Report Type"
+13) Inactivated Forms Folders
+14) Missing Lab Name and Ranges
+15) Missing Pages - with column "Page Type" having Summary Page, Visit Level, etc
+16) Missing Visits
+
