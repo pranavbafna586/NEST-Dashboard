@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface Message {
@@ -126,7 +128,7 @@ export default function Chatbot() {
         setTimeout(() => setIsAnimating(false), 300);
     }, [isAnimating, isOpen]);
 
-    const handleSendMessage = useCallback(() => {
+    const handleSendMessage = useCallback(async () => {
         if (!inputValue.trim()) return;
 
         const newMessage: Message = {
@@ -137,18 +139,81 @@ export default function Chatbot() {
         };
 
         setMessages((prev) => [...prev, newMessage]);
+        const userMessageText = inputValue.trim();
         setInputValue("");
 
-        // Simulate bot response
-        setTimeout(() => {
+        // Add typing indicator
+        const typingId = `typing-${Date.now()}`;
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: typingId,
+                text: "Thinking...",
+                sender: "bot",
+                timestamp: new Date(),
+            },
+        ]);
+
+        try {
+            // Get session ID from localStorage
+            const sessionId = localStorage.getItem("dashboardSessionId") || "";
+
+            // Call Gemini API
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userMessageText,
+                    sessionId,
+                }),
+            });
+
+            const data = await response.json();
+
+            // Remove typing indicator
+            setMessages((prev) => prev.filter((m) => m.id !== typingId));
+
+            if (!response.ok) {
+                // Handle error responses
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    text: data.error || "Sorry, I encountered an error. Please try again.",
+                    sender: "bot",
+                    timestamp: new Date(),
+                };
+                setMessages((prev) => [...prev, errorMessage]);
+                return;
+            }
+
+            // Add cache freshness warning if needed
+            let botText = data.message;
+            if (data.cacheAge && data.cacheAge > 15) {
+                botText =
+                    `⚠️ *Note: Dashboard data is ${data.cacheAge} minutes old. Consider refreshing.*\n\n` +
+                    botText;
+            }
+
             const botResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "Thank you for your message! Our AI is processing your request. This is a demo response.",
+                text: botText,
                 sender: "bot",
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, botResponse]);
-        }, 1000);
+        } catch (error) {
+            console.error("Error sending message:", error);
+
+            // Remove typing indicator
+            setMessages((prev) => prev.filter((m) => m.id !== typingId));
+
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "Sorry, I couldn't connect to the AI service. Please check your connection and try again.",
+                sender: "bot",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+        }
     }, [inputValue]);
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -361,7 +426,27 @@ export default function Chatbot() {
                                                 : "bg-gray-100 text-gray-800 rounded-bl-md"
                                                 }`}
                                         >
-                                            <p className="break-words">{message.text}</p>
+                                            {message.sender === "bot" ? (
+                                                <div className="prose prose-sm max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm]}
+                                                        components={{
+                                                            p: ({ children }) => <p className="break-words my-1">{children}</p>,
+                                                            strong: ({ children }) => <strong className="font-bold text-gray-900">{children}</strong>,
+                                                            em: ({ children }) => <em className="italic">{children}</em>,
+                                                            ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>,
+                                                            ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1">{children}</ol>,
+                                                            li: ({ children }) => <li className="ml-2">{children}</li>,
+                                                            a: ({ href, children }) => <a href={href} className="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">{children}</a>,
+                                                            code: ({ children }) => <code className="bg-gray-200 px-1 py-0.5 rounded text-xs font-mono">{children}</code>,
+                                                        }}
+                                                    >
+                                                        {message.text}
+                                                    </ReactMarkdown>
+                                                </div>
+                                            ) : (
+                                                <p className="break-words">{message.text}</p>
+                                            )}
                                             <span
                                                 className={`text-[10px] mt-1 block ${message.sender === "user" ? "text-white/70" : "text-gray-400"
                                                     }`}

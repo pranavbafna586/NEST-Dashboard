@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -58,27 +58,58 @@ const CustomTooltip = ({
   return null;
 };
 
-const CustomLegend = ({ data }: { data: SignatureComplianceData[] }) => {
-  return (
-    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
-      {data.map((entry, index) => (
-        <div key={`legend-${index}`} className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-sm"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-xs text-gray-700">
-            {entry.category} ({entry.count.toLocaleString()})
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export default function SignatureComplianceChart({
   data,
 }: SignatureComplianceChartProps) {
+  const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
+
+  // Toggle visibility of chart entries
+  const toggleEntry = (entryName: string) => {
+    setHiddenEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(entryName)) {
+        newSet.delete(entryName);
+      } else {
+        newSet.add(entryName);
+      }
+      return newSet;
+    });
+  };
+
+  // Custom Legend - Interactive with toggle functionality
+  const CustomLegend = () => {
+    return (
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4">
+        {data.map((entry, index) => {
+          const isHidden = hiddenEntries.has(entry.category);
+          return (
+            <div
+              key={`legend-${index}`}
+              className="flex items-center gap-2 cursor-pointer select-none"
+              onClick={() => toggleEntry(entry.category)}
+            >
+              <div
+                className="w-3 h-3 rounded-sm transition-opacity"
+                style={{
+                  backgroundColor: entry.color,
+                  opacity: isHidden ? 0.3 : 1,
+                }}
+              />
+              <span
+                className={`text-xs text-gray-700 transition-opacity ${isHidden ? "line-through opacity-50" : ""}`}
+              >
+                {entry.category} ({entry.count.toLocaleString()})
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Filter visible data
+  const visibleData = data.filter((item) => !hiddenEntries.has(item.category));
+
   // Calculate total and compliance rate
   const totalForms = data.reduce((sum, item) => sum + item.count, 0);
   const compliantForms =
@@ -122,7 +153,7 @@ export default function SignatureComplianceChart({
 
       <ResponsiveContainer width="100%" height={400}>
         <BarChart
-          data={data}
+          data={visibleData}
           layout="vertical"
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
@@ -136,14 +167,14 @@ export default function SignatureComplianceChart({
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-            {data.map((entry, index) => (
+            {visibleData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
 
-      <CustomLegend data={data} />
+      <CustomLegend />
 
       {/* Risk indicator */}
       <div className="mt-4 pt-4 border-t border-gray-200">

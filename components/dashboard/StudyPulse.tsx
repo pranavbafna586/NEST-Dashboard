@@ -164,11 +164,13 @@ export default function StudyPulse({ data, loading = false }: StudyPulseProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Study Pulse</h2>
-        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-          Live Metrics
-        </span>
+      <div className="mb-4">
+        <h3 className="text-base font-semibold text-gray-900">
+          Study Pulse Dashboard
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          Real-Time Key Performance Indicators
+        </p>
       </div>
 
       {loading ? (

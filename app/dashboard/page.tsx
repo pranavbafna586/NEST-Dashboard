@@ -1,6 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { FilterState, KPISummary } from "@/types";
+import { aggregateDashboardContext } from "@/lib/dashboard-aggregator";
 import Sidebar from "@/components/dashboard/Sidebar";
 import KPICards from "@/components/dashboard/KPICards";
 import StudyPulse from "@/components/dashboard/StudyPulse";
@@ -32,6 +34,10 @@ export default function DashboardPage() {
   );
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+
+  // Session ID for cache management
+  const [sessionId, setSessionId] = useState<string>("");
+  const cacheUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // KPI state
   const [kpiSummary, setKpiSummary] = useState<KPISummary>({
@@ -93,10 +99,101 @@ export default function DashboardPage() {
   const [patient360Data, setPatient360Data] = useState<any>(null);
   const [loadingPatient360, setLoadingPatient360] = useState(false);
 
-  // Update timestamp only on client side to avoid hydration errors
+  // Initialize session ID on client side
   useEffect(() => {
+    const storedSessionId = localStorage.getItem("dashboardSessionId");
+    if (storedSessionId) {
+      setSessionId(storedSessionId);
+    } else {
+      const newSessionId = uuidv4();
+      setSessionId(newSessionId);
+      localStorage.setItem("dashboardSessionId", newSessionId);
+    }
     setLastUpdated(new Date().toLocaleString());
   }, []);
+
+  // Debounced cache update effect
+  useEffect(() => {
+    // Don't update cache if session ID not initialized
+    if (!sessionId) return;
+
+    // Clear existing timeout
+    if (cacheUpdateTimeout.current) {
+      clearTimeout(cacheUpdateTimeout.current);
+    }
+
+    // Set new timeout (300ms debounce)
+    cacheUpdateTimeout.current = setTimeout(async () => {
+      try {
+        const context = aggregateDashboardContext(
+          filters,
+          {
+            kpi: kpiSummary,
+            studyPulse: studyPulseData,
+            regional: regionalDataEntry,
+            countryPerformance: countryPerformanceData,
+            subjectPerformance: subjectPerformanceData,
+            saeChart: saeChartData,
+            signatureCompliance: signatureComplianceData,
+            sitePerformance: sitePerformanceData,
+            subjectOverview: subjectOverviewData,
+            patient360: patient360Data,
+          },
+          sessionId,
+          {
+            loadingKPI,
+            loadingStudyPulse,
+            loadingRegionalData,
+            loadingCountryPerformance,
+            loadingSubjectPerformance,
+            loadingSAEChart,
+            loadingSignatureCompliance,
+            loadingSitePerformance,
+            loadingSubjectOverview,
+          },
+        );
+
+        // Send to cache API
+        await fetch("/api/cache-context", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(context),
+        });
+
+        console.log("[Dashboard] Context cached successfully");
+      } catch (error) {
+        console.error("[Dashboard] Error caching context:", error);
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (cacheUpdateTimeout.current) {
+        clearTimeout(cacheUpdateTimeout.current);
+      }
+    };
+  }, [
+    sessionId,
+    filters,
+    kpiSummary,
+    studyPulseData,
+    regionalDataEntry,
+    countryPerformanceData,
+    subjectPerformanceData,
+    saeChartData,
+    signatureComplianceData,
+    sitePerformanceData,
+    subjectOverviewData,
+    patient360Data,
+    loadingKPI,
+    loadingStudyPulse,
+    loadingRegionalData,
+    loadingCountryPerformance,
+    loadingSubjectPerformance,
+    loadingSAEChart,
+    loadingSignatureCompliance,
+    loadingSitePerformance,
+    loadingSubjectOverview,
+  ]);
 
   // Fetch KPI data from API when filters change
   useEffect(() => {
@@ -599,7 +696,7 @@ export default function DashboardPage() {
                 Clinical Trial Intelligence Engine
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                Real-time monitoring and analytics for Study 1
+                Real-time monitoring and analytics
               </p>
             </div>
             <div className="flex items-center gap-3">
