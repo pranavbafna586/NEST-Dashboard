@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 interface Patient360Props {
   data: {
@@ -110,6 +110,9 @@ export default function Patient360({ data, onClose }: Patient360Props) {
     complianceStatus,
     formStatus,
   } = data;
+
+  const [showAllQueries, setShowAllQueries] = useState(false);
+  const [showAllSAEs, setShowAllSAEs] = useState(false);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -259,39 +262,6 @@ export default function Patient360({ data, onClose }: Patient360Props) {
             </div>
           </div>
 
-          {/* Recent Visits */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              Recent Visits (Last 5)
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {visitSummary.recentVisits.map((visit, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-white rounded-lg border border-gray-200 text-center"
-                >
-                  <p className="text-xs font-medium text-gray-900 truncate">
-                    {visit.visitName}
-                  </p>
-                  <p className="text-xs text-emerald-600 mt-1">✓ Completed</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Critical Missing Visits */}
           {criticalMissingVisits.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-5">
@@ -402,29 +372,56 @@ export default function Patient360({ data, onClose }: Patient360Props) {
             {queries.openQueryDetails &&
               queries.openQueryDetails.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                    Recent Open Queries
-                  </h4>
-                  <div className="space-y-2">
-                    {queries.openQueryDetails.slice(0, 5).map((query, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 bg-white rounded-lg border border-gray-200 text-xs"
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Recent Open Queries
+                    </h4>
+                    {queries.openQueryDetails.length > 1 && (
+                      <button
+                        onClick={() => setShowAllQueries(!showAllQueries)}
+                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-gray-900">
-                            {query.formName}
-                          </span>
-                          <span className="text-red-600 font-medium">
-                            {query.daysOpen} days open
-                          </span>
+                        {showAllQueries
+                          ? "Show Less"
+                          : `Show All (${queries.openQueryDetails.length})`}
+                        <svg
+                          className={`w-4 h-4 transition-transform ${showAllQueries ? "rotate-180" : ""}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {queries.openQueryDetails
+                      .slice(0, showAllQueries ? undefined : 1)
+                      .map((query, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 bg-white rounded-lg border border-gray-200 text-xs"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-medium text-gray-900">
+                              {query.formName}
+                            </span>
+                            <span className="text-red-600 font-medium">
+                              {query.daysOpen} days open
+                            </span>
+                          </div>
+                          <p className="text-gray-600">
+                            Visit: {query.visitName} | Type:{" "}
+                            {query.markingGroupName}
+                          </p>
                         </div>
-                        <p className="text-gray-600">
-                          Visit: {query.visitName} | Type:{" "}
-                          {query.markingGroupName}
-                        </p>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               )}
@@ -470,40 +467,67 @@ export default function Patient360({ data, onClose }: Patient360Props) {
             </div>
             {safetyIssues.recentSAEs.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">
-                  Recent SAEs
-                </h4>
-                <div className="space-y-3">
-                  {safetyIssues.recentSAEs.slice(0, 5).map((sae, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-white rounded-lg border border-gray-200"
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-700">
+                    Recent SAEs
+                  </h4>
+                  {safetyIssues.recentSAEs.length > 1 && (
+                    <button
+                      onClick={() => setShowAllSAEs(!showAllSAEs)}
+                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">
-                          ID: {sae.discrepancyId}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            sae.caseStatus === "Open"
-                              ? "bg-red-100 text-red-700"
-                              : sae.caseStatus === "Closed"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {sae.caseStatus}
-                        </span>
+                      {showAllSAEs
+                        ? "Show Less"
+                        : `Show All (${safetyIssues.recentSAEs.length})`}
+                      <svg
+                        className={`w-4 h-4 transition-transform ${showAllSAEs ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  {safetyIssues.recentSAEs
+                    .slice(0, showAllSAEs ? undefined : 1)
+                    .map((sae, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-white rounded-lg border border-gray-200"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-900">
+                            ID: {sae.discrepancyId}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded ${
+                              sae.caseStatus === "Open"
+                                ? "bg-red-100 text-red-700"
+                                : sae.caseStatus === "Closed"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {sae.caseStatus}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Form: {sae.formName}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Responsible: {sae.responsibleLF} | Status:{" "}
+                          {sae.actionStatus}
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-600">
-                        Form: {sae.formName}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Responsible: {sae.responsibleLF} | Status:{" "}
-                        {sae.actionStatus}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             )}
