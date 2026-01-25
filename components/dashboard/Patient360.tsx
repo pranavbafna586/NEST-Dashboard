@@ -1,36 +1,124 @@
 "use client";
 
 import React from "react";
-import { SubjectMetric, PatientVisitData, LabIssue, SAERecord } from "@/types";
-import PatientVisitTimeline from "../charts/PatientVisitTimeline";
 
 interface Patient360Props {
-  subject: SubjectMetric;
-  visits: PatientVisitData[];
-  missingVisits: Array<{ visitName: string; daysOutstanding: number }>;
-  labs: LabIssue[];
-  saes: SAERecord[];
-  dataQualityScore: number;
+  data: {
+    subject: {
+      subjectId: string;
+      siteId: string;
+      siteName: string;
+      country: string;
+      region: string;
+      projectName: string;
+      status: string;
+      latestVisit: string;
+      isHighRisk: boolean;
+      totalQueries: number;
+      missingVisits: number;
+      missingPages: number;
+      pagesEntered: number;
+      expectedVisits: number;
+    };
+    visitSummary: {
+      completedVisits: number;
+      missingVisits: number;
+      upcomingVisits: number;
+      recentVisits: Array<{
+        visitName: string;
+        visitDate: string;
+        status: string;
+      }>;
+    };
+    criticalMissingVisits: Array<{
+      visitName: string;
+      daysOutstanding: number;
+      projectedDate: string;
+    }>;
+    queries: {
+      total: number;
+      byType: {
+        dmQueries: number;
+        clinicalQueries: number;
+        medicalQueries: number;
+        siteQueries: number;
+        fieldMonitorQueries: number;
+        codingQueries: number;
+        safetyQueries: number;
+      };
+      openQueryDetails?: Array<{
+        formName: string;
+        visitName: string;
+        markingGroupName: string;
+        queryStatus: string;
+        actionOwner: string;
+        daysOpen: number;
+      }>;
+    };
+    safetyIssues: {
+      totalSAEs: number;
+      openSAEs: number;
+      saesByStatus: {
+        open: number;
+        closed: number;
+        locked: number;
+      };
+      recentSAEs: Array<{
+        discrepancyId: string;
+        formName: string;
+        caseStatus: string;
+        reviewStatus: string;
+        actionStatus: string;
+        responsibleLF: string;
+        createdTimestamp: string;
+      }>;
+    };
+    dataQuality: {
+      score: number;
+      nonConformantPages: number;
+      openLabIssues: number;
+      openEDRRIssues: number;
+      uncodedTerms: number;
+    };
+    complianceStatus: {
+      formsRequireVerification: number;
+      formsVerified: number;
+      crfsOverdue90Days: number;
+      crfsOverdue45to90Days: number;
+      brokenSignatures: number;
+      crfsNeverSigned: number;
+      pdsConfirmed: number;
+      pdsProposed: number;
+    };
+    formStatus: {
+      frozen: number;
+      locked: number;
+      unlocked: number;
+    };
+  };
   onClose: () => void;
 }
 
-export default function Patient360({
-  subject,
-  visits,
-  missingVisits,
-  labs,
-  saes,
-  dataQualityScore,
-  onClose,
-}: Patient360Props) {
+export default function Patient360({ data, onClose }: Patient360Props) {
+  const {
+    subject,
+    visitSummary,
+    criticalMissingVisits,
+    queries,
+    safetyIssues,
+    dataQuality,
+    complianceStatus,
+    formStatus,
+  } = data;
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 bg-linear-to-r from-blue-50 to-cyan-50">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-cyan-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-linear-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
                 <svg
                   className="w-8 h-8 text-white"
                   fill="none"
@@ -85,18 +173,19 @@ export default function Patient360({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
+              className="p-2.5 rounded-xl hover:bg-white/80 bg-white/60 text-gray-700 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md border border-gray-300"
+              title="Close"
             >
               <svg
                 className="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                strokeWidth={2.5}
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
@@ -106,8 +195,8 @@ export default function Patient360({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Top Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
                 Data Quality
@@ -115,50 +204,28 @@ export default function Patient360({
               <div className="flex items-end gap-2">
                 <span
                   className={`text-2xl font-bold ${
-                    dataQualityScore >= 90
+                    dataQuality.score >= 90
                       ? "text-emerald-600"
-                      : dataQualityScore >= 75
+                      : dataQuality.score >= 75
                         ? "text-amber-600"
                         : "text-red-600"
                   }`}
                 >
-                  {dataQualityScore}%
+                  {dataQuality.score}%
                 </span>
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden mb-1">
-                  <div
-                    className={`h-full rounded-full ${
-                      dataQualityScore >= 90
-                        ? "bg-emerald-500"
-                        : dataQualityScore >= 75
-                          ? "bg-amber-500"
-                          : "bg-red-500"
-                    }`}
-                    style={{ width: `${dataQualityScore}%` }}
-                  />
-                </div>
               </div>
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Latest Visit
+                Pages Entered
               </p>
-              <p className="text-lg font-bold text-gray-900">
-                {subject.latestVisit}
-              </p>
-            </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Missing Visits
-              </p>
-              <p
-                className={`text-2xl font-bold ${subject.missingVisits > 0 ? "text-red-600" : "text-emerald-600"}`}
-              >
-                {subject.missingVisits}
+              <p className="text-2xl font-bold text-gray-900">
+                {subject.pagesEntered}
               </p>
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Open Queries
+                Total Queries
               </p>
               <p
                 className={`text-2xl font-bold ${
@@ -172,132 +239,252 @@ export default function Patient360({
                 {subject.totalQueries}
               </p>
             </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
+                Completed Visits
+              </p>
+              <p className="text-2xl font-bold text-emerald-600">
+                {visitSummary.completedVisits}
+              </p>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
+                Missing Visits
+              </p>
+              <p
+                className={`text-2xl font-bold ${subject.missingVisits > 0 ? "text-red-600" : "text-emerald-600"}`}
+              >
+                {subject.missingVisits}
+              </p>
+            </div>
           </div>
 
-          {/* Visit Timeline */}
-          <PatientVisitTimeline data={visits} subjectId={subject.subjectId} />
+          {/* Recent Visits */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Recent Visits (Last 5)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {visitSummary.recentVisits.map((visit, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 bg-white rounded-lg border border-gray-200 text-center"
+                >
+                  <p className="text-xs font-medium text-gray-900 truncate">
+                    {visit.visitName}
+                  </p>
+                  <p className="text-xs text-emerald-600 mt-1">✓ Completed</p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          {/* Detailed Information Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Missing Visits Detail */}
-            {missingVisits.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+          {/* Critical Missing Visits */}
+          {criticalMissingVisits.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+              <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Critical Missing Visits (&gt;30 Days Overdue)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {criticalMissingVisits.map((mv, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Missing Visits Detail
-                </h3>
-                <div className="space-y-3">
-                  {missingVisits.map((mv, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
-                    >
-                      <span className="text-sm text-gray-700">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
                         {mv.visitName}
-                      </span>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded ${
-                          mv.daysOutstanding > 30
-                            ? "bg-red-100 text-red-700"
-                            : mv.daysOutstanding > 15
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-200 text-gray-700"
-                        }`}
-                      >
-                        {mv.daysOutstanding} days
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Lab Issues */}
-            {labs.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-amber-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                  </svg>
-                  Lab Issues
-                </h3>
-                <div className="space-y-3">
-                  {labs.map((lab, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-white rounded-lg border border-gray-200 space-y-1"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900">
-                          {lab.testName}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700">
-                          {lab.labCategory}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600">
-                        {lab.testDescription}
                       </p>
-                      <p className="text-xs text-red-600">{lab.issue}</p>
+                      <p className="text-xs text-gray-600">
+                        Due: {mv.projectedDate}
+                      </p>
                     </div>
-                  ))}
-                </div>
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-700">
+                      {mv.daysOutstanding} days
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* SAEs */}
-            {saes.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                  Serious Adverse Events
-                </h3>
+          {/* Queries Breakdown */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-purple-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Queries by Type (Total: {queries.total})
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "DM", value: queries.byType.dmQueries, color: "blue" },
+                {
+                  label: "Clinical",
+                  value: queries.byType.clinicalQueries,
+                  color: "purple",
+                },
+                {
+                  label: "Medical",
+                  value: queries.byType.medicalQueries,
+                  color: "pink",
+                },
+                {
+                  label: "Site",
+                  value: queries.byType.siteQueries,
+                  color: "amber",
+                },
+                {
+                  label: "Field Monitor",
+                  value: queries.byType.fieldMonitorQueries,
+                  color: "cyan",
+                },
+                {
+                  label: "Coding",
+                  value: queries.byType.codingQueries,
+                  color: "indigo",
+                },
+                {
+                  label: "Safety",
+                  value: queries.byType.safetyQueries,
+                  color: "red",
+                },
+              ].map((q, i) => (
+                <div
+                  key={i}
+                  className={`p-3 bg-white rounded-lg border border-${q.color}-200`}
+                >
+                  <p className="text-xs text-gray-600">{q.label}</p>
+                  <p className={`text-2xl font-bold text-${q.color}-600`}>
+                    {q.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Open Query Details */}
+            {queries.openQueryDetails &&
+              queries.openQueryDetails.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Recent Open Queries
+                  </h4>
+                  <div className="space-y-2">
+                    {queries.openQueryDetails.slice(0, 5).map((query, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-white rounded-lg border border-gray-200 text-xs"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-gray-900">
+                            {query.formName}
+                          </span>
+                          <span className="text-red-600 font-medium">
+                            {query.daysOpen} days open
+                          </span>
+                        </div>
+                        <p className="text-gray-600">
+                          Visit: {query.visitName} | Type:{" "}
+                          {query.markingGroupName}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
+
+          {/* Safety Issues (SAEs) */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-5 h-5 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Safety Issues (SAEs) - Total: {safetyIssues.totalSAEs}
+            </h3>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="p-3 bg-white rounded-lg border border-red-200">
+                <p className="text-xs text-gray-600">Open SAEs</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {safetyIssues.openSAEs}
+                </p>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-emerald-200">
+                <p className="text-xs text-gray-600">Closed SAEs</p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  {safetyIssues.saesByStatus.closed}
+                </p>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-blue-200">
+                <p className="text-xs text-gray-600">Locked SAEs</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {safetyIssues.saesByStatus.locked}
+                </p>
+              </div>
+            </div>
+            {safetyIssues.recentSAEs.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Recent SAEs
+                </h4>
                 <div className="space-y-3">
-                  {saes.map((sae, idx) => (
+                  {safetyIssues.recentSAEs.slice(0, 5).map((sae, idx) => (
                     <div
                       key={idx}
-                      className="p-3 bg-white rounded-lg border border-gray-200 space-y-2"
+                      className="p-3 bg-white rounded-lg border border-gray-200"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-900">
-                          {sae.event}
+                          ID: {sae.discrepancyId}
                         </span>
                         <span
-                          className={`text-xs px-2 py-0.5 rounded ${
+                          className={`text-xs px-2 py-1 rounded ${
                             sae.caseStatus === "Open"
                               ? "bg-red-100 text-red-700"
                               : sae.caseStatus === "Closed"
@@ -308,32 +495,13 @@ export default function Patient360({
                           {sae.caseStatus}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <span className="text-gray-600">DM Review:</span>
-                          <span
-                            className={`ml-1 ${
-                              sae.dmReviewStatus === "Review Completed"
-                                ? "text-emerald-600"
-                                : "text-amber-600"
-                            }`}
-                          >
-                            {sae.dmReviewStatus}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Safety Review:</span>
-                          <span
-                            className={`ml-1 ${
-                              sae.safetyReviewStatus === "Review Completed"
-                                ? "text-emerald-600"
-                                : "text-amber-600"
-                            }`}
-                          >
-                            {sae.safetyReviewStatus}
-                          </span>
-                        </div>
-                      </div>
+                      <p className="text-xs text-gray-600">
+                        Form: {sae.formName}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Responsible: {sae.responsibleLF} | Status:{" "}
+                        {sae.actionStatus}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -341,13 +509,13 @@ export default function Patient360({
             )}
           </div>
 
-          {/* Query Breakdown & Additional Statistics - Separate row */}
+          {/* Data Quality & Compliance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column: Query Breakdown */}
+            {/* Data Quality Issues */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-purple-600"
+                  className="w-5 h-5 text-amber-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -356,81 +524,139 @@ export default function Patient360({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                Query Breakdown
+                Data Quality Issues
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 {[
-                  { label: "Data Management", value: subject.queriesDM },
-                  { label: "Clinical", value: subject.queriesClinical },
-                  { label: "Medical", value: subject.queriesMedical },
-                  { label: "Site", value: subject.queriesSite },
                   {
-                    label: "Field Monitor",
-                    value: subject.queriesFieldMonitor,
+                    label: "Non-Conformant Pages",
+                    value: dataQuality.nonConformantPages,
                   },
-                  { label: "Coding", value: subject.queriesCoding },
-                ].map(
-                  (q, i) =>
-                    q.value > 0 && (
-                      <div
-                        key={i}
-                        className="p-3 bg-white rounded-lg border border-gray-200"
-                      >
-                        <p className="text-xs text-gray-600">{q.label}</p>
-                        <p className="text-lg font-bold text-gray-900">
-                          {q.value}
-                        </p>
-                      </div>
-                    ),
-                )}
+                  {
+                    label: "Open Lab Issues",
+                    value: dataQuality.openLabIssues,
+                  },
+                  {
+                    label: "Open EDRR Issues",
+                    value: dataQuality.openEDRRIssues,
+                  },
+                  { label: "Uncoded Terms", value: dataQuality.uncodedTerms },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                  >
+                    <span className="text-sm text-gray-700">{item.label}</span>
+                    <span
+                      className={`text-lg font-bold ${
+                        item.value > 0 ? "text-red-600" : "text-emerald-600"
+                      }`}
+                    >
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Right Column: 4 Stat Boxes */}
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                {
-                  label: "Pages Entered",
-                  value: subject.pagesEntered,
-                  color: "text-gray-900",
-                },
-                {
-                  label: "CRFs Signed",
-                  value: subject.crfsSigned,
-                  color: "text-gray-900",
-                },
-                {
-                  label: "Overdue 90 Days",
-                  value: subject.crfsOverdue90Days,
-                  color:
-                    subject.crfsOverdue90Days > 0
-                      ? "text-red-600"
-                      : "text-emerald-600",
-                },
-                {
-                  label: "Uncoded Terms",
-                  value: subject.uncodedTerms,
-                  color:
-                    subject.uncodedTerms > 0
-                      ? "text-amber-600"
-                      : "text-emerald-600",
-                },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-50 border border-gray-200 rounded-xl p-5 flex flex-col justify-center"
+            {/* Compliance Status */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+              <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                    {stat.label}
-                  </p>
-                  <p className={`text-2xl font-bold ${stat.color}`}>
-                    {stat.value}
-                  </p>
-                </div>
-              ))}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+                Compliance & Verification
+              </h3>
+              <div className="space-y-3">
+                {[
+                  {
+                    label: "Forms Need Verification",
+                    value: complianceStatus.formsRequireVerification,
+                    warn: true,
+                  },
+                  {
+                    label: "Forms Verified",
+                    value: complianceStatus.formsVerified,
+                    warn: false,
+                  },
+                  {
+                    label: "CRFs Overdue >90 Days",
+                    value: complianceStatus.crfsOverdue90Days,
+                    warn: true,
+                  },
+                  {
+                    label: "Broken Signatures",
+                    value: complianceStatus.brokenSignatures,
+                    warn: true,
+                  },
+                  {
+                    label: "CRFs Never Signed",
+                    value: complianceStatus.crfsNeverSigned,
+                    warn: true,
+                  },
+                  {
+                    label: "PDs Confirmed",
+                    value: complianceStatus.pdsConfirmed,
+                    warn: false,
+                  },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                  >
+                    <span className="text-sm text-gray-700">{item.label}</span>
+                    <span
+                      className={`text-lg font-bold ${
+                        item.warn && item.value > 0
+                          ? "text-amber-600"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Form Status */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-900 mb-4">
+              Form Lock Status
+            </h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-white rounded-lg border border-gray-200 text-center">
+                <p className="text-xs text-gray-600 mb-2">Frozen Forms</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {formStatus.frozen}
+                </p>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-gray-200 text-center">
+                <p className="text-xs text-gray-600 mb-2">Locked Forms</p>
+                <p className="text-2xl font-bold text-emerald-600">
+                  {formStatus.locked}
+                </p>
+              </div>
+              <div className="p-4 bg-white rounded-lg border border-gray-200 text-center">
+                <p className="text-xs text-gray-600 mb-2">Unlocked Forms</p>
+                <p className="text-2xl font-bold text-gray-600">
+                  {formStatus.unlocked}
+                </p>
+              </div>
             </div>
           </div>
         </div>

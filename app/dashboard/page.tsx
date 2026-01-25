@@ -20,8 +20,6 @@ import {
   getKPISummary,
   getStatsByRegion,
   getCountryPerformance,
-  filterMetrics,
-  getSubjectDetails,
 } from "@/data/mockData";
 
 export default function DashboardPage() {
@@ -91,6 +89,14 @@ export default function DashboardPage() {
   // Site Performance state
   const [sitePerformanceData, setSitePerformanceData] = useState<any[]>([]);
   const [loadingSitePerformance, setLoadingSitePerformance] = useState(true);
+
+  // Subject Overview state
+  const [subjectOverviewData, setSubjectOverviewData] = useState<any[]>([]);
+  const [loadingSubjectOverview, setLoadingSubjectOverview] = useState(true);
+
+  // Patient 360 state
+  const [patient360Data, setPatient360Data] = useState<any>(null);
+  const [loadingPatient360, setLoadingPatient360] = useState(false);
 
   // Update timestamp only on client side to avoid hydration errors
   useEffect(() => {
@@ -424,13 +430,155 @@ export default function DashboardPage() {
     fetchSitePerformance();
   }, [filters]);
 
-  // Get all data based on current filters (keeping mock data for other components)
-  const filteredSubjects = filterMetrics(filters);
+  // Fetch Subject Overview data from API when filters change
+  useEffect(() => {
+    const fetchSubjectOverview = async () => {
+      try {
+        setLoadingSubjectOverview(true);
+        const params = new URLSearchParams();
 
-  // Get patient 360 data if a subject is selected
-  const patient360Data = selectedSubjectId
-    ? getSubjectDetails(selectedSubjectId)
-    : null;
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const response = await fetch(`/api/subject-overview?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch subject overview data");
+        }
+        const result = await response.json();
+        setSubjectOverviewData(result.data || []);
+      } catch (error) {
+        console.error("Error fetching subject overview data:", error);
+        setSubjectOverviewData([]);
+      } finally {
+        setLoadingSubjectOverview(false);
+      }
+    };
+
+    fetchSubjectOverview();
+  }, [filters]);
+
+  // Fetch Patient 360 data when a subject is selected
+  useEffect(() => {
+    const fetchPatient360 = async () => {
+      if (!selectedSubjectId) {
+        setPatient360Data(null);
+        return;
+      }
+
+      try {
+        setLoadingPatient360(true);
+        const params = new URLSearchParams();
+        params.append("subjectId", selectedSubjectId);
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+
+        const response = await fetch(`/api/patient-360?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch patient 360 data");
+        }
+        const data = await response.json();
+        setPatient360Data(data);
+      } catch (error) {
+        console.error("Error fetching patient 360 data:", error);
+        setPatient360Data(null);
+      } finally {
+        setLoadingPatient360(false);
+      }
+    };
+
+    fetchPatient360();
+  }, [selectedSubjectId, filters.studyId]);
+
+  // Fetch Subject Overview data from API when filters change
+  useEffect(() => {
+    const fetchSubjectOverview = async () => {
+      try {
+        setLoadingSubjectOverview(true);
+        const params = new URLSearchParams();
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const response = await fetch(`/api/subject-overview?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch subject overview data");
+        }
+        const result = await response.json();
+        setSubjectOverviewData(result.data || []);
+      } catch (error) {
+        console.error("Error fetching subject overview data:", error);
+        setSubjectOverviewData([]);
+      } finally {
+        setLoadingSubjectOverview(false);
+      }
+    };
+
+    fetchSubjectOverview();
+  }, [filters]);
+
+  // Fetch Patient 360 data when a subject is selected
+  useEffect(() => {
+    const fetchPatient360 = async () => {
+      if (!selectedSubjectId) {
+        setPatient360Data(null);
+        return;
+      }
+
+      try {
+        setLoadingPatient360(true);
+        const params = new URLSearchParams();
+        params.append("subjectId", selectedSubjectId);
+
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
+
+        const response = await fetch(`/api/patient-360?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch patient 360 data");
+        }
+        const data = await response.json();
+        setPatient360Data(data);
+      } catch (error) {
+        console.error("Error fetching patient 360 data:", error);
+        setPatient360Data(null);
+      } finally {
+        setLoadingPatient360(false);
+      }
+    };
+
+    fetchPatient360();
+  }, [selectedSubjectId, filters.studyId]);
+
+  // Get all data based on current filters (keeping mock data for other components)
 
   const handleSubjectClick = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
@@ -623,17 +771,28 @@ export default function DashboardPage() {
             )}
 
             {/* Subject Table */}
-            {filteredSubjects.length > 0 && (
+            {loadingSubjectOverview ? (
+              <section className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-4 mx-auto"></div>
+                  <div className="space-y-3">
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="h-10 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </section>
+            ) : subjectOverviewData.length > 0 ? (
               <section>
                 <SubjectTable
-                  data={filteredSubjects}
+                  data={subjectOverviewData}
                   onSubjectClick={handleSubjectClick}
                 />
               </section>
-            )}
+            ) : null}
 
             {/* Empty State */}
-            {filteredSubjects.length === 0 && (
+            {!loadingSubjectOverview && subjectOverviewData.length === 0 && (
               <section className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
                 <svg
                   className="w-16 h-16 mx-auto mb-4 text-gray-400"
@@ -666,8 +825,9 @@ export default function DashboardPage() {
                     <span>
                       Active:{" "}
                       {
-                        filteredSubjects.filter((s) => s.status === "On Trial")
-                          .length
+                        subjectOverviewData.filter(
+                          (s) => s.status === "On Trial",
+                        ).length
                       }{" "}
                       subjects
                     </span>
@@ -676,7 +836,7 @@ export default function DashboardPage() {
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     <span>
                       High Risk:{" "}
-                      {filteredSubjects.filter((s) => s.isHighRisk).length}{" "}
+                      {subjectOverviewData.filter((s) => s.isHighRisk).length}{" "}
                       subjects
                     </span>
                   </div>
@@ -685,7 +845,7 @@ export default function DashboardPage() {
                     <span>
                       Discontinued:{" "}
                       {
-                        filteredSubjects.filter(
+                        subjectOverviewData.filter(
                           (s) => s.status === "Discontinued",
                         ).length
                       }{" "}
@@ -709,12 +869,7 @@ export default function DashboardPage() {
       {/* Patient 360 Modal */}
       {patient360Data && (
         <Patient360
-          subject={patient360Data.subject}
-          visits={patient360Data.visits}
-          missingVisits={patient360Data.missingVisits}
-          labs={patient360Data.labs}
-          saes={patient360Data.saes}
-          dataQualityScore={patient360Data.dataQualityScore}
+          data={patient360Data}
           onClose={() => setSelectedSubjectId(null)}
         />
       )}
