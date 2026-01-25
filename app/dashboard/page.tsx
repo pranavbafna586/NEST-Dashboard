@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { FilterState, KPISummary } from "@/types";
 import { aggregateDashboardContext } from "@/lib/dashboard-aggregator";
@@ -98,6 +98,119 @@ export default function DashboardPage() {
   // Patient 360 state
   const [patient360Data, setPatient360Data] = useState<any>(null);
   const [loadingPatient360, setLoadingPatient360] = useState(false);
+
+  // ============================================
+  // MEMOIZED DATA VALIDATION - Optimized for Performance
+  // ============================================
+  
+  // Memoize data validation to prevent unnecessary recalculations on every render
+  const dataValidation = useMemo(() => {
+    // KPI validation - early return on first truthy value
+    const hasKPI = !!(
+      kpiSummary.totalMissingVisits ||
+      kpiSummary.openQueries ||
+      kpiSummary.seriousAdverseEvents ||
+      kpiSummary.uncodedTerms
+    );
+
+    // Study Pulse validation - early return on first truthy value
+    const hasStudyPulse = !!(
+      studyPulseData.pagesEntered ||
+      studyPulseData.totalQueries ||
+      studyPulseData.activeSubjects ||
+      studyPulseData.missingPages ||
+      studyPulseData.cleanCRFPercentage
+    );
+
+    // Array validations - optimized with length check only
+    const hasRegionalData = regionalDataEntry.length > 0;
+    const hasCountryPerformance = countryPerformanceData.length > 0;
+    const hasSubjectPerformance = subjectPerformanceData.length > 0;
+    const hasSAEChart = saeChartData.length > 0;
+    const hasSignatureCompliance = signatureComplianceData.length > 0;
+    const hasSitePerformance = sitePerformanceData.length > 0;
+    const hasSubjectOverview = subjectOverviewData.length > 0;
+
+    // Determine which regional chart data to use based on filters
+    const hasActiveRegionalData = 
+      filters.siteId !== "ALL" 
+        ? hasSubjectPerformance
+        : filters.country !== "ALL"
+          ? hasRegionalData
+          : filters.region !== "ALL"
+            ? hasCountryPerformance
+            : hasRegionalData;
+
+    // Check if all data is loaded
+    const allDataLoaded = 
+      !loadingKPI &&
+      !loadingStudyPulse &&
+      !loadingRegionalData &&
+      !loadingCountryPerformance &&
+      !loadingSubjectPerformance &&
+      !loadingSAEChart &&
+      !loadingSignatureCompliance &&
+      !loadingSitePerformance &&
+      !loadingSubjectOverview;
+
+    // Check if all data is empty
+    const allDataEmpty = 
+      !hasKPI &&
+      !hasStudyPulse &&
+      !hasRegionalData &&
+      !hasCountryPerformance &&
+      !hasSubjectPerformance &&
+      !hasSAEChart &&
+      !hasSignatureCompliance &&
+      !hasSitePerformance &&
+      !hasSubjectOverview;
+
+    return {
+      hasKPI,
+      hasStudyPulse,
+      hasRegionalData,
+      hasCountryPerformance,
+      hasSubjectPerformance,
+      hasSAEChart,
+      hasSignatureCompliance,
+      hasSitePerformance,
+      hasSubjectOverview,
+      hasActiveRegionalData,
+      allDataLoaded,
+      allDataEmpty,
+      showEmptyState: allDataLoaded && allDataEmpty,
+    };
+  }, [
+    // Only recalculate when data or loading states actually change
+    kpiSummary.totalMissingVisits,
+    kpiSummary.openQueries,
+    kpiSummary.seriousAdverseEvents,
+    kpiSummary.uncodedTerms,
+    studyPulseData.pagesEntered,
+    studyPulseData.totalQueries,
+    studyPulseData.activeSubjects,
+    studyPulseData.missingPages,
+    studyPulseData.cleanCRFPercentage,
+    regionalDataEntry.length,
+    countryPerformanceData.length,
+    subjectPerformanceData.length,
+    saeChartData.length,
+    signatureComplianceData.length,
+    sitePerformanceData.length,
+    subjectOverviewData.length,
+    filters.siteId,
+    filters.country,
+    filters.region,
+    loadingKPI,
+    loadingStudyPulse,
+    loadingRegionalData,
+    loadingCountryPerformance,
+    loadingSubjectPerformance,
+    loadingSAEChart,
+    loadingSignatureCompliance,
+    loadingSitePerformance,
+    loadingSubjectOverview,
+  ]);
 
   // Initialize session ID on client side
   useEffect(() => {
@@ -758,139 +871,145 @@ export default function DashboardPage() {
         {/* Main Content - Scrollable */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* KPI Cards */}
-            <section>
-              <KPICards summary={kpiSummary} role={filters.role} />
-            </section>
-
-            {/* 60/40 Split: Regional Chart (60%) + Study Pulse (40%) */}
-            <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
-              {/* Left: Regional Data Entry Progress - 60% */}
-              <div className="lg:col-span-3 h-full">
-                {loadingRegionalData || loadingSubjectPerformance ? (
-                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
-                    <p className="text-gray-500">Loading data...</p>
-                  </div>
-                ) : filters.siteId !== "ALL" ? (
-                  // When site is selected, show subject-level performance grid
-                  <SubjectPerformanceGrid
-                    data={subjectPerformanceData}
-                    onSubjectClick={handleSubjectClick}
-                  />
-                ) : filters.country !== "ALL" ? (
-                  // When country is selected (but not site), show site-level data (stacked bar)
-                  <RegionStackedBarChart
-                    data={regionalDataEntry}
-                    syncId="dashboard"
-                  />
-                ) : filters.region !== "ALL" ? (
-                  // When region is selected (but not country), show country performance
-                  loadingCountryPerformance ? (
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
-                      <p className="text-gray-500">
-                        Loading country performance...
-                      </p>
-                    </div>
-                  ) : (
-                    <CountryComposedChart
-                      data={countryPerformanceData}
-                      syncId="dashboard"
-                    />
-                  )
-                ) : (
-                  // When no region is selected, show regional data
-                  <RegionStackedBarChart
-                    data={regionalDataEntry}
-                    syncId="dashboard"
-                  />
-                )}
-              </div>
-
-              {/* Right: Study Pulse Panel - 40% */}
-              <div className="lg:col-span-2 h-full">
-                <StudyPulse data={studyPulseData} loading={loadingStudyPulse} />
-              </div>
-            </section>
-
-            {/* Charts Grid - 3 Column Layout */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-              {/* SAE Donut Chart */}
-              <div className="lg:col-span-1 flex">
-                {loadingSAEChart ? (
-                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
-                    <p className="text-gray-500">Loading SAE data...</p>
-                  </div>
-                ) : (
-                  <SAEDonutChart data={saeChartData} />
-                )}
-              </div>
-
-              {/* Signature Compliance Chart - Spans 2 columns */}
-              <div className="lg:col-span-2 flex">
-                {loadingSignatureCompliance ? (
-                  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
-                    <p className="text-gray-500">
-                      Loading signature compliance...
-                    </p>
-                  </div>
-                ) : (
-                  <SignatureComplianceChart data={signatureComplianceData} />
-                )}
-              </div>
-            </section>
-
-            {/* Site Performance Table */}
-            {filters.siteId === "ALL" && (
+            {/* KPI Cards - Only show if there's data */}
+            {!loadingKPI && dataValidation.hasKPI && (
               <section>
-                {loadingSitePerformance ? (
-                  <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
-                    <div className="animate-pulse">
-                      <div className="h-4 bg-gray-200 rounded w-1/4 mb-4 mx-auto"></div>
-                      <div className="space-y-3">
-                        <div className="h-10 bg-gray-200 rounded"></div>
-                        <div className="h-10 bg-gray-200 rounded"></div>
-                        <div className="h-10 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                ) : sitePerformanceData.length > 0 ? (
-                  <SitePerformanceTable
-                    data={sitePerformanceData}
-                    onSiteClick={handleSiteClick}
-                  />
-                ) : (
-                  <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
-                    <p className="text-gray-600">
-                      No sites with signature backlog found
-                    </p>
-                  </div>
-                )}
+                <KPICards summary={kpiSummary} role={filters.role} />
               </section>
             )}
 
-            {/* Subject Table */}
-            {loadingSubjectOverview ? (
-              <section className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm text-center">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-4 mx-auto"></div>
-                  <div className="space-y-3">
-                    <div className="h-10 bg-gray-200 rounded"></div>
-                    <div className="h-10 bg-gray-200 rounded"></div>
-                    <div className="h-10 bg-gray-200 rounded"></div>
-                  </div>
-                </div>
+            {/* 60/40 Split: Regional Chart (60%) + Study Pulse (40%) */}
+            {/* Only show if at least one section has data */}
+            {(() => {
+              const showSection = !loadingRegionalData && !loadingSubjectPerformance && !loadingStudyPulse && 
+                (dataValidation.hasActiveRegionalData || dataValidation.hasStudyPulse);
+
+              if (!showSection) return null;
+
+              // Determine grid layout based on which sections have data
+              const gridClass = dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse
+                ? "grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]"
+                : "grid grid-cols-1 gap-6 min-h-[600px]";
+
+              return (
+                <section className={gridClass}>
+                  {/* Left: Regional Data Entry Progress - 60% */}
+                  {dataValidation.hasActiveRegionalData && (
+                    <div className={dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse ? "lg:col-span-3 h-full" : "lg:col-span-1 h-full"}>
+                      {loadingRegionalData || loadingSubjectPerformance ? (
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
+                          <p className="text-gray-500">Loading data...</p>
+                        </div>
+                      ) : filters.siteId !== "ALL" ? (
+                        // When site is selected, show subject-level performance grid
+                        <SubjectPerformanceGrid
+                          data={subjectPerformanceData}
+                          onSubjectClick={handleSubjectClick}
+                        />
+                      ) : filters.country !== "ALL" ? (
+                        // When country is selected (but not site), show site-level data (stacked bar)
+                        <RegionStackedBarChart
+                          data={regionalDataEntry}
+                          syncId="dashboard"
+                        />
+                      ) : filters.region !== "ALL" ? (
+                        // When region is selected (but not country), show country performance
+                        loadingCountryPerformance ? (
+                          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
+                            <p className="text-gray-500">
+                              Loading country performance...
+                            </p>
+                          </div>
+                        ) : (
+                          <CountryComposedChart
+                            data={countryPerformanceData}
+                            syncId="dashboard"
+                          />
+                        )
+                      ) : (
+                        // When no region is selected, show regional data
+                        <RegionStackedBarChart
+                          data={regionalDataEntry}
+                          syncId="dashboard"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Right: Study Pulse Panel - 40% */}
+                  {dataValidation.hasStudyPulse && (
+                    <div className={dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse ? "lg:col-span-2 h-full" : "lg:col-span-1 h-full"}>
+                      <StudyPulse data={studyPulseData} loading={loadingStudyPulse} />
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
+
+            {/* Charts Grid - Dynamic Column Layout based on available data */}
+            {(() => {
+              const showChartsSection = !loadingSAEChart && !loadingSignatureCompliance && 
+                (dataValidation.hasSAEChart || dataValidation.hasSignatureCompliance);
+
+              if (!showChartsSection) return null;
+
+              // Dynamic grid: if both exist, use 3 cols (1 + 2), if only one exists, use single col
+              return (
+                <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                  {/* SAE Donut Chart */}
+                  {dataValidation.hasSAEChart && (
+                    <div className={dataValidation.hasSAEChart && dataValidation.hasSignatureCompliance ? "lg:col-span-1 flex" : "lg:col-span-3 flex"}>
+                      {loadingSAEChart ? (
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
+                          <p className="text-gray-500">Loading SAE data...</p>
+                        </div>
+                      ) : (
+                        <SAEDonutChart data={saeChartData} />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Signature Compliance Chart - Spans 2 columns or full width if alone */}
+                  {dataValidation.hasSignatureCompliance && (
+                    <div className={dataValidation.hasSAEChart && dataValidation.hasSignatureCompliance ? "lg:col-span-2 flex" : "lg:col-span-3 flex"}>
+                      {loadingSignatureCompliance ? (
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
+                          <p className="text-gray-500">
+                            Loading signature compliance...
+                          </p>
+                        </div>
+                      ) : (
+                        <SignatureComplianceChart data={signatureComplianceData} />
+                      )}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
+
+            {/* Site Performance Table - Only show if data exists */}
+            {filters.siteId === "ALL" && !loadingSitePerformance && dataValidation.hasSitePerformance && (
+              <section>
+                <SitePerformanceTable
+                  data={sitePerformanceData}
+                  onSiteClick={handleSiteClick}
+                />
               </section>
-            ) : subjectOverviewData.length > 0 ? (
+            )}
+
+            {/* Subject Table - Only show if data exists */}
+            {!loadingSubjectOverview && dataValidation.hasSubjectOverview && (
               <section>
                 <SubjectTable
                   data={subjectOverviewData}
                   onSubjectClick={handleSubjectClick}
                 />
               </section>
-            ) : null}
+            )}
 
-            {/* Empty State */}
-            {!loadingSubjectOverview && subjectOverviewData.length === 0 && (
+            {/* Empty State - Only show when all data is empty and not loading */}
+            {dataValidation.showEmptyState && (
+
               <section className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
                 <svg
                   className="w-16 h-16 mx-auto mb-4 text-gray-400"
@@ -914,52 +1033,54 @@ export default function DashboardPage() {
               </section>
             )}
 
-            {/* Footer Info */}
-            <section className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span>
-                      Active:{" "}
-                      {
-                        subjectOverviewData.filter(
-                          (s) => s.status === "On Trial",
-                        ).length
-                      }{" "}
-                      subjects
-                    </span>
+            {/* Footer Info - Only show if there's subject data */}
+            {dataValidation.hasSubjectOverview && (
+              <section className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                      <span>
+                        Active:{" "}
+                        {
+                          subjectOverviewData.filter(
+                            (s) => s.status === "On Trial",
+                          ).length
+                        }{" "}
+                        subjects
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <span>
+                        High Risk:{" "}
+                        {subjectOverviewData.filter((s) => s.isHighRisk).length}{" "}
+                        subjects
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                      <span>
+                        Discontinued:{" "}
+                        {
+                          subjectOverviewData.filter(
+                            (s) => s.status === "Discontinued",
+                          ).length
+                        }{" "}
+                        subjects
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span>
-                      High Risk:{" "}
-                      {subjectOverviewData.filter((s) => s.isHighRisk).length}{" "}
-                      subjects
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                    <span>
-                      Discontinued:{" "}
-                      {
-                        subjectOverviewData.filter(
-                          (s) => s.status === "Discontinued",
-                        ).length
-                      }{" "}
-                      subjects
-                    </span>
-                  </div>
-                </div>
 
-                {/* Upload Dialog */}
-                <UploadDialog
-                  isOpen={uploadDialogOpen}
-                  onClose={() => setUploadDialogOpen(false)}
-                />
-                <span>Last updated: {lastUpdated || "Loading..."}</span>
-              </div>
-            </section>
+                  {/* Upload Dialog */}
+                  <UploadDialog
+                    isOpen={uploadDialogOpen}
+                    onClose={() => setUploadDialogOpen(false)}
+                  />
+                  <span>Last updated: {lastUpdated || "Loading..."}</span>
+                </div>
+              </section>
+            )}
           </div>
         </main>
       </div>
