@@ -20,6 +20,7 @@ interface CountryComposedChartProps {
     avgDaysOutstanding: number;
   }>;
   syncId?: string;
+  loading?: boolean;
 }
 
 const CustomTooltip = ({

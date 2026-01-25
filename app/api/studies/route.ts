@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUniqueStudies } from "@/database/db";
+import { getUniqueStudies } from "@/database/queries/sidebar-filters";
 
 export async function GET() {
   try {

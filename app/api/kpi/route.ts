@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getKPISummaryWithTrends } from "@/database/db";
+import { getKPISummaryWithTrends } from "@/database/queries/kpi-summary";
 
 export async function GET(request: Request) {
   try {

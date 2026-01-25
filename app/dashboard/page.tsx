@@ -16,6 +16,7 @@ import RegionStackedBarChart from "@/components/charts/RegionStackedBarChart";
 import CountryComposedChart from "@/components/charts/CountryComposedChart";
 import SAEDonutChart from "@/components/charts/SAEDonutChart";
 import CodingTreemap from "@/components/charts/CodingTreemap";
+import SubjectPerformanceGrid from "@/components/charts/SubjectPerformanceGrid";
 import {
   getKPISummary,
   getStatsByRegion,
@@ -56,6 +57,30 @@ export default function DashboardPage() {
   // Regional Data Entry Progress state
   const [regionalDataEntry, setRegionalDataEntry] = useState<any[]>([]);
   const [loadingRegionalData, setLoadingRegionalData] = useState(true);
+
+  // Study Pulse state
+  const [studyPulseData, setStudyPulseData] = useState({
+    pagesEntered: 0,
+    totalQueries: 0,
+    activeSubjects: 0,
+    missingPages: 0,
+    cleanCRFPercentage: 0,
+  });
+  const [loadingStudyPulse, setLoadingStudyPulse] = useState(true);
+
+  // Country Performance state
+  const [countryPerformanceData, setCountryPerformanceData] = useState<any[]>(
+    [],
+  );
+  const [loadingCountryPerformance, setLoadingCountryPerformance] =
+    useState(true);
+
+  // Subject Performance state
+  const [subjectPerformanceData, setSubjectPerformanceData] = useState<any[]>(
+    [],
+  );
+  const [loadingSubjectPerformance, setLoadingSubjectPerformance] =
+    useState(true);
 
   // Update timestamp only on client side to avoid hydration errors
   useEffect(() => {
@@ -140,11 +165,126 @@ export default function DashboardPage() {
     fetchRegionalDataEntry();
   }, [filters]);
 
+  // Fetch Study Pulse data from API when filters change
+  useEffect(() => {
+    const fetchStudyPulse = async () => {
+      try {
+        setLoadingStudyPulse(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/study-pulse${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.metrics) {
+          setStudyPulseData(result.metrics);
+        }
+      } catch (error) {
+        console.error("Error fetching study pulse:", error);
+        // Keep default values on error
+      } finally {
+        setLoadingStudyPulse(false);
+      }
+    };
+
+    fetchStudyPulse();
+  }, [filters]);
+
+  // Fetch Country Performance data from API when filters change
+  useEffect(() => {
+    const fetchCountryPerformance = async () => {
+      try {
+        setLoadingCountryPerformance(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/country-performance${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.data) {
+          setCountryPerformanceData(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching country performance:", error);
+        // Fallback to mock data
+        setCountryPerformanceData(getCountryPerformance(filters));
+      } finally {
+        setLoadingCountryPerformance(false);
+      }
+    };
+
+    fetchCountryPerformance();
+  }, [filters]);
+
+  // Fetch Subject Performance data from API when filters change
+  useEffect(() => {
+    const fetchSubjectPerformance = async () => {
+      try {
+        setLoadingSubjectPerformance(true);
+        const params = new URLSearchParams();
+
+        if (filters.region !== "ALL") {
+          params.append("region", filters.region);
+        }
+        if (filters.country !== "ALL") {
+          params.append("country", filters.country);
+        }
+        if (filters.siteId !== "ALL") {
+          params.append("siteId", filters.siteId);
+        }
+        if (filters.subjectId !== "ALL") {
+          params.append("subjectId", filters.subjectId);
+        }
+
+        const url = `/api/subject-performance${params.toString() ? `?${params.toString()}` : ""}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result && result.data) {
+          setSubjectPerformanceData(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching subject performance:", error);
+        // Keep empty array on error
+        setSubjectPerformanceData([]);
+      } finally {
+        setLoadingSubjectPerformance(false);
+      }
+    };
+
+    fetchSubjectPerformance();
+  }, [filters]);
+
   // Get all data based on current filters (keeping mock data for other components)
   const sitePerformance = getSitePerformance(filters);
   const saeData = getSAEChartData(filters);
   const codingData = getCodingCategoryData();
-  const countryPerformance = getCountryPerformance(filters);
   const filteredSubjects = filterMetrics(filters);
 
   // Get patient 360 data if a subject is selected
@@ -241,17 +381,39 @@ export default function DashboardPage() {
             <section className="grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]">
               {/* Left: Regional Data Entry Progress - 60% */}
               <div className="lg:col-span-3 h-full">
-                {loadingRegionalData ? (
+                {loadingRegionalData || loadingSubjectPerformance ? (
                   <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
-                    <p className="text-gray-500">Loading regional data...</p>
+                    <p className="text-gray-500">Loading data...</p>
                   </div>
-                ) : filters.region === "ALL" ? (
+                ) : filters.siteId !== "ALL" ? (
+                  // When site is selected, show subject-level performance grid
+                  <SubjectPerformanceGrid
+                    data={subjectPerformanceData}
+                    onSubjectClick={handleSubjectClick}
+                  />
+                ) : filters.country !== "ALL" ? (
+                  // When country is selected (but not site), show site-level data (stacked bar)
                   <RegionStackedBarChart
                     data={regionalDataEntry}
                     syncId="dashboard"
                   />
+                ) : filters.region !== "ALL" ? (
+                  // When region is selected (but not country), show country performance
+                  loadingCountryPerformance ? (
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
+                      <p className="text-gray-500">
+                        Loading country performance...
+                      </p>
+                    </div>
+                  ) : (
+                    <CountryComposedChart
+                      data={countryPerformanceData}
+                      syncId="dashboard"
+                    />
+                  )
                 ) : (
-                  <CountryComposedChart
+                  // When no region is selected, show regional data
+                  <RegionStackedBarChart
                     data={regionalDataEntry}
                     syncId="dashboard"
                   />
@@ -260,7 +422,7 @@ export default function DashboardPage() {
 
               {/* Right: Study Pulse Panel - 40% */}
               <div className="lg:col-span-2 h-full">
-                <StudyPulse metrics={masterMetrics} studyId={filters.studyId} />
+                <StudyPulse data={studyPulseData} loading={loadingStudyPulse} />
               </div>
             </section>
 

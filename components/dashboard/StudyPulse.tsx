@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { SubjectMetric } from "@/types";
 import {
   PieChart,
   Pie,
@@ -12,87 +11,53 @@ import {
   Legend,
 } from "recharts";
 
-interface StudyPulseProps {
-  metrics: SubjectMetric[];
-  studyId: string | "ALL";
+interface StudyPulseData {
+  pagesEntered: number;
+  totalQueries: number;
+  activeSubjects: number;
+  missingPages: number;
+  cleanCRFPercentage: number;
 }
 
-export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
+interface StudyPulseProps {
+  data: StudyPulseData;
+  loading?: boolean;
+}
+
+export default function StudyPulse({ data, loading = false }: StudyPulseProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [hiddenEntries, setHiddenEntries] = useState<Set<string>>(new Set());
-
-  // Calculate total pages entered and total forms available
-  const filteredMetrics =
-    studyId === "ALL" ? metrics : metrics.filter((m) => m.studyId === studyId);
-
-  const totalPagesEntered = filteredMetrics.reduce(
-    (sum, m) => sum + m.pagesEntered,
-    0,
-  );
-  const totalFormsAvailable = filteredMetrics.reduce(
-    (sum, m) => sum + m.totalFormsAvailable,
-    0,
-  );
-
-  // Calculate total queries raised (sum of 7 query types)
-  const totalQueriesRaised = filteredMetrics.reduce(
-    (sum, m) =>
-      sum +
-      m.queriesDM +
-      m.queriesClinical +
-      m.queriesMedical +
-      m.queriesSite +
-      m.queriesFieldMonitor +
-      m.queriesCoding +
-      m.queriesSafety,
-    0,
-  );
-
-  // Calculate form completion percentage
-  const completionPercentage =
-    totalFormsAvailable > 0
-      ? Math.round((totalPagesEntered / totalFormsAvailable) * 100)
-      : 0;
-
-  // Study name display
-  const studyName =
-    studyId === "ALL"
-      ? "All Studies"
-      : filteredMetrics[0]?.projectName || `Study ${studyId}`;
 
   // Prepare data for Recharts Pie Chart - Equal values for uniform circle
   const chartData = [
     {
       name: "Pages Entered",
       value: 20, // Equal value for uniform segments
-      actualValue: totalPagesEntered,
+      actualValue: data.pagesEntered,
       fill: "rgba(59, 130, 246, 0.85)", // blue
     },
     {
       name: "Total Queries",
       value: 20, // Equal value for uniform segments
-      actualValue: totalQueriesRaised,
+      actualValue: data.totalQueries,
       fill: "rgba(251, 191, 36, 0.85)", // amber/yellow
     },
     {
       name: "Active Subjects",
       value: 20, // Equal value for uniform segments
-      actualValue: filteredMetrics.length,
+      actualValue: data.activeSubjects,
       fill: "rgba(107, 114, 128, 0.85)", // gray
     },
     {
       name: "Missing Pages",
       value: 20, // Equal value for uniform segments
-      actualValue:
-        totalFormsAvailable - totalPagesEntered > 0
-          ? totalFormsAvailable - totalPagesEntered
-          : 0,
+      actualValue: data.missingPages,
       fill: "rgba(239, 68, 68, 0.85)", // red
     },
     {
-      name: "Completion Rate",
+      name: "Clean CRF %",
       value: 20, // Equal value for uniform segments
-      actualValue: completionPercentage,
+      actualValue: data.cleanCRFPercentage,
       fill: "rgba(34, 197, 94, 0.85)", // green
       suffix: "%",
     },
@@ -202,61 +167,69 @@ export default function StudyPulse({ metrics, studyId }: StudyPulseProps) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900">Study Pulse</h2>
         <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-          {studyName}
+          Live Metrics
         </span>
       </div>
 
-      {/* Polar Area Chart - Expanded */}
-      <div className="flex-1 min-h-112.5">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              activeShape={renderActiveShape}
-              data={visibleChartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={120}
-              dataKey="value"
-              onMouseEnter={onPieEnter}
-              onMouseLeave={onPieLeave}
-              stroke="#fff"
-              strokeWidth={2}
-            >
-              {visibleChartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend content={<CustomLegend />} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Overall Status */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Overall Status</span>
-          <div className="flex items-center space-x-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                completionPercentage >= 80
-                  ? "bg-green-500"
-                  : completionPercentage >= 50
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
-              }`}
-            />
-            <span className="text-sm font-medium text-gray-700">
-              {completionPercentage >= 80
-                ? "On Track"
-                : completionPercentage >= 50
-                  ? "At Risk"
-                  : "Critical"}
-            </span>
-          </div>
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Loading study pulse...</p>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Polar Area Chart - Expanded */}
+          <div className="flex-1 min-h-112.5">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  activeShape={renderActiveShape}
+                  data={visibleChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={120}
+                  dataKey="value"
+                  onMouseEnter={onPieEnter}
+                  onMouseLeave={onPieLeave}
+                  stroke="#fff"
+                  strokeWidth={2}
+                >
+                  {visibleChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend content={<CustomLegend />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Overall Status */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Data Quality Status</span>
+              <div className="flex items-center space-x-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    data.cleanCRFPercentage >= 80
+                      ? "bg-green-500"
+                      : data.cleanCRFPercentage >= 50
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {data.cleanCRFPercentage >= 80
+                    ? "On Track"
+                    : data.cleanCRFPercentage >= 50
+                      ? "At Risk"
+                      : "Critical"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
