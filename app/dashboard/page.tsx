@@ -94,6 +94,9 @@ export default function DashboardPage() {
         setLoadingKPI(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }
@@ -133,6 +136,9 @@ export default function DashboardPage() {
         setLoadingRegionalData(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }
@@ -172,6 +178,9 @@ export default function DashboardPage() {
         setLoadingStudyPulse(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }
@@ -210,6 +219,9 @@ export default function DashboardPage() {
         setLoadingCountryPerformance(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }
@@ -249,6 +261,9 @@ export default function DashboardPage() {
         setLoadingSubjectPerformance(true);
         const params = new URLSearchParams();
 
+        if (filters.studyId !== "ALL") {
+          params.append("study", filters.studyId);
+        }
         if (filters.region !== "ALL") {
           params.append("region", filters.region);
         }

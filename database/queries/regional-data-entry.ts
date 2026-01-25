@@ -11,6 +11,7 @@ export interface RegionalDataEntryResult {
  * Get Regional Data Entry Progress
  * Aggregates pages_entered and missing_page from subject_level_metrics by region
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -18,6 +19,7 @@ export interface RegionalDataEntryResult {
  * @returns Array of regional data with completed and missing pages
  */
 export function getRegionalDataEntryProgress(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -39,6 +41,10 @@ export function getRegionalDataEntryProgress(
     `;
 
     // Add filters
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
     if (region && region !== "ALL") {
       query += ` AND region = ?`;
       params.push(region);
@@ -82,6 +88,7 @@ export function getRegionalDataEntryProgress(
  * Get Country-level Data Entry Progress
  * Used when a specific region is selected to show breakdown by country
  *
+ * @param study - Optional study/project filter
  * @param region - Required region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -89,6 +96,7 @@ export function getRegionalDataEntryProgress(
  * @returns Array of country data with completed and missing pages
  */
 export function getCountryDataEntryProgress(
+  study: string | undefined,
   region: string,
   country?: string,
   siteId?: string,
@@ -96,7 +104,7 @@ export function getCountryDataEntryProgress(
 ): RegionalDataEntryResult[] {
   try {
     const database = getDatabase();
-    const params: string[] = [region];
+    const params: string[] = [];
 
     let query = `
       SELECT 
@@ -105,8 +113,15 @@ export function getCountryDataEntryProgress(
         SUM(missing_page) as missingPages,
         SUM(pages_entered + missing_page) as totalExpectedPages
       FROM subject_level_metrics
-      WHERE region = ?
+      WHERE 1=1
     `;
+
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
+    query += ` AND region = ?`;
+    params.push(region);
 
     // Add additional filters
     if (country && country !== "ALL") {
@@ -146,6 +161,7 @@ export function getCountryDataEntryProgress(
  * Get Site-level Data Entry Progress
  * Used when a specific country is selected to show breakdown by site
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Required country filter
  * @param siteId - Optional site filter
@@ -153,6 +169,7 @@ export function getCountryDataEntryProgress(
  * @returns Array of site data with completed and missing pages
  */
 export function getSiteDataEntryProgress(
+  study: string | undefined,
   region: string | undefined,
   country: string,
   siteId?: string,
@@ -169,9 +186,14 @@ export function getSiteDataEntryProgress(
         SUM(missing_page) as missingPages,
         SUM(pages_entered + missing_page) as totalExpectedPages
       FROM subject_level_metrics
-      WHERE country = ?
+      WHERE 1=1
     `;
 
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
+    query += ` AND country = ?`;
     params.push(country);
 
     if (region && region !== "ALL") {

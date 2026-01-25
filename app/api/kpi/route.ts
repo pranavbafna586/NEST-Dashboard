@@ -4,13 +4,20 @@ import { getKPISummaryWithTrends } from "@/database/queries/kpi-summary";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const study = searchParams.get("study") || undefined;
     const region = searchParams.get("region") || undefined;
     const country = searchParams.get("country") || undefined;
     const siteId = searchParams.get("siteId") || undefined;
     const subjectId = searchParams.get("subjectId") || undefined;
 
     // Get KPI summary with all trends
-    const data = getKPISummaryWithTrends(region, country, siteId, subjectId);
+    const data = getKPISummaryWithTrends(
+      study,
+      region,
+      country,
+      siteId,
+      subjectId,
+    );
 
     return NextResponse.json(data);
   } catch (error) {

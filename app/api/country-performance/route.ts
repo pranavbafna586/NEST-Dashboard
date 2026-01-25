@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     // Extract filter parameters
+    const study = searchParams.get("study") || undefined;
     const region = searchParams.get("region") || undefined;
     const country = searchParams.get("country") || undefined;
     const siteId = searchParams.get("siteId") || undefined;
@@ -13,6 +14,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch country performance metrics
     const data = getCountryPerformanceSimplified(
+      study,
       region,
       country,
       siteId,
@@ -22,6 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data,
       filters: {
+        study: study || "ALL",
         region: region || "ALL",
         country: country || "ALL",
         siteId: siteId || "ALL",

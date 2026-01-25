@@ -11,6 +11,7 @@ export interface KPISummary {
  * Get comprehensive KPI Summary (all-time data without trends)
  * Aggregates key metrics from subject_level_metrics and sae_issues tables
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -18,6 +19,7 @@ export interface KPISummary {
  * @returns KPI summary object with totals
  */
 export function getKPISummaryWithTrends(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -29,6 +31,10 @@ export function getKPISummaryWithTrends(
 
     // Build WHERE clause for filters
     let whereClause = "WHERE 1=1";
+    if (study && study !== "ALL") {
+      whereClause += " AND project_name = ?";
+      params.push(study);
+    }
     if (region && region !== "ALL") {
       whereClause += " AND region = ?";
       params.push(region);
@@ -68,6 +74,10 @@ export function getKPISummaryWithTrends(
     const saeParams: string[] = [];
     let saeWhereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      saeWhereClause += " AND project_name = ?";
+      saeParams.push(study);
+    }
     if (country && country !== "ALL") {
       saeWhereClause += " AND country = ?";
       saeParams.push(country);

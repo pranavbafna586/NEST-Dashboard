@@ -16,6 +16,7 @@ export interface SubjectPerformanceResult {
  * Get Subject Performance Metrics for a specific site
  * Returns detailed metrics for all subjects at the site level
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Required site filter
@@ -23,6 +24,7 @@ export interface SubjectPerformanceResult {
  * @returns Array of subject performance metrics
  */
 export function getSubjectPerformance(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -35,6 +37,10 @@ export function getSubjectPerformance(
     // Build WHERE clause for filters
     let whereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      whereClause += " AND project_name = ?";
+      params.push(study);
+    }
     if (region && region !== "ALL") {
       whereClause += " AND region = ?";
       params.push(region);

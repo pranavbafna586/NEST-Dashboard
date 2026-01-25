@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     // Extract filter parameters
+    const study = searchParams.get("study") || undefined;
     const region = searchParams.get("region") || undefined;
     const country = searchParams.get("country") || undefined;
     const siteId = searchParams.get("siteId") || undefined;
@@ -21,17 +22,35 @@ export async function GET(request: NextRequest) {
 
     // If country is selected, show site-level breakdown
     if (country && country !== "ALL") {
-      data = getSiteDataEntryProgress(region, country, siteId, subjectId);
+      data = getSiteDataEntryProgress(
+        study,
+        region,
+        country,
+        siteId,
+        subjectId,
+      );
       level = "site";
     }
     // If region is selected (but not country), show country-level breakdown
     else if (region && region !== "ALL") {
-      data = getCountryDataEntryProgress(region, country, siteId, subjectId);
+      data = getCountryDataEntryProgress(
+        study,
+        region,
+        country,
+        siteId,
+        subjectId,
+      );
       level = "country";
     }
     // Otherwise, show region-level breakdown
     else {
-      data = getRegionalDataEntryProgress(region, country, siteId, subjectId);
+      data = getRegionalDataEntryProgress(
+        study,
+        region,
+        country,
+        siteId,
+        subjectId,
+      );
       level = "region";
     }
 
@@ -39,6 +58,7 @@ export async function GET(request: NextRequest) {
       data,
       level,
       filters: {
+        study: study || "ALL",
         region: region || "ALL",
         country: country || "ALL",
         siteId: siteId || "ALL",

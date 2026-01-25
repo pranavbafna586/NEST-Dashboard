@@ -4,10 +4,11 @@ import { getUniqueSites } from "@/database/queries/sidebar-filters";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const study = searchParams.get("study") || undefined;
     const region = searchParams.get("region") || undefined;
     const country = searchParams.get("country") || undefined;
 
-    const sites = getUniqueSites(region, country);
+    const sites = getUniqueSites(study, region, country);
     return NextResponse.json({ sites });
   } catch (error) {
     console.error("Error in /api/sites:", error);

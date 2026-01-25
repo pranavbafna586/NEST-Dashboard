@@ -10,6 +10,7 @@ export interface CountryPerformanceResult {
  * Get Country Performance Metrics
  * Combines query data from subject_level_metrics and days outstanding from missing_visits
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -17,6 +18,7 @@ export interface CountryPerformanceResult {
  * @returns Array of country performance metrics
  */
 export function getCountryPerformance(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -29,6 +31,10 @@ export function getCountryPerformance(
     // Build WHERE clause for filters
     let whereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      whereClause += " AND slm.project_name = ?";
+      params.push(study);
+    }
     if (region && region !== "ALL") {
       whereClause += " AND slm.region = ?";
       params.push(region);
@@ -55,7 +61,7 @@ export function getCountryPerformance(
           (SELECT AVG(mv.days_outstanding)
            FROM missing_visits mv
            WHERE mv.country = slm.country
-           ${region && region !== "ALL" ? "" : ""}
+           ${study && study !== "ALL" ? "AND mv.project_name = ?" : ""}
            ${country && country !== "ALL" ? "AND mv.country = ?" : ""}
            ${siteId && siteId !== "ALL" ? "AND mv.site_id = ?" : ""}
            ${subjectId && subjectId !== "ALL" ? "AND mv.subject_id = ?" : ""}
@@ -69,6 +75,9 @@ export function getCountryPerformance(
 
     // Build params for the subquery
     const allParams = [...params];
+    if (study && study !== "ALL") {
+      allParams.push(study);
+    }
     if (country && country !== "ALL") {
       allParams.push(country);
     }
@@ -98,6 +107,7 @@ export function getCountryPerformance(
  * Get Country Performance Metrics - Simplified version
  * Uses only subject_level_metrics table for better performance
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -105,6 +115,7 @@ export function getCountryPerformance(
  * @returns Array of country performance metrics
  */
 export function getCountryPerformanceSimplified(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -117,6 +128,10 @@ export function getCountryPerformanceSimplified(
     const queriesParams: string[] = [];
     let queriesWhereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      queriesWhereClause += " AND project_name = ?";
+      queriesParams.push(study);
+    }
     if (region && region !== "ALL") {
       queriesWhereClause += " AND region = ?";
       queriesParams.push(region);
@@ -153,6 +168,10 @@ export function getCountryPerformanceSimplified(
     const daysParams: string[] = [];
     let daysWhereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      daysWhereClause += " AND project_name = ?";
+      daysParams.push(study);
+    }
     if (country && country !== "ALL") {
       daysWhereClause += " AND country = ?";
       daysParams.push(country);

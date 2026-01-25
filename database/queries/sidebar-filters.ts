@@ -20,13 +20,26 @@ export function getUniqueStudies(): Array<{ project_name: string }> {
 
 /**
  * Get unique regions from subject_level_metrics table
+ * @param study - Optional study/project filter
  * @returns Array of unique region names
  */
-export function getUniqueRegions(): string[] {
+export function getUniqueRegions(study?: string): string[] {
   try {
     const database = getDatabase();
-    const query = `SELECT DISTINCT region FROM subject_level_metrics WHERE region IS NOT NULL ORDER BY region`;
-    const rows = database.prepare(query).all() as Array<{ region: string }>;
+    let query = `SELECT DISTINCT region FROM subject_level_metrics WHERE region IS NOT NULL`;
+    const params: string[] = [];
+
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
+
+    query += ` ORDER BY region`;
+
+    const stmt = database.prepare(query);
+    const rows = (
+      study && study !== "ALL" ? stmt.all(...params) : stmt.all()
+    ) as Array<{ region: string }>;
     return rows.map((row) => row.region);
   } catch (error) {
     console.error("Error fetching unique regions:", error);
@@ -35,24 +48,32 @@ export function getUniqueRegions(): string[] {
 }
 
 /**
- * Get unique countries, optionally filtered by region
+ * Get unique countries, optionally filtered by study and region
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @returns Array of unique country names
  */
-export function getUniqueCountries(region?: string): string[] {
+export function getUniqueCountries(study?: string, region?: string): string[] {
   try {
     const database = getDatabase();
     let query = `SELECT DISTINCT country FROM subject_level_metrics WHERE country IS NOT NULL`;
+    const params: string[] = [];
+
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
 
     if (region && region !== "ALL") {
       query += ` AND region = ?`;
+      params.push(region);
     }
 
     query += ` ORDER BY country`;
 
     const stmt = database.prepare(query);
     const rows = (
-      region && region !== "ALL" ? stmt.all(region) : stmt.all()
+      params.length > 0 ? stmt.all(...params) : stmt.all()
     ) as Array<{ country: string }>;
     return rows.map((row) => row.country);
   } catch (error) {
@@ -62,12 +83,14 @@ export function getUniqueCountries(region?: string): string[] {
 }
 
 /**
- * Get unique sites, optionally filtered by region and/or country
+ * Get unique sites, optionally filtered by study, region and/or country
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @returns Array of unique site objects with site_id
  */
 export function getUniqueSites(
+  study?: string,
   region?: string,
   country?: string,
 ): Array<{ site_id: string }> {
@@ -75,6 +98,11 @@ export function getUniqueSites(
     const database = getDatabase();
     let query = `SELECT DISTINCT site_id FROM subject_level_metrics WHERE site_id IS NOT NULL`;
     const params: string[] = [];
+
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
 
     if (region && region !== "ALL") {
       query += ` AND region = ?`;
@@ -98,13 +126,15 @@ export function getUniqueSites(
 }
 
 /**
- * Get unique subjects, optionally filtered by site, region, and/or country
+ * Get unique subjects, optionally filtered by study, site, region, and/or country
+ * @param study - Optional study/project filter
  * @param siteId - Optional site filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @returns Array of unique subject IDs
  */
 export function getUniqueSubjects(
+  study?: string,
   siteId?: string,
   region?: string,
   country?: string,
@@ -113,6 +143,11 @@ export function getUniqueSubjects(
     const database = getDatabase();
     let query = `SELECT DISTINCT subject_id FROM subject_level_metrics WHERE subject_id IS NOT NULL`;
     const params: string[] = [];
+
+    if (study && study !== "ALL") {
+      query += ` AND project_name = ?`;
+      params.push(study);
+    }
 
     if (siteId && siteId !== "ALL") {
       query += ` AND site_id = ?`;

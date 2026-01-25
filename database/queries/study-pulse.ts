@@ -12,6 +12,7 @@ export interface StudyPulseResult {
  * Get Study Pulse Metrics
  * Aggregates key metrics from subject_level_metrics for the Study Pulse chart
  *
+ * @param study - Optional study/project filter
  * @param region - Optional region filter
  * @param country - Optional country filter
  * @param siteId - Optional site filter
@@ -19,6 +20,7 @@ export interface StudyPulseResult {
  * @returns Study pulse metrics
  */
 export function getStudyPulseMetrics(
+  study?: string,
   region?: string,
   country?: string,
   siteId?: string,
@@ -31,6 +33,10 @@ export function getStudyPulseMetrics(
     // Build WHERE clause for filters
     let whereClause = "WHERE 1=1";
 
+    if (study && study !== "ALL") {
+      whereClause += " AND project_name = ?";
+      params.push(study);
+    }
     if (region && region !== "ALL") {
       whereClause += " AND region = ?";
       params.push(region);
