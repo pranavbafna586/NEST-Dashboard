@@ -6,19 +6,19 @@ import { DashboardContext } from "@/types/dashboard-context";
  * @returns Formatted system prompt
  */
 export function buildSystemPrompt(context: DashboardContext): string {
-    const { filters, data, metadata, timestamp } = context;
+  const { filters, data, metadata, timestamp } = context;
 
-    // Calculate cache age
-    const cacheAge = Math.floor(
-        (Date.now() - new Date(timestamp).getTime()) / (1000 * 60),
-    );
-    const freshnessNote =
-        cacheAge > 15
-            ? "⚠️ Note: This data is more than 15 minutes old. Please suggest refreshing for the most current information."
-            : "";
+  // Calculate cache age
+  const cacheAge = Math.floor(
+    (Date.now() - new Date(timestamp).getTime()) / (1000 * 60),
+  );
+  const freshnessNote =
+    cacheAge > 15
+      ? "⚠️ Note: This data is more than 15 minutes old. Please suggest refreshing for the most current information."
+      : "";
 
-    // Build filter context
-    const filterContext = `
+  // Build filter context
+  const filterContext = `
 Current View Filters:
 - Study: ${filters.studyId === "ALL" ? "All Studies" : filters.studyId}
 - Region: ${filters.region === "ALL" ? "All Regions" : filters.region}
@@ -27,8 +27,8 @@ Current View Filters:
 - Subject: ${filters.subjectId === "ALL" ? "All Subjects" : filters.subjectId}
 `.trim();
 
-    // Build KPI summary
-    const kpiSummary = `
+  // Build KPI summary
+  const kpiSummary = `
 Key Performance Indicators (KPIs):
 - Total Missing Visits: ${data.kpi.totalMissingVisits}
 - Open Queries: ${data.kpi.openQueries}
@@ -36,8 +36,8 @@ Key Performance Indicators (KPIs):
 - Uncoded Terms: ${data.kpi.uncodedTerms}
 `.trim();
 
-    // Build Study Pulse summary
-    const studyPulseSummary = `
+  // Build Study Pulse summary
+  const studyPulseSummary = `
 Study Pulse Metrics:
 - Pages Entered: ${data.studyPulse.pagesEntered}
 - Total Queries: ${data.studyPulse.totalQueries}
@@ -46,8 +46,8 @@ Study Pulse Metrics:
 - Clean CRF Percentage: ${data.studyPulse.cleanCRFPercentage}%
 `.trim();
 
-    // Build metadata summary
-    const metadataSummary = `
+  // Build metadata summary
+  const metadataSummary = `
 Dataset Overview:
 - Total Subjects in View: ${metadata.totalSubjects}
 - Total Sites in View: ${metadata.totalSites}
@@ -56,132 +56,222 @@ Dataset Overview:
 ${freshnessNote}
 `.trim();
 
-    // Top-level subjects with issues (if available)
-    let topIssuesNote = "";
-    if (data.subjectOverview && data.subjectOverview.length > 0) {
-        const topSubjects = data.subjectOverview
-            .filter(
-                (s: any) =>
-                    s.missing_visits > 0 || s.open_queries > 0 || s.sae_count > 0,
-            )
-            .slice(0, 5);
+  // Regional Data Entry Progress (complete breakdown)
+  let regionalDataNote = "";
+  if (data.regional && data.regional.length > 0) {
+    regionalDataNote = `
+Regional Data Entry Progress (${data.regional.length} regions):
+${data.regional
+  .map(
+    (r: any) =>
+      `- ${r.region}: Expected=${r.expected}, Entered=${r.entered}, Signed=${r.signed}, Missing=${r.missing}, Progress=${((r.entered / r.expected) * 100).toFixed(1)}%`,
+  )
+  .join("\n")}
+`.trim();
+  }
 
-        if (topSubjects.length > 0) {
-            topIssuesNote = `
+  // Country Performance (complete breakdown)
+  let countryPerformanceNote = "";
+  if (data.countryPerformance && data.countryPerformance.length > 0) {
+    countryPerformanceNote = `
+Country Performance Metrics (${data.countryPerformance.length} countries):
+${data.countryPerformance
+  .map(
+    (c: any) =>
+      `- ${c.country}: Subjects=${c.subjects}, Enrollment=${c.enrollment}%, SDV=${c.sdv}%, Queries=${c.queries}, Deviations=${c.deviations}`,
+  )
+  .join("\n")}
+`.trim();
+  }
+
+  // Subject Performance Grid (complete breakdown)
+  let subjectPerformanceNote = "";
+  if (data.subjectPerformance && data.subjectPerformance.length > 0) {
+    subjectPerformanceNote = `
+Subject Performance Details (${data.subjectPerformance.length} subjects):
+${data.subjectPerformance
+  .map(
+    (s: any) =>
+      `- ${s.subject_id}: Status="${s.subject_status}", LatestVisit="${s.latest_visit}", PagesEntered=${s.pages_entered}, MissingPages=${s.missing_page}, Queries=${s.total_queries}, CleanCRF=${s.percentage_clean_crf}%, MissingVisits=${s.missing_visits}, FormsVerified=${s.forms_verified}`,
+  )
+  .join("\n")}
+`.trim();
+  }
+
+  // Signature Compliance Details
+  let signatureComplianceNote = "";
+  if (data.signatureCompliance && data.signatureCompliance.length > 0) {
+    signatureComplianceNote = `
+Signature Compliance by Month (${data.signatureCompliance.length} data points):
+${data.signatureCompliance
+  .map(
+    (sc: any) =>
+      `- ${sc.month}: Required=${sc.required}, Signed=${sc.signed}, Pending=${sc.pending}, Compliance=${((sc.signed / sc.required) * 100).toFixed(1)}%`,
+  )
+  .join("\n")}
+`.trim();
+  }
+
+  // Top-level subjects with issues (if available)
+  let topIssuesNote = "";
+  if (data.subjectOverview && data.subjectOverview.length > 0) {
+    const topSubjects = data.subjectOverview
+      .filter(
+        (s: any) =>
+          s.missing_visits > 0 || s.open_queries > 0 || s.sae_count > 0,
+      )
+      .slice(0, 5);
+
+    if (topSubjects.length > 0) {
+      topIssuesNote = `
 Top Subjects with Issues:
 ${topSubjects
-                    .map(
-                        (s: any) =>
-                            `- ${s.subject_id}: ${s.missing_visits} missing visits, ${s.open_queries} open queries, ${s.sae_count} SAEs`,
-                    )
-                    .join("\n")}
+  .map(
+    (s: any) =>
+      `- ${s.subject_id}: ${s.missing_visits} missing visits, ${s.open_queries} open queries, ${s.sae_count} SAEs`,
+  )
+  .join("\n")}
 `.trim();
-        }
     }
+  }
 
-    // ALL Subjects Overview (complete list with details)
-    let subjectsDetailNote = "";
-    if (data.subjectOverview && data.subjectOverview.length > 0) {
-        subjectsDetailNote = `
+  // ALL Subjects Overview (complete list with details)
+  let subjectsDetailNote = "";
+  if (data.subjectOverview && data.subjectOverview.length > 0) {
+    subjectsDetailNote = `
 Complete Subject List (${data.subjectOverview.length} subjects):
 ${data.subjectOverview
-                .map(
-                    (s: any) =>
-                        `- ${s.subject_id}: Status="${s.status}", Latest Visit="${s.latest_visit}", Pages Entered=${s.pages_entered}, Missing Visits=${s.missing_visits}, Queries=${s.open_queries}, SAEs=${s.sae_count}`,
-                )
-                .join("\n")}
+  .map(
+    (s: any) =>
+      `- ${s.subject_id}: Status="${s.status}", Latest Visit="${s.latest_visit}", Pages Entered=${s.pages_entered}, Missing Visits=${s.missing_visits}, Queries=${s.open_queries}, SAEs=${s.sae_count}`,
+  )
+  .join("\n")}
 `.trim();
-    }
+  }
 
-    // Site performance highlight (if available)
-    let sitePerformanceNote = "";
-    if (data.sitePerformance && data.sitePerformance.length > 0) {
-        const topSites = data.sitePerformance.slice(0, 3);
-        sitePerformanceNote = `
-Top Sites by Signature Backlog:
-${topSites
-                .map(
-                    (site: any) =>
-                        `- ${site.site_id} (${site.country}): ${site.pending_signatures} pending signatures`,
-                )
-                .join("\n")}
+  // Site performance highlight (if available)
+  let sitePerformanceNote = "";
+  if (data.sitePerformance && data.sitePerformance.length > 0) {
+    sitePerformanceNote = `
+Site Performance - Signature Backlog (${data.sitePerformance.length} sites):
+${data.sitePerformance
+  .map(
+    (site: any) =>
+      `- ${site.site_id} (${site.country}): Pending Signatures=${site.pending_signatures}, Total Forms=${site.total_forms || "N/A"}, Backlog Rate=${site.backlog_rate || "N/A"}%`,
+  )
+  .join("\n")}
 `.trim();
-    }
+  }
 
-    // SAE breakdown (if available)
-    let saeBreakdown = "";
-    if (data.saeChart && data.saeChart.length > 0) {
-        saeBreakdown = `
+  // SAE breakdown (if available)
+  let saeBreakdown = "";
+  if (data.saeChart && data.saeChart.length > 0) {
+    saeBreakdown = `
 SAE Breakdown by Category:
 ${data.saeChart.map((sae: any) => `- ${sae.name}: ${sae.value}`).join("\n")}
 `.trim();
-    }
+  }
 
-    // Patient 360 Details (if a specific patient is selected)
-    let patient360Note = "";
-    if (data.patient360) {
-        const p = data.patient360;
-        patient360Note = `
+  // Patient 360 Details (if a specific patient is selected)
+  let patient360Note = "";
+  if (data.patient360) {
+    const p = data.patient360;
+    patient360Note = `
 🔍 PATIENT 360 VIEW - Detailed Patient Information:
 
-Subject: ${p.subject_id || "N/A"}
-Status: ${p.status || "N/A"}
-Site: ${p.site_id || "N/A"}
+SUBJECT OVERVIEW:
+- Subject ID: ${p.subject?.subjectId || "N/A"}
+- Status: ${p.subject?.status || "N/A"}
+- Site: ${p.subject?.siteId || "N/A"} (${p.subject?.siteName || "N/A"})
+- Country: ${p.subject?.country || "N/A"}
+- Region: ${p.subject?.region || "N/A"}
+- Project: ${p.subject?.projectName || "N/A"}
+- Latest Visit: ${p.subject?.latestVisit || "N/A"}
+- High Risk: ${p.subject?.isHighRisk ? "YES ⚠️" : "No"}
 
-Demographics:
-- Age: ${p.age || "N/A"}
-- Gender: ${p.gender || "N/A"}
-- Enrollment Date: ${p.enrollment_date || "N/A"}
+KEY METRICS:
+- Total Queries: ${p.subject?.totalQueries || 0}
+- Missing Visits: ${p.subject?.missingVisits || 0}
+- Missing Pages: ${p.subject?.missingPages || 0}
+- Pages Entered: ${p.subject?.pagesEntered || 0}
+- Expected Visits: ${p.subject?.expectedVisits || 0}
 
-Visit Information:
-- Latest Visit: ${p.latest_visit || "N/A"}
-- Total Visits Completed: ${p.visits_completed || 0}
-- Missed Visits: ${p.missed_visits || 0}
-- Upcoming Visits: ${p.upcoming_visits ? p.upcoming_visits.join(", ") : "None"}
+VISIT SUMMARY:
+- Completed Visits: ${p.visitSummary?.completedVisits || 0}
+- Missing Visits: ${p.visitSummary?.missingVisits || 0}
+- Upcoming Visits: ${p.visitSummary?.upcomingVisits || 0}
+${p.visitSummary?.recentVisits && p.visitSummary.recentVisits.length > 0 ? `- Recent Visits: ${p.visitSummary.recentVisits.map((v: any) => `${v.visitName} (${v.visitDate})`).join(", ")}` : "- No recent visits"}
 
-Data Quality:
-- Pages Entered: ${p.pages_entered || 0}
-- Missing Pages: ${p.missing_pages || 0}
-- Data Completion: ${p.data_completion_percentage || 0}%
+CRITICAL MISSING VISITS (>30 days overdue):
+${p.criticalMissingVisits && p.criticalMissingVisits.length > 0 ? p.criticalMissingVisits.map((v: any) => `- ${v.visitName}: ${v.daysOutstanding} days overdue (projected: ${v.projectedDate})`).join("\n") : "- None"}
 
-Queries:
-- Open Queries: ${p.open_queries || 0}
-- Resolved Queries: ${p.resolved_queries || 0}
-${p.query_details ? `- Query Categories: ${p.query_details.map((q: any) => `${q.category} (${q.count})`).join(", ")}` : ""}
+QUERIES BREAKDOWN:
+- Total Queries: ${p.queries?.total || 0}
+- DM Queries: ${p.queries?.byType?.dmQueries || 0}
+- Clinical Queries: ${p.queries?.byType?.clinicalQueries || 0}
+- Medical Queries: ${p.queries?.byType?.medicalQueries || 0}
+- Site Queries: ${p.queries?.byType?.siteQueries || 0}
+- Field Monitor Queries: ${p.queries?.byType?.fieldMonitorQueries || 0}
+- Coding Queries: ${p.queries?.byType?.codingQueries || 0}
+- Safety Queries: ${p.queries?.byType?.safetyQueries || 0}
+${p.queries?.openQueryDetails && p.queries.openQueryDetails.length > 0 ? `\nOpen Query Details (Top 10):\n${p.queries.openQueryDetails.map((q: any) => `- ${q.formName} (${q.visitName}): ${q.markingGroupName} - ${q.queryStatus} - Owner: ${q.actionOwner} - ${q.daysOpen} days open`).join("\n")}` : ""}
 
-Adverse Events:
-- Total SAEs: ${p.total_saes || 0}
-- Total AEs: ${p.total_aes || 0}
-${p.sae_details ? `- SAE Details: ${p.sae_details.map((s: any) => `${s.term} (${s.severity}, ${s.status})`).join(", ")}` : ""}
-${p.ae_details ? `- Recent AEs: ${p.ae_details.slice(0, 3).map((a: any) => a.term).join(", ")}` : ""}
+SAFETY ISSUES (SAEs):
+- Total SAEs: ${p.safetyIssues?.totalSAEs || 0}
+- Open SAEs: ${p.safetyIssues?.openSAEs || 0}
+- SAEs by Status: Open=${p.safetyIssues?.saesByStatus?.open || 0}, Closed=${p.safetyIssues?.saesByStatus?.closed || 0}, Locked=${p.safetyIssues?.saesByStatus?.locked || 0}
+${p.safetyIssues?.recentSAEs && p.safetyIssues.recentSAEs.length > 0 ? `\nRecent SAEs:\n${p.safetyIssues.recentSAEs.map((s: any) => `- ${s.formName}: ${s.caseStatus} - Review: ${s.reviewStatus} - Action: ${s.actionStatus} - Owner: ${s.responsibleLF}`).join("\n")}` : ""}
 
-Protocol Deviations:
-- Total Deviations: ${p.protocol_deviations || 0}
-${p.deviation_details ? `- Types: ${p.deviation_details.map((d: any) => d.type).join(", ")}` : ""}
+DATA QUALITY:
+- Data Quality Score: ${p.dataQuality?.score || 0}%
+- Non-Conformant Pages: ${p.dataQuality?.nonConformantPages || 0}
+- Open Lab Issues: ${p.dataQuality?.openLabIssues || 0}
+- Open EDRR Issues: ${p.dataQuality?.openEDRRIssues || 0}
+- Uncoded Terms: ${p.dataQuality?.uncodedTerms || 0}
 
-Concomitant Medications:
-${p.medications ? `- Current Medications: ${p.medications.map((m: any) => m.name).join(", ")}` : "- None recorded"}
+COMPLIANCE STATUS:
+- Forms Require Verification: ${p.complianceStatus?.formsRequireVerification || 0}
+- Forms Verified: ${p.complianceStatus?.formsVerified || 0}
+- CRFs Overdue >90 Days: ${p.complianceStatus?.crfsOverdue90Days || 0}
+- CRFs Overdue 45-90 Days: ${p.complianceStatus?.crfsOverdue45to90Days || 0}
+- Broken Signatures: ${p.complianceStatus?.brokenSignatures || 0}
+- CRFs Never Signed: ${p.complianceStatus?.crfsNeverSigned || 0}
+- PDS Confirmed: ${p.complianceStatus?.pdsConfirmed || 0}
 
-Medical History:
-${p.medical_history ? `- ${p.medical_history.join(", ")}` : "- None recorded"}
+FORM STATUS:
+- Frozen: ${p.formStatus?.frozen || 0}
+- Locked: ${p.formStatus?.locked || 0}
+- Unlocked: ${p.formStatus?.unlocked || 0}
 
-Notes:
-${p.notes || "No additional notes"}
-
-⭐ IMPORTANT: This patient is currently selected. Prioritize answering questions about THIS specific patient (${p.subject_id}) with the detailed information above.
+⭐ IMPORTANT: This patient is currently selected. Prioritize answering questions about THIS specific patient (${p.subject?.subjectId}) with the detailed information above.
 `.trim();
-    }
+  }
 
-    // Construct the full system prompt
-    const systemPrompt = `You are an AI assistant for the Clinical Trial Intelligence Engine (CTIE), a real-time monitoring and analytics platform for clinical trials.
+  // Construct the full system prompt
+  const systemPrompt = `You are an AI assistant for the Clinical Trial Intelligence Engine (CTIE), a real-time monitoring and analytics platform for clinical trials.
 
 ROLE AND CAPABILITIES:
 You help clinical trial managers, data managers, and study coordinators by:
-1. Analyzing trial data and identifying trends
-2. Highlighting issues requiring attention (missing visits, open queries, SAEs)
-3. Providing actionable recommendations
-4. Explaining data patterns and anomalies
-5. Answering questions about specific subjects, sites, or metrics
+1. Analyzing comprehensive trial data across all regions, countries, sites, and subjects
+2. Highlighting issues requiring attention (missing visits, open queries, SAEs, signature backlogs)
+3. Providing detailed, data-driven actionable recommendations
+4. Explaining data patterns, trends, and anomalies with specific numbers
+5. Answering precise questions about specific subjects, sites, regions, countries, or any metrics
+6. Comparing performance across different dimensions (regional, country-level, site-level)
+7. Tracking compliance metrics including signatures, data entry progress, and protocol adherence
+
+DATA ACCESS:
+You have access to COMPLETE detailed data including:
+- All KPI metrics (missing visits, queries, SAEs, uncoded terms)
+- Study pulse metrics (pages entered, queries, active subjects, clean CRF %)
+- Regional data entry progress for ALL regions
+- Country-level performance metrics for ALL countries
+- Subject performance details for ALL subjects in view
+- Signature compliance trends over time
+- Site performance metrics including signature backlogs
+- Complete subject overview with visit and query details
+- Patient 360 detailed view when a specific subject is selected
+- SAE breakdown by category
 
 CURRENT CONTEXT:
 ${filterContext}
@@ -192,6 +282,14 @@ AVAILABLE DATA:
 ${kpiSummary}
 
 ${studyPulseSummary}
+
+${regionalDataNote}
+
+${countryPerformanceNote}
+
+${subjectPerformanceNote}
+
+${signatureComplianceNote}
 
 ${subjectsDetailNote}
 
@@ -204,16 +302,18 @@ ${saeBreakdown}
 ${patient360Note}
 
 GUIDELINES FOR RESPONSES:
-1. **Be Specific**: Always reference exact numbers from the data above
-2. **Be Concise**: Keep responses focused and actionable (2-3 paragraphs max)
-3. **Be Positive**: Focus on insights and opportunities, not limitations
-4. **Be Constructive**: Highlight priorities and suggest actionable next steps
-5. **Work with Available Data**: Use the data you have without commenting on what's missing
-6. **Provide Context**: Explain what the numbers mean in clinical trial terms
-7. **Suggest Actions**: When relevant, suggest next steps (e.g., "Review Site_101's signature backlog" or "Follow up on subjects with multiple open queries")
-8. **Filter Awareness**: If user asks about data not in current filters, suggest they can adjust filters to see more detail
+1. **Be Highly Specific**: ALWAYS reference exact numbers, percentages, and specific entities (subject IDs, site IDs, regions, countries) from the detailed data above
+2. **Use All Available Data**: Leverage the complete data breakdowns provided - regional metrics, country performance, subject details, compliance trends, etc.
+3. **Provide Precise Answers**: When asked about specific metrics, regions, countries, or subjects, provide exact figures from the data
+4. **Be Concise Yet Comprehensive**: Keep responses focused (2-4 paragraphs) but include all relevant specific data points
+5. **Compare and Contrast**: When relevant, compare performance across regions, countries, or sites using the detailed data
+6. **Provide Context**: Explain what the numbers mean in clinical trial terms and why they matter
+7. **Suggest Targeted Actions**: Reference specific entities that need attention (e.g., "Review Site_101 which has 15 pending signatures" or "Follow up with Subject_ABC who has 8 open queries")
+8. **List When Appropriate**: Use bulleted lists for multiple data points (e.g., listing all regions with their progress percentages)
 9. **Stay Professional**: Use clinical trial terminology appropriately
-10. **Be Solution-Focused**: Frame findings in terms of opportunities for improvement
+10. **Be Solution-Focused**: Frame findings as actionable opportunities with specific next steps
+11. **Acknowledge Drill-downs**: When filters are applied, acknowledge you're showing detailed data for that specific selection
+12. **Never Say "Limited Data"**: You have comprehensive detailed data - use it to provide thorough answers
 
 TONE:
 - Professional and supportive
@@ -234,14 +334,14 @@ ${freshnessNote ? `\n${freshnessNote}\n` : ""}
 
 Now, please answer the user's question based on this context.`;
 
-    return systemPrompt;
+  return systemPrompt;
 }
 
 /**
  * Create a quick summary prompt for initial greetings
  */
 export function buildWelcomePrompt(context: DashboardContext): string {
-    return `Based on the current dashboard data, provide a brief 2-sentence summary highlighting:
+  return `Based on the current dashboard data, provide a brief 2-sentence summary highlighting:
 1. The most critical issue (highest number from KPIs)
 2. One actionable insight
 

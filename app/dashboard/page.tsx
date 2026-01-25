@@ -153,6 +153,20 @@ export default function DashboardPage() {
           },
         );
 
+        // Log data summary for verification
+        console.log("[Dashboard] Caching context with data:", {
+          kpi: kpiSummary,
+          studyPulse: studyPulseData,
+          regionalCount: regionalDataEntry.length,
+          countryPerformanceCount: countryPerformanceData.length,
+          subjectPerformanceCount: subjectPerformanceData.length,
+          saeChartCount: saeChartData.length,
+          signatureComplianceCount: signatureComplianceData.length,
+          sitePerformanceCount: sitePerformanceData.length,
+          subjectOverviewCount: subjectOverviewData.length,
+          hasPatient360: !!patient360Data,
+        });
+
         // Send to cache API
         await fetch("/api/cache-context", {
           method: "POST",
