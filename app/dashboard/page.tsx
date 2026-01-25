@@ -102,7 +102,7 @@ export default function DashboardPage() {
   // ============================================
   // MEMOIZED DATA VALIDATION - Optimized for Performance
   // ============================================
-  
+
   // Memoize data validation to prevent unnecessary recalculations on every render
   const dataValidation = useMemo(() => {
     // KPI validation - early return on first truthy value
@@ -132,8 +132,8 @@ export default function DashboardPage() {
     const hasSubjectOverview = subjectOverviewData.length > 0;
 
     // Determine which regional chart data to use based on filters
-    const hasActiveRegionalData = 
-      filters.siteId !== "ALL" 
+    const hasActiveRegionalData =
+      filters.siteId !== "ALL"
         ? hasSubjectPerformance
         : filters.country !== "ALL"
           ? hasRegionalData
@@ -142,7 +142,7 @@ export default function DashboardPage() {
             : hasRegionalData;
 
     // Check if all data is loaded
-    const allDataLoaded = 
+    const allDataLoaded =
       !loadingKPI &&
       !loadingStudyPulse &&
       !loadingRegionalData &&
@@ -154,7 +154,7 @@ export default function DashboardPage() {
       !loadingSubjectOverview;
 
     // Check if all data is empty
-    const allDataEmpty = 
+    const allDataEmpty =
       !hasKPI &&
       !hasStudyPulse &&
       !hasRegionalData &&
@@ -881,21 +881,34 @@ export default function DashboardPage() {
             {/* 60/40 Split: Regional Chart (60%) + Study Pulse (40%) */}
             {/* Only show if at least one section has data */}
             {(() => {
-              const showSection = !loadingRegionalData && !loadingSubjectPerformance && !loadingStudyPulse && 
-                (dataValidation.hasActiveRegionalData || dataValidation.hasStudyPulse);
+              const showSection =
+                !loadingRegionalData &&
+                !loadingSubjectPerformance &&
+                !loadingStudyPulse &&
+                (dataValidation.hasActiveRegionalData ||
+                  dataValidation.hasStudyPulse);
 
               if (!showSection) return null;
 
               // Determine grid layout based on which sections have data
-              const gridClass = dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse
-                ? "grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]"
-                : "grid grid-cols-1 gap-6 min-h-[600px]";
+              const gridClass =
+                dataValidation.hasActiveRegionalData &&
+                dataValidation.hasStudyPulse
+                  ? "grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]"
+                  : "grid grid-cols-1 gap-6 min-h-[600px]";
 
               return (
                 <section className={gridClass}>
                   {/* Left: Regional Data Entry Progress - 60% */}
                   {dataValidation.hasActiveRegionalData && (
-                    <div className={dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse ? "lg:col-span-3 h-full" : "lg:col-span-1 h-full"}>
+                    <div
+                      className={
+                        dataValidation.hasActiveRegionalData &&
+                        dataValidation.hasStudyPulse
+                          ? "lg:col-span-3 h-full"
+                          : "lg:col-span-1 h-full"
+                      }
+                    >
                       {loadingRegionalData || loadingSubjectPerformance ? (
                         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm h-full flex items-center justify-center">
                           <p className="text-gray-500">Loading data...</p>
@@ -938,8 +951,18 @@ export default function DashboardPage() {
 
                   {/* Right: Study Pulse Panel - 40% */}
                   {dataValidation.hasStudyPulse && (
-                    <div className={dataValidation.hasActiveRegionalData && dataValidation.hasStudyPulse ? "lg:col-span-2 h-full" : "lg:col-span-1 h-full"}>
-                      <StudyPulse data={studyPulseData} loading={loadingStudyPulse} />
+                    <div
+                      className={
+                        dataValidation.hasActiveRegionalData &&
+                        dataValidation.hasStudyPulse
+                          ? "lg:col-span-2 h-full"
+                          : "lg:col-span-1 h-full"
+                      }
+                    >
+                      <StudyPulse
+                        data={studyPulseData}
+                        loading={loadingStudyPulse}
+                      />
                     </div>
                   )}
                 </section>
@@ -948,8 +971,11 @@ export default function DashboardPage() {
 
             {/* Charts Grid - Dynamic Column Layout based on available data */}
             {(() => {
-              const showChartsSection = !loadingSAEChart && !loadingSignatureCompliance && 
-                (dataValidation.hasSAEChart || dataValidation.hasSignatureCompliance);
+              const showChartsSection =
+                !loadingSAEChart &&
+                !loadingSignatureCompliance &&
+                (dataValidation.hasSAEChart ||
+                  dataValidation.hasSignatureCompliance);
 
               if (!showChartsSection) return null;
 
@@ -958,7 +984,14 @@ export default function DashboardPage() {
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
                   {/* SAE Donut Chart */}
                   {dataValidation.hasSAEChart && (
-                    <div className={dataValidation.hasSAEChart && dataValidation.hasSignatureCompliance ? "lg:col-span-1 flex" : "lg:col-span-3 flex"}>
+                    <div
+                      className={
+                        dataValidation.hasSAEChart &&
+                        dataValidation.hasSignatureCompliance
+                          ? "lg:col-span-1 flex"
+                          : "lg:col-span-3 flex"
+                      }
+                    >
                       {loadingSAEChart ? (
                         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
                           <p className="text-gray-500">Loading SAE data...</p>
@@ -971,7 +1004,14 @@ export default function DashboardPage() {
 
                   {/* Signature Compliance Chart - Spans 2 columns or full width if alone */}
                   {dataValidation.hasSignatureCompliance && (
-                    <div className={dataValidation.hasSAEChart && dataValidation.hasSignatureCompliance ? "lg:col-span-2 flex" : "lg:col-span-3 flex"}>
+                    <div
+                      className={
+                        dataValidation.hasSAEChart &&
+                        dataValidation.hasSignatureCompliance
+                          ? "lg:col-span-2 flex"
+                          : "lg:col-span-3 flex"
+                      }
+                    >
                       {loadingSignatureCompliance ? (
                         <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex-1 flex items-center justify-center">
                           <p className="text-gray-500">
@@ -979,7 +1019,9 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       ) : (
-                        <SignatureComplianceChart data={signatureComplianceData} />
+                        <SignatureComplianceChart
+                          data={signatureComplianceData}
+                        />
                       )}
                     </div>
                   )}
@@ -988,14 +1030,16 @@ export default function DashboardPage() {
             })()}
 
             {/* Site Performance Table - Only show if data exists */}
-            {filters.siteId === "ALL" && !loadingSitePerformance && dataValidation.hasSitePerformance && (
-              <section>
-                <SitePerformanceTable
-                  data={sitePerformanceData}
-                  onSiteClick={handleSiteClick}
-                />
-              </section>
-            )}
+            {filters.siteId === "ALL" &&
+              !loadingSitePerformance &&
+              dataValidation.hasSitePerformance && (
+                <section>
+                  <SitePerformanceTable
+                    data={sitePerformanceData}
+                    onSiteClick={handleSiteClick}
+                  />
+                </section>
+              )}
 
             {/* Subject Table - Only show if data exists */}
             {!loadingSubjectOverview && dataValidation.hasSubjectOverview && (
@@ -1009,7 +1053,6 @@ export default function DashboardPage() {
 
             {/* Empty State - Only show when all data is empty and not loading */}
             {dataValidation.showEmptyState && (
-
               <section className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
                 <svg
                   className="w-16 h-16 mx-auto mb-4 text-gray-400"
