@@ -8,12 +8,19 @@ const dbPath = path.join(process.cwd(), "database", "edc_metrics.db");
 let db: Database.Database | null = null;
 
 export function getDatabase() {
-  if (!db) {
+  // Check if db exists and is open
+  if (!db || !db.open) {
     try {
+      // Close if exists but not open
+      if (db && !db.open) {
+        db = null;
+      }
+
       db = new Database(dbPath, { readonly: true });
       console.log("Database connected successfully:", dbPath);
     } catch (error) {
       console.error("Error connecting to database:", error);
+      console.error("Database path:", dbPath);
       throw error;
     }
   }
