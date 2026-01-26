@@ -40,13 +40,6 @@ export default function SubjectEnrollmentFunnel({
 }: SubjectEnrollmentFunnelProps) {
   const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"];
 
-  const completionRate =
-    funnelData.length > 0 && funnelData[0].count > 0
-      ? Math.round(
-          (funnelData[funnelData.length - 1].count / funnelData[0].count) * 100,
-        )
-      : 0;
-
   return (
     <div className="space-y-6">
       {/* Key Metrics Overview */}
@@ -55,24 +48,12 @@ export default function SubjectEnrollmentFunnel({
         subtitle="Overview of subject enrollment and completion statistics"
         icon={Users}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatsCard
-            label="Total Subjects"
-            value={totals.totalSubjects}
-            icon={Users}
-            color="blue"
-          />
+        <div className="grid grid-cols-1 gap-4">
           <StatsCard
             label="Active Subjects"
             value={totals.activeSubjects}
             icon={UserCheck}
             color="green"
-          />
-          <StatsCard
-            label="Completion Rate"
-            value={`${completionRate}%`}
-            icon={TrendingUp}
-            color="amber"
           />
         </div>
       </DrillDownSection>
