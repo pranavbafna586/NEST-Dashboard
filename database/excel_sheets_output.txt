@@ -1,0 +1,711 @@
+
+=== Excel Files Analysis ===
+Directory: C:\Users\Pranav\OneDrive\Desktop\New folder\nest\Study 1_CPID_Input Files - Anonymization
+
+Found 9 Excel file(s)
+
+============================================================
+
+📂 Processing: Study 1_Compiled_EDRR_updated.xlsx
+
+  📊 Sheet 1: OpenIssuesSummary
+     Rows: 28
+     Columns (4):
+       1. Study
+       2. Subject
+       3. Total Open issue Count per subject
+       4. .
+
+============================================================
+
+📂 Processing: Study 1_CPID_EDC_Metrics_URSV2.0_14 NOV 2025_updated.xlsx
+
+  📊 Sheet 1: Subject Level Metrics
+     Rows: 110
+     Columns (44):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject ID
+       6. Latest Visit (SV) (Source: Rave EDC: BO4)
+       7. Subject Status (Source: PRIMARY Form)
+       8. Input files
+       9. Column_9
+       10. Column_10
+       11. Column_11
+       12. Column_12
+       13. Column_13
+       14. Column_14
+       15. Column_15
+       16. Column_16
+       17. CPMD
+       18. Column_18
+       19. Column_19
+       20. Column_20
+       21. Column_21
+       22. Column_22
+       23. Column_23
+       24. Column_24
+       25. Column_25
+       26. Column_26
+       27. Column_27
+       28. Column_28
+       29. Column_29
+       30. Column_30
+       31. Column_31
+       32. Column_32
+       33. Column_33
+       34. Column_34
+       35. Column_35
+       36. Column_36
+       37. Column_37
+       38. Column_38
+       39. SSM
+       40. Column_40
+       41. Column_41
+       42. Column_42
+       43. Column_43
+       44. Column_44
+
+  📊 Sheet 2: Region_Country View
+     Rows: 102
+     Columns (16):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject ID
+       6. Visit Status (Source: J-review)
+       7. Page Status (Source: (Rave EDC : BO4))
+       8. Queries status (Source:(Rave EDC : BO4))
+       9. Column_9
+       10. PI Signatures (Source: (Rave EDC : BO4))
+       11. Column_11
+       12. Page Action Status (Source: (Rave EDC : BO4))
+       13. Column_13
+       14. Column_14
+       15. Missing LNRs (Source: (J-review))
+       16. Column_16
+
+  📊 Sheet 3: Query Report - Cumulative
+     Rows: 575
+     Columns (17):
+       1. Study
+       2. Region
+       3. Country
+       4. Site Number
+       5. Subject Name
+       6. Folder Name
+       7. Form
+       8. Field OID
+       9. Log #
+       10. Visit Date
+       11. Query Status
+       12. Action Owner
+       13. Marking Group Name
+       14. Query Open Date
+       15. Query Response Date
+       16. # Days Since Open
+       17. # Days Since Response
+
+  📊 Sheet 4: Query Report - Site Action
+     Rows: 389
+     Columns (17):
+       1. Study
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Folder Name
+       7. Form
+       8. Field OID
+       9. Log #
+       10. Visit Date
+       11. Query Status
+       12. Action Owner
+       13. Marking Group Name
+       14. Query Open Date
+       15. Query Response Date
+       16. # Days Since Open
+       17. # Days Since Response
+
+  📊 Sheet 5: Query Report - CRA Action
+     Rows: 27
+     Columns (17):
+       1. Study
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Folder Name
+       7. Form 
+       8. Field OID
+       9. Log #
+       10. Visit Date
+       11. Query Status
+       12. Action Owner
+       13. Marking Group Name
+       14. Query Open Date
+       15. Query Response Date
+       16. # Days Since Open
+       17. # Days Since Response
+
+  📊 Sheet 6: Non conformant
+     Rows: 13
+     Columns (11):
+       1. Study
+       2. Region
+       3. Country
+       4. Study Site
+       5. Subject Name
+       6. Folder Name
+       7. Page
+       8. Log #
+       9. Field OID
+       10. Audit Time
+       11. Visit date
+
+  📊 Sheet 7: PI Signature Report
+     Rows: 1168
+     Columns (13):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Visit Name
+       7. Data Page Name
+       8. Page Require Signature
+       9. Audit Action
+       10. Visit Date
+       11. Date page entered/ Date last PI Sign
+       12. No. of days
+       13. Pending since/ PI signed since
+
+  📊 Sheet 8: SDV
+     Rows: 7352
+     Columns (9):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site
+       5. Subject Name
+       6. Folder Name
+       7. Data Page Name
+       8. Visit Date
+       9. Verification Status
+
+  📊 Sheet 9: Protocol Deviation
+     Rows: 16
+     Columns (10):
+       1. Study
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Folder Name
+       7. Data Page Name
+       8. Log #
+       9. PD Status
+       10. Visit date
+
+  📊 Sheet 10: CRF UnFreeze
+     Rows: 4
+     Columns (8):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Data Page Name
+       7. UnFreeze
+       8. Visit date
+
+  📊 Sheet 11: CRF Locked
+     Rows: 2
+     Columns (9):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Data Page Name
+       7. Lock and Unlock
+       8. Audit User
+       9. Visit date
+
+  📊 Sheet 12: CRF Freeze
+     Rows: 2
+     Columns (8):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Data Page Name
+       7. Freeze
+       8. Visit date
+
+  📊 Sheet 13: CRF UnLocked
+     Rows: 2
+     Columns (9):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Data Page Name
+       7. Lock and Unlock
+       8. Audit User
+       9. Visit date
+
+  📊 Sheet 14: SV
+     Rows: 757
+     Columns (7):
+       1. Project Name
+       2. Region
+       3. Country
+       4. Site ID
+       5. Subject Name
+       6. Folder Name
+       7. Visit date
+
+  📊 Sheet 15: Reports info -reference
+     Rows: 17
+     Columns (2):
+       1. Report Name
+       2. Content
+
+============================================================
+
+📂 Processing: Study 1_eSAE Dashboard_Standard DM_Safety Report_updated.xlsx
+
+  📊 Sheet 1: SAE Dashboard_DM
+     Rows: 700
+     Columns (11):
+       1. Discrepancy ID
+       2. Study ID
+       3. Country
+       4. Site
+       5. Patient ID
+       6. Form Name
+       7. Discrepancy Created Timestamp in Dashboard
+       8. Review Status
+       9. Action Status
+       10. Column_10
+       11. Column_11
+
+  📊 Sheet 2: SAE Dashboard_Safety
+     Rows: 574
+     Columns (8):
+       1. Discrepancy ID
+       2. Study ID
+       3. Site
+       4. Patient ID
+       5. Case Status
+       6. Discrepancy Created Timestamp in Dashboard
+       7. Review Status
+       8. Action Status
+
+============================================================
+
+📂 Processing: Study 1_GlobalCodingReport_MedDRA_updated.xlsx
+
+  📊 Sheet 1: GlobalCodingReport_MedDRA
+     Rows: 1513
+     Columns (10):
+       1. MedDRA Coding Report
+       2. Study
+       3. Dictionary
+       4. Dictionary Version number
+       5. Subject
+       6. Form OID
+       7. Logline
+       8. Field OID
+       9. Coding Status
+       10. Require Coding
+
+============================================================
+
+📂 Processing: Study 1_GlobalCodingReport_WHODD_updated.xlsx
+
+  📊 Sheet 1: GlobalCodingReport_WHODD
+     Rows: 1573
+     Columns (10):
+       1. WHODrug Coding Report
+       2. Study
+       3. Dictionary
+       4. Dictionary Version number
+       5. Subject
+       6. Form OID
+       7. Logline
+       8. Field OID
+       9. Coding Status
+       10. Require Coding
+
+============================================================
+
+📂 Processing: Study 1_Inactivated Forms, Folders and  Records Report_updated.xlsx
+
+  📊 Sheet 1: Sheet1
+     Rows: 5607
+     Columns (252):
+       1. Country
+       2. Study Site Number
+       3. Subject
+       4. Folder
+       5. Form 
+       6. Data on Form/
+Record    
+       7. RecordPosition
+       8. Audit Action
+       9. Column_9
+       10. Column_10
+       11. Column_11
+       12. Column_12
+       13. Column_13
+       14. Column_14
+       15. Column_15
+       16. Column_16
+       17. Column_17
+       18. Column_18
+       19. Column_19
+       20. Column_20
+       21. Column_21
+       22. Column_22
+       23. Column_23
+       24. Column_24
+       25. Column_25
+       26. Column_26
+       27. Column_27
+       28. Column_28
+       29. Column_29
+       30. Column_30
+       31. Column_31
+       32. Column_32
+       33. Column_33
+       34. Column_34
+       35. Column_35
+       36. Column_36
+       37. Column_37
+       38. Column_38
+       39. Column_39
+       40. Column_40
+       41. Column_41
+       42. Column_42
+       43. Column_43
+       44. Column_44
+       45. Column_45
+       46. Column_46
+       47. Column_47
+       48. Column_48
+       49. Column_49
+       50. Column_50
+       51. Column_51
+       52. Column_52
+       53. Column_53
+       54. Column_54
+       55. Column_55
+       56. Column_56
+       57. Column_57
+       58. Column_58
+       59. Column_59
+       60. Column_60
+       61. Column_61
+       62. Column_62
+       63. Column_63
+       64. Column_64
+       65. Column_65
+       66. Column_66
+       67. Column_67
+       68. Column_68
+       69. Column_69
+       70. Column_70
+       71. Column_71
+       72. Column_72
+       73. Column_73
+       74. Column_74
+       75. Column_75
+       76. Column_76
+       77. Column_77
+       78. Column_78
+       79. Column_79
+       80. Column_80
+       81. Column_81
+       82. Column_82
+       83. Column_83
+       84. Column_84
+       85. Column_85
+       86. Column_86
+       87. Column_87
+       88. Column_88
+       89. Column_89
+       90. Column_90
+       91. Column_91
+       92. Column_92
+       93. Column_93
+       94. Column_94
+       95. Column_95
+       96. Column_96
+       97. Column_97
+       98. Column_98
+       99. Column_99
+       100. Column_100
+       101. Column_101
+       102. Column_102
+       103. Column_103
+       104. Column_104
+       105. Column_105
+       106. Column_106
+       107. Column_107
+       108. Column_108
+       109. Column_109
+       110. Column_110
+       111. Column_111
+       112. Column_112
+       113. Column_113
+       114. Column_114
+       115. Column_115
+       116. Column_116
+       117. Column_117
+       118. Column_118
+       119. Column_119
+       120. Column_120
+       121. Column_121
+       122. Column_122
+       123. Column_123
+       124. Column_124
+       125. Column_125
+       126. Column_126
+       127. Column_127
+       128. Column_128
+       129. Column_129
+       130. Column_130
+       131. Column_131
+       132. Column_132
+       133. Column_133
+       134. Column_134
+       135. Column_135
+       136. Column_136
+       137. Column_137
+       138. Column_138
+       139. Column_139
+       140. Column_140
+       141. Column_141
+       142. Column_142
+       143. Column_143
+       144. Column_144
+       145. Column_145
+       146. Column_146
+       147. Column_147
+       148. Column_148
+       149. Column_149
+       150. Column_150
+       151. Column_151
+       152. Column_152
+       153. Column_153
+       154. Column_154
+       155. Column_155
+       156. Column_156
+       157. Column_157
+       158. Column_158
+       159. Column_159
+       160. Column_160
+       161. Column_161
+       162. Column_162
+       163. Column_163
+       164. Column_164
+       165. Column_165
+       166. Column_166
+       167. Column_167
+       168. Column_168
+       169. Column_169
+       170. Column_170
+       171. Column_171
+       172. Column_172
+       173. Column_173
+       174. Column_174
+       175. Column_175
+       176. Column_176
+       177. Column_177
+       178. Column_178
+       179. Column_179
+       180. Column_180
+       181. Column_181
+       182. Column_182
+       183. Column_183
+       184. Column_184
+       185. Column_185
+       186. Column_186
+       187. Column_187
+       188. Column_188
+       189. Column_189
+       190. Column_190
+       191. Column_191
+       192. Column_192
+       193. Column_193
+       194. Column_194
+       195. Column_195
+       196. Column_196
+       197. Column_197
+       198. Column_198
+       199. Column_199
+       200. Column_200
+       201. Column_201
+       202. Column_202
+       203. Column_203
+       204. Column_204
+       205. Column_205
+       206. Column_206
+       207. Column_207
+       208. Column_208
+       209. Column_209
+       210. Column_210
+       211. Column_211
+       212. Column_212
+       213. Column_213
+       214. Column_214
+       215. Column_215
+       216. Column_216
+       217. Column_217
+       218. Column_218
+       219. Column_219
+       220. Column_220
+       221. Column_221
+       222. Column_222
+       223. Column_223
+       224. Column_224
+       225. Column_225
+       226. Column_226
+       227. Column_227
+       228. Column_228
+       229. Column_229
+       230. Column_230
+       231. Column_231
+       232. Column_232
+       233. Column_233
+       234. Column_234
+       235. Column_235
+       236. Column_236
+       237. Column_237
+       238. Column_238
+       239. Column_239
+       240. Column_240
+       241. Column_241
+       242. Column_242
+       243. Column_243
+       244. Column_244
+       245. Column_245
+       246. Column_246
+       247. Column_247
+       248. Column_248
+       249. Column_249
+       250. Column_250
+       251. Column_251
+       252. Column_252
+
+============================================================
+
+📂 Processing: Study 1_Missing_Lab_Name_and_Missing_Ranges_14NOV2025_updated.xlsx
+
+  📊 Sheet 1: Missing_Lab_Name_and_Missing
+     Rows: 128
+     Columns (10):
+       1. Country
+       2. Site number
+       3. Subject
+       4. Visit
+       5. Form Name
+       6. Lab category
+       7. Lab Date
+       8. Test Name
+       9. Test description
+       10. Issue
+
+============================================================
+
+📂 Processing: Study 1_Missing_Pages_Report_URSV3.0_14 NOV 2025_updated.xlsx
+
+  📊 Sheet 1: All Pages Missing
+     Rows: 194
+     Columns (9):
+       1. Form Details
+       2. Country
+       3. Site Number
+       4. Subject Name
+       5. Visit Name
+       6. Page Name
+       7. Visit date
+       8. Subject Status
+       9. # of Days Missing
+
+  📊 Sheet 2: Visit Level Pages Missing
+     Rows: 192
+     Columns (9):
+       1. Form Details
+       2. Country
+       3. Site Number
+       4. Subject Name
+       5. Visit Name
+       6. Page Name
+       7. Visit date
+       8. Subject Status
+       9. # of Days Missing
+
+============================================================
+
+📂 Processing: Study 1_Visit Projection Tracker_14NOV2025_updated.xlsx
+
+  📊 Sheet 1: Missing Visits
+     Rows: 15
+     Columns (6):
+       1. Country
+       2. Site
+       3. Subject
+       4. Visit
+       5. Projected Date
+       6. # Days Outstanding
+
+============================================================
+
+
+=== SUMMARY ===
+
+Total Excel Files: 9
+Total Sheets: 25
+
+1. Study 1_Compiled_EDRR_updated.xlsx
+   └─ 1. OpenIssuesSummary (4 columns, 28 rows)
+2. Study 1_CPID_EDC_Metrics_URSV2.0_14 NOV 2025_updated.xlsx
+   └─ 1. Subject Level Metrics (44 columns, 110 rows)
+   └─ 2. Region_Country View (16 columns, 102 rows)
+   └─ 3. Query Report - Cumulative (17 columns, 575 rows)
+   └─ 4. Query Report - Site Action (17 columns, 389 rows)
+   └─ 5. Query Report - CRA Action (17 columns, 27 rows)
+   └─ 6. Non conformant (11 columns, 13 rows)
+   └─ 7. PI Signature Report (13 columns, 1168 rows)
+   └─ 8. SDV (9 columns, 7352 rows)
+   └─ 9. Protocol Deviation (10 columns, 16 rows)
+   └─ 10. CRF UnFreeze (8 columns, 4 rows)
+   └─ 11. CRF Locked (9 columns, 2 rows)
+   └─ 12. CRF Freeze (8 columns, 2 rows)
+   └─ 13. CRF UnLocked (9 columns, 2 rows)
+   └─ 14. SV (7 columns, 757 rows)
+   └─ 15. Reports info -reference (2 columns, 17 rows)
+3. Study 1_eSAE Dashboard_Standard DM_Safety Report_updated.xlsx
+   └─ 1. SAE Dashboard_DM (11 columns, 700 rows)
+   └─ 2. SAE Dashboard_Safety (8 columns, 574 rows)
+4. Study 1_GlobalCodingReport_MedDRA_updated.xlsx
+   └─ 1. GlobalCodingReport_MedDRA (10 columns, 1513 rows)
+5. Study 1_GlobalCodingReport_WHODD_updated.xlsx
+   └─ 1. GlobalCodingReport_WHODD (10 columns, 1573 rows)
+6. Study 1_Inactivated Forms, Folders and  Records Report_updated.xlsx
+   └─ 1. Sheet1 (252 columns, 5607 rows)
+7. Study 1_Missing_Lab_Name_and_Missing_Ranges_14NOV2025_updated.xlsx
+   └─ 1. Missing_Lab_Name_and_Missing (10 columns, 128 rows)
+8. Study 1_Missing_Pages_Report_URSV3.0_14 NOV 2025_updated.xlsx
+   └─ 1. All Pages Missing (9 columns, 194 rows)
+   └─ 2. Visit Level Pages Missing (9 columns, 192 rows)
+9. Study 1_Visit Projection Tracker_14NOV2025_updated.xlsx
+   └─ 1. Missing Visits (6 columns, 15 rows)

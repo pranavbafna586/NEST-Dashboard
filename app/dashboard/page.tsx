@@ -828,7 +828,10 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setUploadDialogOpen(true)}
+                onClick={() => {
+                  console.log("Upload button clicked");
+                  setUploadDialogOpen(true);
+                }}
                 className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 transition-colors shadow-sm flex items-center gap-2"
               >
                 <svg
@@ -1115,11 +1118,6 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Upload Dialog */}
-                  <UploadDialog
-                    isOpen={uploadDialogOpen}
-                    onClose={() => setUploadDialogOpen(false)}
-                  />
                   <span>Last updated: {lastUpdated || "Loading..."}</span>
                 </div>
               </section>
@@ -1127,6 +1125,12 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Upload Dialog */}
+      <UploadDialog
+        isOpen={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+      />
 
       {/* Patient 360 Modal */}
       {patient360Data && (

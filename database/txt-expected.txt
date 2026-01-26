@@ -1,0 +1,121 @@
+📂 Expected Excel Files Structure
+
+This file contains the expected structure of Excel files for validation.
+The system will compare uploaded files against this structure.
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 1: Compiled_EDRR.xlsx
+  📊 Sheet: OpenIssuesSummary
+     Columns (4): Study, Subject, Total Open issue Count per subject, .
+     Expected rows: 20-50
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 2: CPID_EDC_Metrics.xlsx
+  📊 Sheet 1: Subject Level Metrics
+     Columns (44): Project Name, Region, Country, Site ID, Subject ID, Latest Visit (SV), Subject Status, Missing Visits, Missing Page, Coded terms, Uncoded Terms, Open issues in LNR, Open Issues EDRR, Inactivated forms and folders, eSAE dashboard review for DM, eSAE dashboard review for safety, Expected Visits, Pages Entered, Pages with Non-Conformant data, Total CRFs with queries & Non-Conformant data, Total CRFs without queries & Non-Conformant data, Percentage Clean Entered CRF, DM Queries, Clinical Queries, Medical Queries, Site Queries, Field Monitor Queries, Coding Queries, Safety Queries, Total Queries, CRFs Require Verification (SDV), Forms Verified, CRFs Frozen, CRFs Not Frozen, CRFs Locked, CRFs Unlocked, PDs Confirmed, PDs Proposed, CRFs Signed, CRFs overdue within 45 days, CRFs overdue 45-90 days, CRFs overdue beyond 90 days, Broken Signatures, CRFs Never Signed
+     
+  📊 Sheet 2: Region_Country View
+     Columns (16): Project Name, Region, Country, Site ID, Subject ID, Visit Status, Page Status, Queries status, PI Signatures, Page Action Status, Missing LNRs
+     
+  📊 Sheet 3: Query Report - Cumulative
+     Columns (17): Study, Region, Country, Site Number, Subject Name, Folder Name, Form, Field OID, Log #, Visit Date, Query Status, Action Owner, Marking Group Name, Query Open Date, Query Response Date, # Days Since Open, # Days Since Response
+     
+  📊 Sheet 4: Query Report - Site Action
+     Columns (17): Study, Region, Country, Site ID, Subject Name, Folder Name, Form, Field OID, Log #, Visit Date, Query Status, Action Owner, Marking Group Name, Query Open Date, Query Response Date, # Days Since Open, # Days Since Response
+     
+  📊 Sheet 5: Query Report - CRA Action
+     Columns (17): Study, Region, Country, Site ID, Subject Name, Folder Name, Form, Field OID, Log #, Visit Date, Query Status, Action Owner, Marking Group Name, Query Open Date, Query Response Date, # Days Since Open, # Days Since Response
+     
+  📊 Sheet 6: Non conformant
+     Columns (11): Study, Region, Country, Study Site, Subject Name, Folder Name, Page, Log #, Field OID, Audit Time, Visit date
+     
+  📊 Sheet 7: PI Signature Report
+     Columns (13): Project Name, Region, Country, Site ID, Subject Name, Visit Name, Data Page Name, Page Require Signature, Audit Action, Visit Date, Date page entered/ Date last PI Sign, No. of days, Pending since/ PI signed since
+     
+  📊 Sheet 8: SDV
+     Columns (9): Project Name, Region, Country, Site, Subject Name, Folder Name, Data Page Name, Visit Date, Verification Status
+     
+  📊 Sheet 9: Protocol Deviation
+     Columns (10): Study, Region, Country, Site ID, Subject Name, Folder Name, Data Page Name, Log #, PD Status, Visit date
+     
+  📊 Sheet 10: CRF UnFreeze
+     Columns (8): Project Name, Region, Country, Site ID, Subject Name, Data Page Name, UnFreeze, Visit date
+     
+  📊 Sheet 11: CRF Locked
+     Columns (9): Project Name, Region, Country, Site ID, Subject Name, Data Page Name, Lock and Unlock, Audit User, Visit date
+     
+  📊 Sheet 12: CRF Freeze
+     Columns (8): Project Name, Region, Country, Site ID, Subject Name, Data Page Name, Freeze, Visit date
+     
+  📊 Sheet 13: CRF UnLocked
+     Columns (9): Project Name, Region, Country, Site ID, Subject Name, Data Page Name, Lock and Unlock, Audit User, Visit date
+     
+  📊 Sheet 14: SV
+     Columns (7): Project Name, Region, Country, Site ID, Subject Name, Folder Name, Visit date
+     
+  📊 Sheet 15: Reports info -reference
+     Columns (2): Report Name, Content
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 3: eSAE_Dashboard_Standard_DM_Safety_Report.xlsx
+  📊 Sheet 1: SAE Dashboard_DM
+     Columns (11): Discrepancy ID, Study ID, Country, Site, Patient ID, Form Name, Discrepancy Created Timestamp in Dashboard, Review Status, Action Status
+     
+  📊 Sheet 2: SAE Dashboard_Safety
+     Columns (8): Discrepancy ID, Study ID, Site, Patient ID, Case Status, Discrepancy Created Timestamp in Dashboard, Review Status, Action Status
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 4: GlobalCodingReport_MedDRA.xlsx
+  📊 Sheet: GlobalCodingReport_MedDRA
+     Columns (10): MedDRA Coding Report, Study, Dictionary, Dictionary Version number, Subject, Form OID, Logline, Field OID, Coding Status, Require Coding
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 5: GlobalCodingReport_WHODD.xlsx
+  📊 Sheet: GlobalCodingReport_WHODD
+     Columns (10): WHODrug Coding Report, Study, Dictionary, Dictionary Version number, Subject, Form OID, Logline, Field OID, Coding Status, Require Coding
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 6: Inactivated_Forms_Folders_Records_Report.xlsx
+  📊 Sheet: Sheet1
+     Columns (8+): Country, Study Site Number, Subject, Folder, Form, Data on Form/Record, RecordPosition, Audit Action
+     Note: May have additional columns
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 7: Missing_Lab_Name_and_Missing_Ranges.xlsx
+  📊 Sheet: Missing_Lab_Name_and_Missing
+     Columns (10): Country, Site number, Subject, Visit, Form Name, Lab category, Lab Date, Test Name, Test description, Issue
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 8: Missing_Pages_Report.xlsx
+  📊 Sheet 1: All Pages Missing
+     Columns (9): Form Details, Country, Site Number, Subject Name, Visit Name, Page Name, Visit date, Subject Status, # of Days Missing
+     
+  📊 Sheet 2: Visit Level Pages Missing
+     Columns (9): Form Details, Country, Site Number, Subject Name, Visit Name, Page Name, Visit date, Subject Status, # of Days Missing
+
+═══════════════════════════════════════════════════════════════
+
+📂 File 9: Visit_Projection_Tracker.xlsx
+  📊 Sheet: Missing Visits
+     Columns (6): Country, Site, Subject, Visit, Projected Date, # Days Outstanding
+
+═══════════════════════════════════════════════════════════════
+
+TOTAL EXPECTED FILES: 9
+TOTAL EXPECTED SHEETS: 25
+
+File name patterns may include:
+- Study number prefix (e.g., "Study 1_")
+- Date suffixes (e.g., "_14NOV2025")
+- Version suffixes (e.g., "_updated", "_URSV2.0")
+- Anonymization suffix (e.g., "_Anonymization")
+
+The system will match files based on content similarity, not exact name matching.

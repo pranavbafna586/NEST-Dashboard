@@ -1,0 +1,53 @@
+{
+  "isValid": false,
+  "missingFiles": [],
+  "renamedFiles": [
+    {
+      "oldName": "Study 1_Compiled_EDRR_updated.xlsx",
+      "newName": "Compiled_EDRR.xlsx",
+      "reason": "Removed study number prefix 'Study 1_' and version suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_CPID_EDC_Metrics_URSV2.0_14 NOV 2025_updated.xlsx",
+      "newName": "CPID_EDC_Metrics.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', version '_URSV2.0', date '_14 NOV 2025', and suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_eSAE Dashboard_Standard DM_Safety Report_updated.xlsx",
+      "newName": "eSAE_Dashboard_Standard_DM_Safety_Report.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', suffix '_updated', and standardized spacing."
+    },
+    {
+      "oldName": "Study 1_GlobalCodingReport_MedDRA_updated.xlsx",
+      "newName": "GlobalCodingReport_MedDRA.xlsx",
+      "reason": "Removed study number prefix 'Study 1_' and suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_GlobalCodingReport_WHODD_updated.xlsx",
+      "newName": "GlobalCodingReport_WHODD.xlsx",
+      "reason": "Removed study number prefix 'Study 1_' and suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_Inactivated Forms, Folders and  Records Report_updated.xlsx",
+      "newName": "Inactivated_Forms_Folders_Records_Report.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', suffix '_updated', and standardized spacing."
+    },
+    {
+      "oldName": "Study 1_Missing_Lab_Name_and_Missing_Ranges_14NOV2025_updated.xlsx",
+      "newName": "Missing_Lab_Name_and_Missing_Ranges.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', date '_14NOV2025', and suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_Missing_Pages_Report_URSV3.0_14 NOV 2025_updated.xlsx",
+      "newName": "Missing_Pages_Report.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', version '_URSV3.0', date '_14 NOV 2025', and suffix '_updated'."
+    },
+    {
+      "oldName": "Study 1_Visit Projection Tracker_14NOV2025_updated.xlsx",
+      "newName": "Visit_Projection_Tracker.xlsx",
+      "reason": "Removed study number prefix 'Study 1_', date '_14NOV2025', and suffix '_updated'."
+    }
+  ],
+  "differences": "Detailed structural differences found:\n\n1.  File: CPID_EDC_Metrics.xlsx (received as 'Study 1_CPID_EDC_Metrics_URSV2.0_14 NOV 2025_updated.xlsx')\n    *   Sheet: 'Subject Level Metrics': Column names mismatch. Several expected column names are missing and replaced by generic placeholders (e.g., 'Input files', 'Column_9', 'CPMD', 'SSM', 'Column_40', etc.) or have added 'Source: X' annotations, indicating a deviation from the precisely defined expected column structure.\n    *   Sheet: 'Region_Country View': Column names mismatch. Several expected column names are missing and replaced by generic placeholders (e.g., 'Column_9', 'Column_11', 'Column_13', 'Column_14', 'Column_16') or have added 'Source: X' annotations.\n\n2.  File: eSAE_Dashboard_Standard_DM_Safety_Report.xlsx (received as 'Study 1_eSAE Dashboard_Standard DM_Safety Report_updated.xlsx')\n    *   Sheet: 'SAE Dashboard_DM': Column count mismatch. The received file has 11 columns, while the expected structure defines 9. The received file includes additional, unnamed columns labeled 'Column_10' and 'Column_11'.\n\n3.  File: Inactivated_Forms_Folders_Records_Report.xlsx (received as 'Study 1_Inactivated Forms, Folders and  Records Report_updated.xlsx')\n    *   Sheet: 'Sheet1': Column count discrepancy. The received file contains 252 columns. While the expected structure states '8+', implying more columns are acceptable, the vast majority of these (244 columns) are generic placeholders (e.g., 'Column_9' through 'Column_252'), indicating a lack of specific definition for these additional columns compared to the explicit 8 expected columns.",
+  "newFolderName": "Study 1"
+}

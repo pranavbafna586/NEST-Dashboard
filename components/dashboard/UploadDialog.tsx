@@ -7,21 +7,27 @@ interface UploadDialogProps {
   onClose: () => void;
 }
 
+type ProcessingStep =
+  | "idle"
+  | "uploading"
+  | "validating"
+  | "renaming"
+  | "importing"
+  | "complete"
+  | "error";
+
+const REQUIRED_FILE_COUNT = 9;
+
 export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [currentStep, setCurrentStep] = useState<ProcessingStep>("idle");
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string>("");
+  const [statusMessage, setStatusMessage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const acceptedFileTypes = [
-    ".pdf",
-    ".xlsx",
-    ".xls",
-    ".csv",
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.ms-excel",
-    "text/csv",
-  ];
+  const acceptedFileTypes = [".xlsx", ".xls", ".xlsm"];
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -59,7 +65,15 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...selectedFiles]);
+
+      // Validate file count
+      if (selectedFiles.length !== REQUIRED_FILE_COUNT) {
+        setError(`Please select exactly ${REQUIRED_FILE_COUNT} Excel files`);
+        return;
+      }
+
+      setFiles(selectedFiles);
+      setError("");
     }
   };
 
@@ -67,11 +81,153 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = () => {
-    // TODO: Implement actual upload logic
-    console.log("Uploading files:", files);
-    alert(`Uploading ${files.length} file(s)...`);
+  const handleUpload = async () => {
+    if (files.length !== REQUIRED_FILE_COUNT) {
+      setError(`Please upload exactly ${REQUIRED_FILE_COUNT} files`);
+      return;
+    }
+
+    try {
+      // Step 1: Upload files to temp directory
+      setCurrentStep("uploading");
+      setProgress(10);
+      setStatusMessage("Uploading files to server...");
+
+      console.log("Starting file upload...");
+      const formData = new FormData();
+      files.forEach((file) => formData.append("files", file));
+
+      const uploadResponse = await fetch("/api/save-files", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error("Upload failed:", errorText);
+        throw new Error(`Failed to upload files: ${errorText}`);
+      }
+
+      const uploadData = await uploadResponse.json();
+      console.log("Upload response:", uploadData);
+      const { folderPath } = uploadData;
+      setProgress(20);
+
+      // Step 2: Validate with Gemini AI
+      setCurrentStep("validating");
+      setProgress(30);
+      setStatusMessage(
+        "Validating files with AI (checking structure and naming)...",
+      );
+
+      console.log("Starting validation...", folderPath);
+      const validateResponse = await fetch("/api/validate-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderPath }),
+      });
+
+      if (!validateResponse.ok) {
+        const errorText = await validateResponse.text();
+        console.error("Validation failed:", errorText);
+        throw new Error(`Validation failed: ${errorText}`);
+      }
+
+      const validationResult = await validateResponse.json();
+      console.log("Validation result:", validationResult);
+      setProgress(50);
+
+      // Step 3: Rename files
+      setCurrentStep("renaming");
+      setProgress(60);
+      setStatusMessage("Renaming files to standard format...");
+
+      console.log("Starting rename...");
+      const renameResponse = await fetch("/api/rename-files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderPath, validationResult }),
+      });
+
+      if (!renameResponse.ok) {
+        const errorText = await renameResponse.text();
+        console.error("Rename failed:", errorText);
+        throw new Error(`Renaming failed: ${errorText}`);
+      }
+
+      const renameData = await renameResponse.json();
+      console.log("Rename response:", renameData);
+      const { newFolderPath } = renameData;
+      setProgress(75);
+
+      // Step 4: Import to database
+      setCurrentStep("importing");
+      setProgress(70);
+      setStatusMessage("Closing existing database connections...");
+
+      console.log("Starting database import...");
+
+      // Simulate progress updates for import substeps
+      setTimeout(
+        () => setStatusMessage("Checking Python installation..."),
+        500,
+      );
+      setTimeout(() => {
+        setProgress(75);
+        setStatusMessage("Installing Python dependencies...");
+      }, 1000);
+      setTimeout(() => {
+        setProgress(80);
+        setStatusMessage("Creating/verifying database schema...");
+      }, 1500);
+      setTimeout(() => {
+        setProgress(85);
+        setStatusMessage("Copying files to Study Files directory...");
+      }, 2000);
+      setTimeout(() => {
+        setProgress(90);
+        setStatusMessage("Extracting and processing Excel data...");
+      }, 2500);
+      setTimeout(() => {
+        setProgress(95);
+        setStatusMessage("Inserting data into database...");
+      }, 3000);
+      const importResponse = await fetch("/api/import-to-database", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folderPath: newFolderPath }),
+      });
+
+      if (!importResponse.ok) {
+        const errorText = await importResponse.text();
+        console.error("Import failed:", errorText);
+        throw new Error(`Database import failed: ${errorText}`);
+      }
+
+      const importResult = await importResponse.json();
+      console.log("Import result:", importResult);
+      setProgress(100);
+      setStatusMessage("Import complete! Reloading dashboard...");
+
+      setCurrentStep("complete");
+
+      // Reload the page after 2 seconds to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      console.error("Processing error:", err);
+      setError(err instanceof Error ? err.message : "An error occurred");
+      setCurrentStep("error");
+    }
+  };
+
+  const handleClose = () => {
     setFiles([]);
+    setCurrentStep("idle");
+    setProgress(0);
+    setError("");
+    setStatusMessage("");
     onClose();
   };
 
@@ -131,20 +287,30 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
 
   if (!isOpen) return null;
 
+  console.log("UploadDialog rendering - isOpen:", isOpen);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/30">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-md bg-white/30">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Upload Files</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Upload Excel Files
+            </h2>
             <p className="text-sm text-gray-600 mt-1">
-              Upload PDF, XLSX, or CSV files for data import
+              Upload exactly {REQUIRED_FILE_COUNT} Excel files for validation
+              and import
             </p>
           </div>
           <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+            onClick={handleClose}
+            disabled={
+              currentStep !== "idle" &&
+              currentStep !== "complete" &&
+              currentStep !== "error"
+            }
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
           >
             <svg
               className="w-6 h-6"
@@ -206,12 +372,13 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".pdf,.xlsx,.xls,.csv"
+                accept=".xlsx,.xls,.xlsm"
                 onChange={handleFileSelect}
                 className="hidden"
               />
               <p className="text-xs text-gray-500 mt-4">
-                Supported formats: PDF, XLSX, CSV (Max 10MB per file)
+                Supported formats: XLSX, XLS, XLSM - Exactly{" "}
+                {REQUIRED_FILE_COUNT} files required
               </p>
             </div>
           </div>
@@ -262,36 +429,205 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
               </div>
             </div>
           )}
+
+          {/* Processing Status */}
+          {(currentStep === "uploading" ||
+            currentStep === "validating" ||
+            currentStep === "renaming" ||
+            currentStep === "importing") && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-blue-600 animate-spin mt-0.5 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-blue-900 mb-1">
+                    Processing...
+                  </p>
+                  <p className="text-sm text-blue-700">{statusMessage}</p>
+                  <div className="mt-3 bg-blue-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-blue-600 h-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1 text-right">
+                    {progress}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {currentStep === "complete" && (
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-green-600 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-green-900">
+                    Import Complete!
+                  </p>
+                  <p className="text-sm text-green-700">
+                    Dashboard will reload automatically...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && currentStep === "error" && (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg
+                  className="w-5 h-5 text-red-600 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-red-900 mb-1">
+                    Error
+                  </p>
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
           <p className="text-sm text-gray-600">
             {files.length === 0
-              ? "No files selected"
-              : `${files.length} file${files.length > 1 ? "s" : ""} ready to upload`}
+              ? `No files selected (need ${REQUIRED_FILE_COUNT})`
+              : files.length === REQUIRED_FILE_COUNT
+                ? `${files.length} files ready - Good to go!`
+                : `${files.length} files selected - Need exactly ${REQUIRED_FILE_COUNT}`}
           </p>
           <div className="flex items-center space-x-3">
             <button
-              onClick={onClose}
-              className="px-4 py-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700 font-medium transition-colors"
+              onClick={handleClose}
+              disabled={
+                currentStep !== "idle" &&
+                currentStep !== "complete" &&
+                currentStep !== "error"
+              }
+              className="px-4 py-2 bg-white hover:bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-700 font-medium transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleUpload}
-              disabled={files.length === 0}
+              disabled={
+                files.length !== REQUIRED_FILE_COUNT ||
+                currentStep === "uploading" ||
+                currentStep === "validating" ||
+                currentStep === "renaming" ||
+                currentStep === "importing"
+              }
               className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
-                files.length === 0
+                files.length !== REQUIRED_FILE_COUNT ||
+                currentStep === "uploading" ||
+                currentStep === "validating" ||
+                currentStep === "renaming" ||
+                currentStep === "importing"
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
               }`}
             >
-              Upload {files.length > 0 && `(${files.length})`}
+              {currentStep === "idle" || currentStep === "error"
+                ? `Upload ${files.length > 0 ? `(${files.length})` : ""}`
+                : "Processing..."}
             </button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Helper component for processing step indicator
+function ProcessingStepIndicator({
+  title,
+  isActive,
+  isComplete,
+}: {
+  title: string;
+  isActive: boolean;
+  isComplete: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      {isComplete ? (
+        <svg
+          className="w-5 h-5 text-green-600"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+          />
+        </svg>
+      ) : isActive ? (
+        <svg
+          className="w-5 h-5 text-blue-600 animate-spin"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      ) : (
+        <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+      )}
+      <span
+        className={`text-sm ${isActive ? "text-blue-700 font-medium" : isComplete ? "text-green-700" : "text-gray-600"}`}
+      >
+        {title}
+      </span>
     </div>
   );
 }
