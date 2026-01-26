@@ -295,9 +295,9 @@ export interface WHODrugCoding {
   dictionary: string;
   dictionaryVersion: string;
   formName:
-    | "Antineoplastic Medications"
-    | "Prior or Concomitant Medications"
-    | "Medical History - Medications";
+  | "Antineoplastic Medications"
+  | "Prior or Concomitant Medications"
+  | "Medical History - Medications";
   formOID: string;
   logline: number;
   fieldOID: string;
@@ -322,6 +322,9 @@ export interface KPISummary {
   openQueries: number;
   seriousAdverseEvents: number;
   uncodedTerms: number;
+  totalSubjects?: number;
+  conformantPagesPercentage?: number;
+  protocolDeviationsConfirmed?: number;
 }
 
 // Chart data types

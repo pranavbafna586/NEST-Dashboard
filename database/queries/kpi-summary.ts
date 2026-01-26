@@ -5,6 +5,9 @@ export interface KPISummary {
   openQueries: number;
   uncodedTerms: number;
   seriousAdverseEvents: number;
+  totalSubjects?: number;
+  conformantPagesPercentage?: number;
+  protocolDeviationsConfirmed?: number;
 }
 
 /**
@@ -57,7 +60,10 @@ export function getKPISummaryWithTrends(
       SELECT 
         SUM(missing_visits) as totalMissingVisits,
         SUM(total_queries) as openQueries,
-        SUM(uncoded_terms) as uncodedTerms
+        SUM(uncoded_terms) as uncodedTerms,
+        COUNT(DISTINCT subject_id) as totalSubjects,
+        SUM(pages_entered) as totalPagesEntered,
+        SUM(pages_non_conformant) as totalNonConformantPages
       FROM subject_level_metrics
       ${whereClause}
     `;
@@ -67,7 +73,20 @@ export function getKPISummaryWithTrends(
       totalMissingVisits: number;
       openQueries: number;
       uncodedTerms: number;
+      totalSubjects: number;
+      totalPagesEntered: number;
+      totalNonConformantPages: number;
     };
+
+    // Calculate conformant pages percentage
+    const conformantPagesPercentage =
+      metrics.totalPagesEntered > 0
+        ? Math.round(
+          ((metrics.totalPagesEntered - metrics.totalNonConformantPages) /
+            metrics.totalPagesEntered) *
+          100
+        )
+        : 0;
 
     // Get SAE count from sae_issues table (all-time)
     // Note: sae_issues doesn't have region column, only country, site_id, subject_id
@@ -101,12 +120,49 @@ export function getKPISummaryWithTrends(
     const saeStmt = database.prepare(saeQuery);
     const saeResult = saeStmt.get(...saeParams) as { saeCount: number };
 
+    // Get Protocol Deviations count (confirmed only)
+    const pdParams: string[] = [];
+    let pdWhereClause = "WHERE pd_status = 'PD Confirmed'";
+
+    if (study && study !== "ALL") {
+      pdWhereClause += " AND project_name = ?";
+      pdParams.push(study);
+    }
+    if (region && region !== "ALL") {
+      pdWhereClause += " AND region = ?";
+      pdParams.push(region);
+    }
+    if (country && country !== "ALL") {
+      pdWhereClause += " AND country = ?";
+      pdParams.push(country);
+    }
+    if (siteId && siteId !== "ALL") {
+      pdWhereClause += " AND site_id = ?";
+      pdParams.push(siteId);
+    }
+    if (subjectId && subjectId !== "ALL") {
+      pdWhereClause += " AND subject_id = ?";
+      pdParams.push(subjectId);
+    }
+
+    const pdQuery = `
+      SELECT COUNT(*) as pdCount
+      FROM protocol_deviation
+      ${pdWhereClause}
+    `;
+
+    const pdStmt = database.prepare(pdQuery);
+    const pdResult = pdStmt.get(...pdParams) as { pdCount: number };
+
     return {
       summary: {
         totalMissingVisits: metrics.totalMissingVisits || 0,
         openQueries: metrics.openQueries || 0,
         uncodedTerms: metrics.uncodedTerms || 0,
         seriousAdverseEvents: saeResult.saeCount || 0,
+        totalSubjects: metrics.totalSubjects || 0,
+        conformantPagesPercentage: conformantPagesPercentage,
+        protocolDeviationsConfirmed: pdResult.pdCount || 0,
       },
     };
   } catch (error) {
@@ -117,6 +173,9 @@ export function getKPISummaryWithTrends(
         openQueries: 0,
         uncodedTerms: 0,
         seriousAdverseEvents: 0,
+        totalSubjects: 0,
+        conformantPagesPercentage: 0,
+        protocolDeviationsConfirmed: 0,
       },
     };
   }

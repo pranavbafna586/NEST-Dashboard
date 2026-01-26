@@ -18,6 +18,13 @@ import CountryComposedChart from "@/components/charts/CountryComposedChart";
 import SAEDonutChart from "@/components/charts/SAEDonutChart";
 import SignatureComplianceChart from "@/components/charts/SignatureComplianceChart";
 import SubjectPerformanceGrid from "@/components/charts/SubjectPerformanceGrid";
+import DrillDownPanel from "@/components/dashboard/DrillDownPanel";
+import SubjectEnrollmentFunnel from "@/components/dashboard/SubjectEnrollmentFunnel";
+import QueryDistributionChart from "@/components/dashboard/QueryDistributionChart";
+import QueryResponseTimeTable from "@/components/dashboard/QueryResponseTimeTable";
+import SAEDistributionChart from "@/components/dashboard/SAEDistributionChart";
+import ConformantPagesChart from "@/components/dashboard/ConformantPagesChart";
+import ProtocolDeviationChart from "@/components/dashboard/ProtocolDeviationChart";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState<FilterState>({
@@ -98,6 +105,14 @@ export default function DashboardPage() {
   // Patient 360 state
   const [patient360Data, setPatient360Data] = useState<any>(null);
   const [loadingPatient360, setLoadingPatient360] = useState(false);
+
+  // Drill-down modal state
+  const [drillDownModal, setDrillDownModal] = useState<{
+    isOpen: boolean;
+    type: string | null;
+  }>({ isOpen: false, type: null });
+  const [drillDownData, setDrillDownData] = useState<any>(null);
+  const [loadingDrillDown, setLoadingDrillDown] = useState(false);
 
   // ============================================
   // MEMOIZED DATA VALIDATION - Optimized for Performance
@@ -803,6 +818,72 @@ export default function DashboardPage() {
     });
   };
 
+  // Handle KPI card clicks to open drill-down modal
+  const handleKPIClick = async (kpiType: string) => {
+    setDrillDownModal({ isOpen: true, type: kpiType });
+    setLoadingDrillDown(true);
+    setDrillDownData(null);
+
+    try {
+      // Build query params from current filters
+      const params = new URLSearchParams();
+      if (filters.studyId && filters.studyId !== "ALL") {
+        params.append("study", filters.studyId);
+      }
+      if (filters.region && filters.region !== "ALL") {
+        params.append("region", filters.region);
+      }
+      if (filters.country && filters.country !== "ALL") {
+        params.append("country", filters.country);
+      }
+      if (filters.siteId && filters.siteId !== "ALL") {
+        params.append("siteId", filters.siteId);
+      }
+      if (filters.subjectId && filters.subjectId !== "ALL") {
+        params.append("subjectId", filters.subjectId);
+      }
+
+      // Fetch data based on KPI type
+      let endpoint = "";
+      switch (kpiType) {
+        case "totalSubjects":
+          endpoint = "/api/subject-enrollment-status";
+          break;
+        case "openQueries":
+          // Fetch both query distribution and response time data
+          const [distResponse, timeResponse] = await Promise.all([
+            fetch(`/api/query-distribution?${params}`),
+            fetch(`/api/query-response-time?${params}`),
+          ]);
+          const distData = await distResponse.json();
+          const timeData = await timeResponse.json();
+          setDrillDownData({ distribution: distData, responseTime: timeData });
+          setLoadingDrillDown(false);
+          return;
+        case "activeSAEs":
+          endpoint = "/api/sae-distribution";
+          break;
+        case "conformantPages":
+          endpoint = "/api/conformant-pages";
+          break;
+        case "protocolDeviations":
+          endpoint = "/api/protocol-deviation-details";
+          break;
+        default:
+          setLoadingDrillDown(false);
+          return;
+      }
+
+      const response = await fetch(`${endpoint}?${params}`);
+      const data = await response.json();
+      setDrillDownData(data);
+    } catch (error) {
+      console.error("Error fetching drill-down data:", error);
+    } finally {
+      setLoadingDrillDown(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -877,7 +958,11 @@ export default function DashboardPage() {
             {/* KPI Cards - Only show if there's data */}
             {!loadingKPI && dataValidation.hasKPI && (
               <section>
-                <KPICards summary={kpiSummary} role={filters.role} />
+                <KPICards
+                  summary={kpiSummary}
+                  role={filters.role}
+                  onKPIClick={handleKPIClick}
+                />
               </section>
             )}
 
@@ -1139,6 +1224,121 @@ export default function DashboardPage() {
           onClose={() => setSelectedSubjectId(null)}
         />
       )}
+
+      {/* Drill-Down Panel */}
+      <DrillDownPanel
+        isOpen={drillDownModal.isOpen}
+        onClose={() => setDrillDownModal({ isOpen: false, type: null })}
+        kpiType={drillDownModal.type || undefined}
+        title={
+          drillDownModal.type === "totalSubjects"
+            ? "Subject Enrollment Status"
+            : drillDownModal.type === "openQueries"
+              ? "Query Distribution Analysis"
+              : drillDownModal.type === "activeSAEs"
+                ? "SAE Distribution by Team"
+                : drillDownModal.type === "conformantPages"
+                  ? "Clean CRF Percentage by Study"
+                  : drillDownModal.type === "protocolDeviations"
+                    ? "Protocol Deviations"
+                    : "Details"
+        }
+        subtitle={
+          drillDownModal.type === "totalSubjects"
+            ? "Visualize enrollment funnel and subject status distribution"
+            : drillDownModal.type === "openQueries"
+              ? "Analyze query distribution across teams and response times"
+              : drillDownModal.type === "activeSAEs"
+                ? "Monitor serious adverse events by study and team"
+                : drillDownModal.type === "conformantPages"
+                  ? "Track data quality and CRF conformance metrics"
+                  : drillDownModal.type === "protocolDeviations"
+                    ? "Review protocol deviation trends and details"
+                    : ""
+        }
+        breadcrumbs={[
+          {
+            label: "Dashboard",
+            onClick: () => setDrillDownModal({ isOpen: false, type: null }),
+          },
+          {
+            label:
+              drillDownModal.type === "totalSubjects"
+                ? "Subject Enrollment"
+                : drillDownModal.type === "openQueries"
+                  ? "Query Analysis"
+                  : drillDownModal.type === "activeSAEs"
+                    ? "SAE Distribution"
+                    : drillDownModal.type === "conformantPages"
+                      ? "CRF Quality"
+                      : drillDownModal.type === "protocolDeviations"
+                        ? "Protocol Deviations"
+                        : "Details",
+          },
+        ]}
+        loading={loadingDrillDown}
+      >
+        {!loadingDrillDown && drillDownData && (
+          <>
+            {drillDownModal.type === "totalSubjects" && (
+              <SubjectEnrollmentFunnel
+                funnelData={drillDownData.funnel || []}
+                excluded={
+                  drillDownData.excluded || {
+                    screenFailure: 0,
+                    discontinued: 0,
+                  }
+                }
+                totals={
+                  drillDownData.totals || {
+                    totalSubjects: 0,
+                    activeSubjects: 0,
+                  }
+                }
+              />
+            )}
+            {drillDownModal.type === "openQueries" && (
+              <div className="space-y-6">
+                <QueryDistributionChart
+                  distribution={drillDownData.distribution?.distribution || []}
+                  total={drillDownData.distribution?.total || 0}
+                />
+                <QueryResponseTimeTable
+                  data={drillDownData.responseTime?.data || []}
+                />
+              </div>
+            )}
+            {drillDownModal.type === "activeSAEs" && (
+              <SAEDistributionChart data={drillDownData.data || []} />
+            )}
+            {drillDownModal.type === "conformantPages" && (
+              <ConformantPagesChart
+                byStudy={drillDownData.byStudy || []}
+                overall={
+                  drillDownData.overall || {
+                    total_pages: 0,
+                    conformant_pages: 0,
+                    non_conformant_pages: 0,
+                    percentage: 0,
+                  }
+                }
+              />
+            )}
+            {drillDownModal.type === "protocolDeviations" && (
+              <ProtocolDeviationChart
+                byStudy={drillDownData.byStudy || []}
+                overall={
+                  drillDownData.overall || {
+                    confirmed: 0,
+                    proposed: 0,
+                    total: 0,
+                  }
+                }
+              />
+            )}
+          </>
+        )}
+      </DrillDownPanel>
 
       {/* Floating Chatbot */}
       <Chatbot />
