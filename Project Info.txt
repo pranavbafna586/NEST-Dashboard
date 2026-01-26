@@ -1,0 +1,236 @@
+Clinical Trial Intelligence Engine (CTIE) - Project Documentation
+==============================================================
+
+Overview
+--------
+CTIE is an AI-powered platform for harmonizing, analyzing, and visualizing clinical trial data. It ingests heterogeneous data from multiple studies, processes and validates it, stores it in a structured database, and provides a modern dashboard for real-time insights, powered by Next.js (TypeScript) and Python ETL scripts. The system leverages Google Gemini for AI-driven validation and mapping.
+
+Key Features
+------------
+- Automated ingestion and harmonization of clinical trial Excel files
+- Data validation, renaming, and structure enforcement
+- ETL pipeline for extracting, cleaning, and inserting data into SQLite
+- Rich dashboard with KPIs, charts, tables, and patient-level drilldown
+- AI-powered chatbot and file validation (Gemini API)
+- Modular, extensible codebase (Next.js, TypeScript, Python)
+
+Project Structure
+-----------------
+Top-level folders and files:
+
+- app/                → Next.js App Router structure (pages, API routes, layout)
+- components/         → React UI components (dashboard, charts, landing, etc.)
+- database/           → Database schema, queries, validation, and import logic (TypeScript)
+- hooks/              → Custom React hooks
+- lib/                → Shared utilities (dashboard aggregation, Excel analysis, AI prompts)
+- public/             → Static assets (images, screenshots)
+- Study Files/        → Raw Excel files for each study (not read here)
+- types/              → TypeScript type definitions
+- Python scripts      → Data extraction, cleaning, and database creation (main.py, etc.)
+- .env                → Environment variables (API keys, DB path, etc.)
+- README.md           → High-level overview and usage
+
+Detailed Folder/Module Breakdown
+--------------------------------
+
+1. Data Processing & ETL (Python)
+---------------------------------
+- main.py: Orchestrates the ETL pipeline. For each study in Study Files/:
+	- Extracts data from Excel files (extract_data.py)
+	- Fills missing values and harmonizes data (fill_missing_values.py)
+	- Creates/updates the SQLite database (create_database.py)
+	- Inserts processed data (data_insertion.py)
+	- Verifies schema and data integrity
+- extract_data.py: Handles robust extraction and standardization of all relevant Excel sheets, with column mapping and date normalization.
+- fill_missing_values.py: Fills missing values, computes derived metrics, and ensures data completeness.
+- create_database.py: Defines the full SQLite schema (15+ tables for subjects, queries, SDV, SAE, coding, etc.), with indexes for performance.
+- data_insertion.py: Batch-inserts processed data into the database, with type conversion and error handling.
+
+2. Database Layer (TypeScript)
+------------------------------
+- database/db.ts: Singleton connection to SQLite using better-sqlite3.
+- database/queries/: Query modules for each dashboard/filter feature (country-performance, sidebar-filters, etc.).
+- database/excelValidator.ts: Validates uploaded Excel files against expected structure, using Gemini API for intelligent mapping and feedback.
+- database/importToDatabase.ts: Orchestrates running the Python ETL pipeline from Node.js, including dependency checks and error handling.
+- database/listExcelSheets.ts: Utility to list and analyze Excel file structure.
+- database/runValidation.ts: End-to-end validation and renaming pipeline for uploads.
+- database/validateUpload.ts: Integrates validation and import for the upload button/API.
+
+3. Next.js App & API
+--------------------
+- app/layout.tsx: Global layout and font setup.
+- app/page.tsx: Landing page with animated hero, features, dashboard preview, chatbot.
+- app/dashboard/page.tsx: Main dashboard page, loads all KPIs, charts, tables, and patient drilldown. Uses hooks and aggregator for state.
+- app/upload/page.tsx: Upload page for Excel files, integrates ExcelUploadPipeline component.
+- app/api/: API routes for all dashboard data (cache, chat, kpi, patient-360, etc.), each as a route.ts file. These call into database/queries/ modules.
+
+4. UI Components
+----------------
+- components/landing/: Landing page UI (Header, Hero, Features, Chatbot, etc.)
+- components/dashboard/: Dashboard UI (Sidebar, KPICards, StudyPulse, DataTable, Patient360, UploadDialog, etc.)
+- components/charts/: All chart visualizations (RegionStackedBarChart, CountryComposedChart, SAEDonutChart, CodingTreemap, etc.)
+
+5. Shared Utilities & Types
+--------------------------
+- lib/dashboard-aggregator.ts: Aggregates all dashboard data into a single context for rendering.
+- lib/excel-analyzer.ts: Analyzes Excel file structure for validation and preview.
+- lib/expected-structure.ts: Defines the expected structure for all study Excel files (auto-generated from Study 1).
+- lib/gemini.ts, lib/prompts.ts: AI integration and prompt templates for Gemini API.
+- types/: All shared TypeScript types for dashboard context, filters, upload pipeline, etc.
+
+6. Data Validation & Upload Pipeline
+-----------------------------------
+- ExcelUploadPipeline.tsx: UI for uploading, validating, renaming, and importing Excel files. Shows progress and errors.
+- Validation uses Gemini API to check file/sheet/column names, suggest renames, and ensure conformance to expected structure.
+- On success, triggers the Python ETL pipeline to process and insert data.
+
+7. AI Integration (Gemini)
+-------------------------
+- .env: Stores GEMINI_API_KEY and model name.
+- database/excelValidator.ts, lib/gemini.ts: Use Google Gemini for smart validation, mapping, and chatbot features.
+
+8. Study Files/
+---------------
+- Contains one folder per study (e.g., Study 1, Study 2, ...), each with 9 standard Excel files. These are processed by the ETL pipeline but not read for documentation due to repetition.
+
+How the System Works (End-to-End)
+---------------------------------
+1. User uploads a set of 9 Excel files for a new study via the dashboard.
+2. Files are validated and renamed as needed (AI-assisted), then moved to Study Files/.
+3. Python ETL pipeline extracts, cleans, and inserts all study data into the SQLite database.
+4. Next.js API routes serve dashboard data by querying the database.
+5. Dashboard UI displays KPIs, charts, tables, and patient-level details, with filters for study, region, site, etc.
+6. AI chatbot and validation features are available throughout.
+
+Tech Stack
+----------
+- Next.js 16 (App Router, TypeScript)
+- React 19
+- Tailwind CSS
+- Recharts, Chart.js
+- Python 3 (pandas, numpy, openpyxl, dotenv)
+- SQLite (better-sqlite3)
+- Google Gemini API
+
+Environment Variables (.env)
+---------------------------
+- GEMINI_API_KEY: Google Gemini API key
+- GEMINI_MODEL: Gemini model name
+- CACHE_TTL_MINUTES, MAX_CACHE_SIZE_KB, RATE_LIMIT_PER_MINUTE: Cache and rate limit settings
+- DB_PATH: Path to SQLite database
+
+For more details, see README.md and code comments in each module.
+
+--------------------------------------------------------------------------------
+DETAILED CODE FILE BREAKDOWN (EVERY FILE)
+--------------------------------------------------------------------------------
+
+ROOT & PYTHON SCRIPTS
+---------------------
+main.py                - Orchestrates the ETL pipeline: processes all studies, extracts, cleans, and inserts data into the database.
+create_database.py      - Defines and creates the SQLite database schema (all tables, indexes, verification).
+extract_data.py         - Extracts and standardizes data from Excel files for each study.
+fill_missing_values.py  - Fills missing values and harmonizes/derives metrics in extracted data.
+data_insertion.py       - Batch-inserts processed data into the SQLite database, with type conversion and error handling.
+
+Next.js CONFIG & ENV
+--------------------
+next.config.ts         - Next.js configuration (Turbopack, root, etc.).
+.env                   - Environment variables (API keys, DB path, cache settings, etc.).
+
+APP ROUTER (app/)
+------------------
+layout.tsx             - Global layout, font, and metadata for the app.
+page.tsx               - Landing page: hero, features, dashboard preview, chatbot.
+dashboard/page.tsx     - Main dashboard page: loads all KPIs, charts, tables, patient drilldown.
+upload/page.tsx        - Upload page for Excel files, integrates ExcelUploadPipeline.
+api/*/route.ts         - API endpoints for all dashboard data (one per feature: kpi, patient-360, chat, cache, etc.).
+
+COMPONENTS (components/)
+------------------------
+landing/
+	Header.tsx           - Landing page header.
+	Hero.tsx             - Animated hero section.
+	ParticlesBackground.tsx - Animated background.
+	BentoFeatures.tsx    - Feature grid for landing page.
+	DashboardPreview.tsx - Dashboard preview section.
+	Footer.tsx           - Landing page footer.
+	Chatbot.tsx          - AI chatbot UI.
+dashboard/
+	Sidebar.tsx          - Dashboard sidebar with filters.
+	KPICards.tsx         - KPI summary cards.
+	StudyPulse.tsx       - Study pulse panel.
+	DataTable.tsx        - Site and subject data tables.
+	Patient360.tsx       - Patient 360 modal (timeline, labs, SAE, etc.).
+	UploadDialog.tsx     - Dialog for uploading Excel files.
+	ExcelUploadPipeline.tsx - UI for uploading, validating, renaming, and importing Excel files.
+	DrillDownPanel.tsx   - Drilldown for subject/site details.
+	DrillDownModal.tsx   - Modal for drilldown details.
+	DrillDownSection.tsx - Section for drilldown.
+	SearchableDropdown.tsx - Dropdown for filters/search.
+	SubjectEnrollmentFunnel.tsx - Funnel chart for enrollment.
+	EDRRIssuesChart.tsx  - EDRR issues visualization.
+	ConformantPagesChart.tsx - Non-conformant pages chart.
+	QueryDistributionChart.tsx - Query distribution chart.
+	QueryResponseTimeTable.tsx - Query response time table.
+	SAEDistributionChart.tsx - SAE distribution chart.
+	ProtocolDeviationChart.tsx - Protocol deviation chart.
+charts/
+	RegionStackedBarChart.tsx - Regional data entry progress.
+	CountryComposedChart.tsx  - Country-level performance chart.
+	SAEDonutChart.tsx         - SAE donut chart.
+	CodingTreemap.tsx         - Medical coding treemap.
+	PatientVisitTimeline.tsx  - Patient visit timeline chart.
+	SignatureComplianceChart.tsx - Signature compliance chart.
+	SubjectPerformanceGrid.tsx - Subject performance grid.
+
+HOOKS (hooks/)
+--------------
+useSpeechRecognition.ts - Custom React hook for speech-to-text in chatbot.
+
+LIBRARY (lib/)
+--------------
+dashboard-aggregator.ts - Aggregates all dashboard data into a single context for rendering.
+excel-analyzer.ts       - Analyzes Excel file structure for validation and preview.
+expected-structure.ts   - Defines the expected structure for all study Excel files (auto-generated from Study 1).
+expected-structure-complete.ts - Full expected structure, all columns/sheets.
+file-renamer.ts         - Renames files/columns based on Gemini mapping instructions.
+gemini.ts               - Google Gemini API integration for AI-powered features.
+gemini-mapping.ts       - Generates Gemini prompts and parses mapping responses for file/sheet/column mapping.
+prompts.ts              - System prompt builder for Gemini, based on dashboard context.
+cache-service.ts        - In-memory cache for dashboard context (for dev; use Redis in prod).
+
+DATABASE (database/)
+---------------------
+db.ts                  - Singleton connection to SQLite using better-sqlite3.
+excelValidator.ts       - Validates uploaded Excel files against expected structure, using Gemini API for mapping and feedback.
+importToDatabase.ts     - Orchestrates running the Python ETL pipeline from Node.js, including dependency checks and error handling.
+listExcelSheets.ts      - Utility to list and analyze Excel file structure.
+listTables.ts           - Utility to list all tables in the SQLite database.
+runValidation.ts        - End-to-end validation and renaming pipeline for uploads.
+validateUpload.ts       - Integrates validation and import for the upload button/API.
+test-patient360-redesigned.ts - Test queries for patient 360 feature.
+test-query-types.ts     - Test queries for query types.
+test-site-performance.ts - Test queries for site performance.
+queries/
+	sidebar-filters.ts    - Query functions for sidebar filters (studies, regions, countries, sites, subjects).
+	country-performance.ts - Query for country-level performance metrics.
+	kpi-summary.ts        - Query for KPI summary metrics.
+	patient-360.ts        - Query for patient 360 data.
+	regional-data-entry.ts - Query for regional data entry progress.
+	sae-chart.ts          - Query for SAE chart data.
+	signature-compliance.ts - Query for signature compliance data.
+	site-performance.ts   - Query for site performance metrics.
+	study-pulse.ts        - Query for study pulse panel.
+	subject-overview.ts   - Query for subject overview data.
+	subject-performance.ts - Query for subject performance data.
+
+TYPES (types/)
+--------------
+index.ts               - All shared TypeScript types for dashboard context, filters, enums, etc.
+dashboard-context.ts    - DashboardContext interface and related types.
+upload-pipeline.ts      - Types for Excel upload/validation pipeline.
+
+OTHER
+-----
+expected-structure-generated.ts - Auto-generated expected structure for Excel files.
