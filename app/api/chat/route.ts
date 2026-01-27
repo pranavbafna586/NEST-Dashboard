@@ -1,3 +1,67 @@
+/**
+ * AI Chat API Endpoint - Gemini-Powered Dashboard Insights
+ * 
+ * PURPOSE:
+ * Enables natural language conversations with dashboard data using Google's Gemini AI.
+ * Users can ask questions about their clinical trial data and receive contextualized insights
+ * based on their current dashboard state (filtered data, study selection, etc.).
+ * 
+ * BUSINESS CONTEXT - AI-Powered Data Analysis:
+ * Clinical trial dashboards contain complex, multidimensional data that requires expertise
+ * to interpret. This AI copilot helps users:
+ * - Ask questions in plain English without needing SQL or data science skills
+ * - Get instant insights about trends, outliers, and patterns
+ * - Understand what the numbers mean in business context
+ * - Discover hidden correlations across datasets
+ * - Generate executive summaries of dashboard state
+ * 
+ * EXAMPLE USER QUESTIONS:
+ * - "Which sites have the most protocol deviations?"
+ * - "Why is Site 101's query rate so high compared to others?"
+ * - "Are there any concerning safety signals in the SAE data?"
+ * - "Which countries are lagging in enrollment?"
+ * - "Is the study on track for database lock?"
+ * - "Summarize the key risks in this filtered data"
+ * 
+ * HOW IT WORKS:
+ * 1. Frontend aggregates ALL current dashboard data into DashboardContext
+ * 2. Context cached on server with sessionId (15-minute TTL)
+ * 3. User sends chat message referencing their session
+ * 4. API retrieves cached context and sends it + user question to Gemini
+ * 5. Gemini analyzes the data and generates natural language response
+ * 6. Response returned to user with data quality indicators
+ * 
+ * CONTEXT CACHING STRATEGY:
+ * - Reduces Gemini API costs: Context sent once, reused for 15 minutes
+ * - Faster responses: No need to re-aggregate data on every message
+ * - Session isolation: Each user has independent context and history
+ * - Automatic cleanup: Stale contexts removed every 5 minutes
+ * 
+ * RATE LIMITING:
+ * - 10 messages per minute per session (configurable via RATE_LIMIT_PER_MINUTE)
+ * - Prevents abuse and controls API costs
+ * - In-memory tracking (use Redis for production multi-server deployment)
+ * 
+ * SECURITY CONSIDERATIONS:
+ * - Session IDs prevent cross-user data leakage
+ * - Content safety filters prevent prompt injection
+ * - API key secured in environment variables
+ * - No PII sent to Gemini (only aggregated clinical trial metrics)
+ * 
+ * ERROR HANDLING:
+ * - API key errors: Configuration issue, contact support
+ * - Quota exceeded: Service temporarily unavailable, retry
+ * - Safety filters: Content flagged, rephrase question
+ * - Stale context: Dashboard refresh required
+ * 
+ * DATA SOURCES:
+ * - Receives aggregated DashboardContext with data from ALL other API endpoints
+ * - Gemini Model: gemini-1.5-flash (fast, cost-effective for dashboard Q&A)
+ * 
+ * USE IN DASHBOARD:
+ * Powers the floating chat widget where users converse with their trial data.
+ */
+
 import { NextResponse } from "next/server";
 import { generateInsight } from "@/lib/gemini";
 import { getCachedContext, getCacheAge } from "@/lib/cache-service";
@@ -7,7 +71,11 @@ import {
   DashboardContext,
 } from "@/types/dashboard-context";
 
-// Rate limiting map (in-memory - use Redis in production)
+/**
+ * RATE LIMITING:
+ * In-memory map tracking message counts per session per minute.
+ * Production deployments should use Redis for multi-server support.
+ */
 const rateLimitMap = new Map<string, { count: number; resetAt: Date }>();
 
 const RATE_LIMIT_PER_MINUTE =
@@ -74,7 +142,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get context from cache or use provided context
+    /**
+     * CONTEXT RETRIEVAL:
+     * Try to use provided context first (rare), fall back to cached context.
+     * Cached context is set by /api/cache-context when dashboard loads.
+     * If no context found, user needs to reload dashboard to populate cache.
+     */
     let dashboardContext: DashboardContext | null = context || null;
     if (!dashboardContext) {
       dashboardContext = getCachedContext(sessionId);
@@ -112,7 +185,11 @@ export async function POST(request: Request) {
       `[Chat API] Processing message for session ${sessionId.substring(0, 8)}... Cache age: ${cacheAge}min`,
     );
 
-    // Generate AI response
+    /**
+     * GEMINI AI GENERATION:
+     * Sends user question + dashboard context to Gemini for analysis.
+     * See lib/gemini.ts for prompt engineering and context formatting.
+     */
     const aiResponse = await generateInsight(message, dashboardContext);
 
     // Prepare response
@@ -127,7 +204,12 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("[Chat API] Error:", error);
 
-    // Handle Gemini-specific errors
+    /**
+     * GEMINI ERROR CATEGORIZATION:
+     * - API key errors: Configuration problem, support needed
+     * - Quota errors: Too many requests, temporary service degradation
+     * - Safety errors: Content filter triggered, user should rephrase
+     */
     if (error.message?.includes("API key")) {
       return NextResponse.json(
         { error: "AI service configuration error. Please contact support." },

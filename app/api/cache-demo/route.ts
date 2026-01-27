@@ -1,9 +1,71 @@
+/**
+ * Cache Demo API Endpoint
+ * 
+ * PURPOSE:
+ * Developer/debug endpoint to inspect cached dashboard context and verify cache operation.
+ * Shows what data is being stored and cached for AI chat functionality.
+ * 
+ * BUSINESS CONTEXT - Debugging AI Chat Issues:
+ * When AI chat gives unexpected answers, developers/admins need to verify:
+ * - Is context being cached correctly?
+ * - What data is the AI actually seeing?
+ * - Is the cache stale or corrupted?
+ * - How long has this session's cache been active?
+ * 
+ * TWO MODES OF OPERATION:
+ * 
+ * 1. **Statistics Mode** (no sessionId parameter):
+ *    GET /api/cache-demo
+ *    Returns:
+ *    - Cache configuration (TTL, max size, cleanup interval)
+ *    - Global cache statistics (total sessions, memory usage)
+ *    - Instructions on how to view specific session data
+ * 
+ * 2. **Session Inspection Mode** (with sessionId):
+ *    GET /api/cache-demo?sessionId=abc123
+ *    Returns:
+ *    - Session metadata (timestamp, filters, age)
+ *    - Data summary counts (how many subjects, sites, queries, etc.)
+ *    - Preview of first few rows of each dataset
+ *    
+ *    GET /api/cache-demo?sessionId=abc123&full=true
+ *    Returns:
+ *    - Everything above PLUS
+ *    - Complete cached data (all rows, all tables)
+ *    - WARNING: Can be very large response (100+ KB)
+ * 
+ * HOW TO USE:
+ * 1. Open dashboard in browser
+ * 2. Open browser console
+ * 3. Check sessionId: `localStorage.getItem('dashboardSessionId')`
+ * 4. Visit: `/api/cache-demo?sessionId=<your-session-id>`
+ * 5. Verify data counts match dashboard display
+ * 6. Add `&full=true` to see complete cached data if needed
+ * 
+* SECURITY NOTE:
+ * - This endpoint exposes cached data without authentication
+ * - Should be disabled or protected in production
+ * - Or implement session ownership verification
+ * 
+ * USE CASES:
+ * - Debug why AI chat is giving wrong answers (check what data it sees)
+ * - Verify cache is persisting correctly between requests
+ * - Troubleshoot filter application (check cached filters match UI)
+ * - Performance testing (see cache memory footprint)
+ */
+
 import { NextResponse } from "next/server";
 import { getCacheStats } from "@/lib/cache-service";
 
 /**
  * GET /api/cache-demo
  * Demo endpoint to view cache contents and structure
+ * 
+ * Query Parameters:
+ *   - sessionId: (optional) View cached data for specific session
+ *   - full: (optional) If "true", show complete data instead of preview
+ * 
+ * @returns Cache statistics or session data preview/full data
  */
 export async function GET(request: Request) {
     try {
@@ -20,6 +82,7 @@ export async function GET(request: Request) {
             ? cacheModule.getCachedContext(sessionId)
             : null;
 
+        // If sessionId provided but no data found
         if (!cachedContext && sessionId) {
             return NextResponse.json({
                 error: "No cached data found for this session",
@@ -28,8 +91,8 @@ export async function GET(request: Request) {
             });
         }
 
+        // If no sessionId, return statistics and instructions
         if (!sessionId) {
-            // Just return stats
             return NextResponse.json({
                 cacheInfo: {
                     location: "Server-side in-memory Map (lib/cache-service.ts)",
@@ -66,7 +129,7 @@ export async function GET(request: Request) {
         };
 
         if (full) {
-            // Show COMPLETE cached data
+            // Show COMPLETE cached data (can be large!)
             response.completeData = {
                 kpi: cachedContext.data.kpi,
                 studyPulse: cachedContext.data.studyPulse,
