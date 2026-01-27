@@ -100,6 +100,232 @@ export const ROLE_KPI_MAPPING: RoleKPIConfig[] = [
   },
 ];
 
+// Role-based component visibility configuration
+export interface RoleComponentVisibility {
+  role: ResponsibleFunction;
+  components: {
+    kpiCards: boolean;
+    studyPulse: boolean;
+    regionalChart: boolean; // RegionStackedBarChart / CountryComposedChart / SubjectPerformanceGrid
+    saeDonutChart: boolean;
+    signatureComplianceChart: boolean;
+    sitePerformanceTable: boolean;
+    subjectTable: boolean;
+    queryDistributionChart: boolean;
+    queryResponseTimeTable: boolean;
+    saeDistributionChart: boolean;
+    conformantPagesChart: boolean;
+    protocolDeviationChart: boolean;
+    edrrIssuesChart: boolean;
+    subjectEnrollmentFunnel: boolean;
+  };
+}
+
+export const ROLE_COMPONENT_VISIBILITY: RoleComponentVisibility[] = [
+  {
+    role: "DM", // Data Manager
+    components: {
+      kpiCards: true, // DM-specific KPIs
+      studyPulse: true, // Inherited from Study-Level
+      regionalChart: true,
+      saeDonutChart: false,
+      signatureComplianceChart: false,
+      sitePerformanceTable: true, // Query response time tracking
+      subjectTable: true, // Subject-level query details
+      queryDistributionChart: true, // Form-level error distribution
+      queryResponseTimeTable: true, // Top 10 sites by response time
+      saeDistributionChart: false,
+      conformantPagesChart: true, // Inherited coding status
+      protocolDeviationChart: false,
+      edrrIssuesChart: true, // Total EDRR Issues
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "CRA", // Clinical Research Associate
+    components: {
+      kpiCards: true, // Forms requiring SDV
+      studyPulse: true,
+      regionalChart: true, // Lab data completeness
+      saeDonutChart: false,
+      signatureComplianceChart: true, // PI Signature Summary
+      sitePerformanceTable: true, // Query response time
+      subjectTable: true, // Lab test tracking
+      queryDistributionChart: true, // Site-specific query breakdown
+      queryResponseTimeTable: true,
+      saeDistributionChart: false,
+      conformantPagesChart: false,
+      protocolDeviationChart: false,
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: true, // Total subjects enrolled
+    },
+  },
+  {
+    role: "Investigator",
+    components: {
+      kpiCards: true, // Site queries, signatures, missing pages/visits
+      studyPulse: true,
+      regionalChart: true,
+      saeDonutChart: false,
+      signatureComplianceChart: true, // Outstanding signatures
+      sitePerformanceTable: true, // Query response time
+      subjectTable: true, // Lab test tracking
+      queryDistributionChart: false,
+      queryResponseTimeTable: true,
+      saeDistributionChart: false,
+      conformantPagesChart: false,
+      protocolDeviationChart: true, // Protocol deviation summary
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: true, // Subject retention funnel
+    },
+  },
+  {
+    role: "Safety Team",
+    components: {
+      kpiCards: true, // SAE review queries
+      studyPulse: false,
+      regionalChart: false,
+      saeDonutChart: true, // SAE bar graph (top 5 studies)
+      signatureComplianceChart: false,
+      sitePerformanceTable: false,
+      subjectTable: false,
+      queryDistributionChart: true, // Medical coding queue
+      queryResponseTimeTable: false,
+      saeDistributionChart: true, // SAE distribution
+      conformantPagesChart: false,
+      protocolDeviationChart: true, // Protocol deviation
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "Coder",
+    components: {
+      kpiCards: true, // Coding-specific KPIs
+      studyPulse: false,
+      regionalChart: false,
+      saeDonutChart: false,
+      signatureComplianceChart: false,
+      sitePerformanceTable: false,
+      subjectTable: true, // Form-level coding details
+      queryDistributionChart: true, // Coding status, medical coding queue
+      queryResponseTimeTable: false,
+      saeDistributionChart: false,
+      conformantPagesChart: false,
+      protocolDeviationChart: false,
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "CDMD", // Medical Team
+    components: {
+      kpiCards: true,
+      studyPulse: false,
+      regionalChart: false,
+      saeDonutChart: true,
+      signatureComplianceChart: false,
+      sitePerformanceTable: false,
+      subjectTable: false,
+      queryDistributionChart: true,
+      queryResponseTimeTable: false,
+      saeDistributionChart: true,
+      conformantPagesChart: false,
+      protocolDeviationChart: true,
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "CSE/CDD", // Clinical Data Expert
+    components: {
+      kpiCards: true,
+      studyPulse: true,
+      regionalChart: true,
+      saeDonutChart: false,
+      signatureComplianceChart: false,
+      sitePerformanceTable: true,
+      subjectTable: true,
+      queryDistributionChart: true,
+      queryResponseTimeTable: true,
+      saeDistributionChart: false,
+      conformantPagesChart: true,
+      protocolDeviationChart: false,
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "Site",
+    components: {
+      kpiCards: true,
+      studyPulse: true,
+      regionalChart: true,
+      saeDonutChart: false,
+      signatureComplianceChart: true,
+      sitePerformanceTable: true,
+      subjectTable: true,
+      queryDistributionChart: true,
+      queryResponseTimeTable: true,
+      saeDistributionChart: false,
+      conformantPagesChart: false,
+      protocolDeviationChart: true,
+      edrrIssuesChart: false,
+      subjectEnrollmentFunnel: false,
+    },
+  },
+  {
+    role: "CD LF", // Lead Function - Executive View
+    components: {
+      kpiCards: true,
+      studyPulse: true,
+      regionalChart: true,
+      saeDonutChart: true,
+      signatureComplianceChart: true,
+      sitePerformanceTable: true,
+      subjectTable: true,
+      queryDistributionChart: true,
+      queryResponseTimeTable: true,
+      saeDistributionChart: true,
+      conformantPagesChart: true,
+      protocolDeviationChart: true,
+      edrrIssuesChart: true,
+      subjectEnrollmentFunnel: true,
+    },
+  },
+];
+
+// Helper function to get component visibility for a role
+export function getComponentVisibility(
+  role?: ResponsibleFunction,
+): RoleComponentVisibility["components"] {
+  if (!role) {
+    // Default: show all components if no role is selected
+    return {
+      kpiCards: true,
+      studyPulse: true,
+      regionalChart: true,
+      saeDonutChart: true,
+      signatureComplianceChart: true,
+      sitePerformanceTable: true,
+      subjectTable: true,
+      queryDistributionChart: true,
+      queryResponseTimeTable: true,
+      saeDistributionChart: true,
+      conformantPagesChart: true,
+      protocolDeviationChart: true,
+      edrrIssuesChart: true,
+      subjectEnrollmentFunnel: true,
+    };
+  }
+
+  const config = ROLE_COMPONENT_VISIBILITY.find((c) => c.role === role);
+  return config
+    ? config.components
+    : ROLE_COMPONENT_VISIBILITY[ROLE_COMPONENT_VISIBILITY.length - 1]
+        .components; // Default to CD LF (all)
+}
+
 // File 1: CPID_EDC_Metrics - Master Report Card
 export interface SubjectMetric {
   subjectId: string;
@@ -295,9 +521,9 @@ export interface WHODrugCoding {
   dictionary: string;
   dictionaryVersion: string;
   formName:
-  | "Antineoplastic Medications"
-  | "Prior or Concomitant Medications"
-  | "Medical History - Medications";
+    | "Antineoplastic Medications"
+    | "Prior or Concomitant Medications"
+    | "Medical History - Medications";
   formOID: string;
   logline: number;
   fieldOID: string;

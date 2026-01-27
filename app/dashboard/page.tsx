@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { FilterState, KPISummary } from "@/types";
+import { FilterState, KPISummary, getComponentVisibility } from "@/types";
 import { aggregateDashboardContext } from "@/lib/dashboard-aggregator";
 import Sidebar from "@/components/dashboard/Sidebar";
 import KPICards from "@/components/dashboard/KPICards";
@@ -45,6 +45,12 @@ export default function DashboardPage() {
   // Session ID for cache management
   const [sessionId, setSessionId] = useState<string>("");
   const cacheUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Get role-based component visibility
+  const componentVisibility = useMemo(
+    () => getComponentVisibility(filters.role),
+    [filters.role],
+  );
 
   // KPI state
   const [kpiSummary, setKpiSummary] = useState<KPISummary>({
@@ -955,44 +961,50 @@ export default function DashboardPage() {
         {/* Main Content - Scrollable */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* KPI Cards - Only show if there's data */}
-            {!loadingKPI && dataValidation.hasKPI && (
-              <section>
-                <KPICards
-                  summary={kpiSummary}
-                  role={filters.role}
-                  onKPIClick={handleKPIClick}
-                />
-              </section>
-            )}
+            {/* KPI Cards - Only show if there's data AND role allows */}
+            {!loadingKPI &&
+              dataValidation.hasKPI &&
+              componentVisibility.kpiCards && (
+                <section>
+                  <KPICards
+                    summary={kpiSummary}
+                    role={filters.role}
+                    onKPIClick={handleKPIClick}
+                  />
+                </section>
+              )}
 
             {/* 60/40 Split: Regional Chart (60%) + Study Pulse (40%) */}
-            {/* Only show if at least one section has data */}
+            {/* Only show if at least one section has data AND role allows */}
             {(() => {
-              const showSection =
+              const showRegional =
                 !loadingRegionalData &&
                 !loadingSubjectPerformance &&
+                dataValidation.hasActiveRegionalData &&
+                componentVisibility.regionalChart;
+
+              const showStudyPulse =
                 !loadingStudyPulse &&
-                (dataValidation.hasActiveRegionalData ||
-                  dataValidation.hasStudyPulse);
+                dataValidation.hasStudyPulse &&
+                componentVisibility.studyPulse;
+
+              const showSection = showRegional || showStudyPulse;
 
               if (!showSection) return null;
 
               // Determine grid layout based on which sections have data
               const gridClass =
-                dataValidation.hasActiveRegionalData &&
-                dataValidation.hasStudyPulse
+                showRegional && showStudyPulse
                   ? "grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-[600px]"
                   : "grid grid-cols-1 gap-6 min-h-[600px]";
 
               return (
                 <section className={gridClass}>
                   {/* Left: Regional Data Entry Progress - 60% */}
-                  {dataValidation.hasActiveRegionalData && (
+                  {showRegional && (
                     <div
                       className={
-                        dataValidation.hasActiveRegionalData &&
-                        dataValidation.hasStudyPulse
+                        showRegional && showStudyPulse
                           ? "lg:col-span-3 h-full"
                           : "lg:col-span-1 h-full"
                       }
@@ -1038,11 +1050,10 @@ export default function DashboardPage() {
                   )}
 
                   {/* Right: Study Pulse Panel - 40% */}
-                  {dataValidation.hasStudyPulse && (
+                  {showStudyPulse && (
                     <div
                       className={
-                        dataValidation.hasActiveRegionalData &&
-                        dataValidation.hasStudyPulse
+                        showRegional && showStudyPulse
                           ? "lg:col-span-2 h-full"
                           : "lg:col-span-1 h-full"
                       }
@@ -1057,13 +1068,19 @@ export default function DashboardPage() {
               );
             })()}
 
-            {/* Charts Grid - Dynamic Column Layout based on available data */}
+            {/* Charts Grid - Dynamic Column Layout based on available data AND role */}
             {(() => {
-              const showChartsSection =
+              const showSAEChart =
                 !loadingSAEChart &&
+                dataValidation.hasSAEChart &&
+                componentVisibility.saeDonutChart;
+
+              const showSignatureChart =
                 !loadingSignatureCompliance &&
-                (dataValidation.hasSAEChart ||
-                  dataValidation.hasSignatureCompliance);
+                dataValidation.hasSignatureCompliance &&
+                componentVisibility.signatureComplianceChart;
+
+              const showChartsSection = showSAEChart || showSignatureChart;
 
               if (!showChartsSection) return null;
 
@@ -1071,11 +1088,10 @@ export default function DashboardPage() {
               return (
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
                   {/* SAE Donut Chart */}
-                  {dataValidation.hasSAEChart && (
+                  {showSAEChart && (
                     <div
                       className={
-                        dataValidation.hasSAEChart &&
-                        dataValidation.hasSignatureCompliance
+                        showSAEChart && showSignatureChart
                           ? "lg:col-span-1 flex"
                           : "lg:col-span-3 flex"
                       }
@@ -1091,11 +1107,10 @@ export default function DashboardPage() {
                   )}
 
                   {/* Signature Compliance Chart - Spans 2 columns or full width if alone */}
-                  {dataValidation.hasSignatureCompliance && (
+                  {showSignatureChart && (
                     <div
                       className={
-                        dataValidation.hasSAEChart &&
-                        dataValidation.hasSignatureCompliance
+                        showSAEChart && showSignatureChart
                           ? "lg:col-span-2 flex"
                           : "lg:col-span-3 flex"
                       }
@@ -1117,10 +1132,11 @@ export default function DashboardPage() {
               );
             })()}
 
-            {/* Site Performance Table - Only show if data exists */}
+            {/* Site Performance Table - Only show if data exists AND role allows */}
             {filters.siteId === "ALL" &&
               !loadingSitePerformance &&
-              dataValidation.hasSitePerformance && (
+              dataValidation.hasSitePerformance &&
+              componentVisibility.sitePerformanceTable && (
                 <section>
                   <SitePerformanceTable
                     data={sitePerformanceData}
@@ -1129,15 +1145,17 @@ export default function DashboardPage() {
                 </section>
               )}
 
-            {/* Subject Table - Only show if data exists */}
-            {!loadingSubjectOverview && dataValidation.hasSubjectOverview && (
-              <section>
-                <SubjectTable
-                  data={subjectOverviewData}
-                  onSubjectClick={handleSubjectClick}
-                />
-              </section>
-            )}
+            {/* Subject Table - Only show if data exists AND role allows */}
+            {!loadingSubjectOverview &&
+              dataValidation.hasSubjectOverview &&
+              componentVisibility.subjectTable && (
+                <section>
+                  <SubjectTable
+                    data={subjectOverviewData}
+                    onSubjectClick={handleSubjectClick}
+                  />
+                </section>
+              )}
 
             {/* Empty State - Only show when all data is empty and not loading */}
             {dataValidation.showEmptyState && (
@@ -1159,54 +1177,60 @@ export default function DashboardPage() {
                   No data available
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Adjust your filters to view relevant data
+                  {filters.role
+                    ? `No data available for ${filters.role} role with current filters`
+                    : "Adjust your filters to view relevant data"}
                 </p>
               </section>
             )}
 
-            {/* Footer Info - Only show if there's subject data */}
-            {dataValidation.hasSubjectOverview && (
-              <section className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                      <span>
-                        Active:{" "}
-                        {
-                          subjectOverviewData.filter(
-                            (s) => s.status === "On Trial",
-                          ).length
-                        }{" "}
-                        subjects
-                      </span>
+            {/* Footer Info - Only show if there's subject data AND role allows */}
+            {dataValidation.hasSubjectOverview &&
+              componentVisibility.subjectTable && (
+                <section className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-gray-600">
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span>
+                          Active:{" "}
+                          {
+                            subjectOverviewData.filter(
+                              (s) => s.status === "On Trial",
+                            ).length
+                          }{" "}
+                          subjects
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <span>
+                          High Risk:{" "}
+                          {
+                            subjectOverviewData.filter((s) => s.isHighRisk)
+                              .length
+                          }{" "}
+                          subjects
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                        <span>
+                          Discontinued:{" "}
+                          {
+                            subjectOverviewData.filter(
+                              (s) => s.status === "Discontinued",
+                            ).length
+                          }{" "}
+                          subjects
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      <span>
-                        High Risk:{" "}
-                        {subjectOverviewData.filter((s) => s.isHighRisk).length}{" "}
-                        subjects
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                      <span>
-                        Discontinued:{" "}
-                        {
-                          subjectOverviewData.filter(
-                            (s) => s.status === "Discontinued",
-                          ).length
-                        }{" "}
-                        subjects
-                      </span>
-                    </div>
-                  </div>
 
-                  <span>Last updated: {lastUpdated || "Loading..."}</span>
-                </div>
-              </section>
-            )}
+                    <span>Last updated: {lastUpdated || "Loading..."}</span>
+                  </div>
+                </section>
+              )}
           </div>
         </main>
       </div>
@@ -1280,62 +1304,71 @@ export default function DashboardPage() {
       >
         {!loadingDrillDown && drillDownData && (
           <>
-            {drillDownModal.type === "totalSubjects" && (
-              <SubjectEnrollmentFunnel
-                funnelData={drillDownData.funnel || []}
-                excluded={
-                  drillDownData.excluded || {
-                    screenFailure: 0,
-                    discontinued: 0,
+            {drillDownModal.type === "totalSubjects" &&
+              componentVisibility.subjectEnrollmentFunnel && (
+                <SubjectEnrollmentFunnel
+                  funnelData={drillDownData.funnel || []}
+                  excluded={
+                    drillDownData.excluded || {
+                      screenFailure: 0,
+                      discontinued: 0,
+                    }
                   }
-                }
-                totals={
-                  drillDownData.totals || {
-                    totalSubjects: 0,
-                    activeSubjects: 0,
+                  totals={
+                    drillDownData.totals || {
+                      totalSubjects: 0,
+                      activeSubjects: 0,
+                    }
                   }
-                }
-              />
-            )}
-            {drillDownModal.type === "openQueries" && (
-              <div className="space-y-6">
-                <QueryDistributionChart
-                  distribution={drillDownData.distribution?.distribution || []}
-                  total={drillDownData.distribution?.total || 0}
                 />
-                <QueryResponseTimeTable
-                  data={drillDownData.responseTime?.data || []}
+              )}
+            {drillDownModal.type === "openQueries" &&
+              componentVisibility.queryDistributionChart && (
+                <div className="space-y-6">
+                  <QueryDistributionChart
+                    distribution={
+                      drillDownData.distribution?.distribution || []
+                    }
+                    total={drillDownData.distribution?.total || 0}
+                  />
+                  {componentVisibility.queryResponseTimeTable && (
+                    <QueryResponseTimeTable
+                      data={drillDownData.responseTime?.data || []}
+                    />
+                  )}
+                </div>
+              )}
+            {drillDownModal.type === "activeSAEs" &&
+              componentVisibility.saeDistributionChart && (
+                <SAEDistributionChart data={drillDownData.data || []} />
+              )}
+            {drillDownModal.type === "conformantPages" &&
+              componentVisibility.conformantPagesChart && (
+                <ConformantPagesChart
+                  byStudy={drillDownData.byStudy || []}
+                  overall={
+                    drillDownData.overall || {
+                      total_pages: 0,
+                      conformant_pages: 0,
+                      non_conformant_pages: 0,
+                      percentage: 0,
+                    }
+                  }
                 />
-              </div>
-            )}
-            {drillDownModal.type === "activeSAEs" && (
-              <SAEDistributionChart data={drillDownData.data || []} />
-            )}
-            {drillDownModal.type === "conformantPages" && (
-              <ConformantPagesChart
-                byStudy={drillDownData.byStudy || []}
-                overall={
-                  drillDownData.overall || {
-                    total_pages: 0,
-                    conformant_pages: 0,
-                    non_conformant_pages: 0,
-                    percentage: 0,
+              )}
+            {drillDownModal.type === "protocolDeviations" &&
+              componentVisibility.protocolDeviationChart && (
+                <ProtocolDeviationChart
+                  byStudy={drillDownData.byStudy || []}
+                  overall={
+                    drillDownData.overall || {
+                      confirmed: 0,
+                      proposed: 0,
+                      total: 0,
+                    }
                   }
-                }
-              />
-            )}
-            {drillDownModal.type === "protocolDeviations" && (
-              <ProtocolDeviationChart
-                byStudy={drillDownData.byStudy || []}
-                overall={
-                  drillDownData.overall || {
-                    confirmed: 0,
-                    proposed: 0,
-                    total: 0,
-                  }
-                }
-              />
-            )}
+                />
+              )}
           </>
         )}
       </DrillDownPanel>
