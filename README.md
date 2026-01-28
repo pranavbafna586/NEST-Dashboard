@@ -7,12 +7,14 @@
 ## 📋 Problem Statement
 
 Clinical trials generate vast amounts of heterogeneous data from multiple sources, including:
+
 - **Electronic Data Capture (EDC) systems**
 - **Laboratory reports**
 - **Site operational metrics**
 - **Monitoring logs**
 
 However, these data streams often remain **siloed**, leading to:
+
 - Delayed identification of operational bottlenecks
 - Inconsistent data quality
 - Limited visibility for scientific decision-making
@@ -30,6 +32,7 @@ There is a critical need for an **integrated solution** that can:
 3. **Proactively detect** data quality issues and operational inefficiencies
 
 Furthermore, the solution should leverage **Generative and Agentic AI** capabilities to:
+
 - Enable intelligent collaboration
 - Automate routine tasks
 - Provide context-aware recommendations to stakeholders
@@ -41,6 +44,7 @@ This accelerates trial execution and improves scientific outcomes.
 ## ✨ Features
 
 ### Landing Page
+
 - Modern, professional UI with animated particles background
 - Interactive hero section with call-to-action
 - Bento-style feature grid showcasing capabilities
@@ -52,6 +56,7 @@ This accelerates trial execution and improves scientific outcomes.
 The dashboard provides comprehensive real-time insights across multiple domains:
 
 #### 📊 KPI Cards
+
 - **Total Subjects** - Active trial participants
 - **Total Queries** - Data clarification requests
 - **SDV Records** - Source Data Verification count
@@ -61,19 +66,21 @@ The dashboard provides comprehensive real-time insights across multiple domains:
 
 #### 📈 Data Visualizations
 
-| Chart | Description |
-|-------|-------------|
+| Chart                          | Description                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
 | **Regional Stacked Bar Chart** | Data entry progress by region (North America, Europe, Asia Pacific, Latin America) |
-| **Country Composed Chart** | Country-level performance metrics with dual-axis visualization |
-| **SAE Donut Chart** | Serious Adverse Events distribution by category |
-| **Coding Treemap** | Medical coding categories visualization with hierarchical data |
+| **Country Composed Chart**     | Country-level performance metrics with dual-axis visualization                     |
+| **SAE Donut Chart**            | Serious Adverse Events distribution by category                                    |
+| **Coding Treemap**             | Medical coding categories visualization with hierarchical data                     |
 
 #### 🔬 Study Pulse Panel
+
 - Real-time study health monitoring
 - Key metrics at a glance
 - Alert indicators for issues requiring attention
 
 #### 📋 Data Tables
+
 - **Site Performance Table** - Detailed site-level metrics with click-through navigation
 - **Subject Table** - Individual subject data with risk indicators
 - **Patient 360 Modal** - Comprehensive patient view with:
@@ -88,47 +95,59 @@ The dashboard provides comprehensive real-time insights across multiple domains:
 ## 🖼️ Screenshots
 
 ### Landing Page
+
 ![Landing Page](./public/screenshots/landing_page.png)
-*Modern landing page with animated particles and glassmorphism design*
+_Interactive landing page featuring animated particle effects and glassmorphism UI elements_
 
 ### Dashboard Overview
+
 ![Dashboard](./public/screenshots/dashboard.png)
-*Main dashboard with KPI cards and regional data visualization*
+_Main dashboard displaying real-time KPI metrics and regional data analytics_
+
+![KPI Cards Drill View](./public/screenshots/KPICardsDrillView.png)
+_Detailed drill-down view for individual KPI card analysis_
+
+![Study and Region Filter](public/screenshots/Study_RegionFilter.png)
+_Advanced filtering capabilities by study and geographic region_
 
 ### Dashboard Analytics
+
 ![Analytics](./public/screenshots/dashboard_analytics.png)
-*SAE distribution and coding treemap visualizations*
+_Advanced visualizations showing Serious Adverse Event distribution and hierarchical medical coding analysis_
 
 ### Patient 360 View
+
 ![Patient 360](./public/screenshots/patient360.png)
-*Comprehensive patient data modal with visit timeline*
+_Comprehensive patient profile with complete visit timeline, lab results, and adverse event tracking_
+
+### Upload Feature for Excel Sheets
+
+![Upload Feature](public/screenshots/Upload.png)
+_Dynamic data ingestion with real-time dashboard updates upon study file upload_
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm/yarn/pnpm/bun
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone "https://github.com/pranavbafna586/NEST-Dashboard"
 cd nest
 
 # Install dependencies
-npm install
-# or
 pnpm install
 ```
 
 ### Development
 
 ```bash
-npm run dev
-# or
 pnpm dev
 ```
 
@@ -190,6 +209,7 @@ nest/
 ## 📊 Data Sources
 
 The dashboard ingests and processes data from the following sources:
+
 - QC Anonymized Study Files (Excel datasets)
 - Subject demographics and enrollment
 - Query management records

@@ -936,9 +936,6 @@ export default function DashboardPage() {
                 </svg>
                 Upload
               </button>
-              <button className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 transition-colors shadow-sm">
-                Export Report
-              </button>
               <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white font-medium transition-colors flex items-center gap-2 shadow-sm">
                 <svg
                   className="w-4 h-4"

@@ -738,14 +738,6 @@ export default function Sidebar({
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center gap-2 text-xs text-gray-600">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span>Study 1 Active</span>
-        </div>
-      </div>
     </aside>
   );
 }
