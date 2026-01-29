@@ -139,7 +139,7 @@ _Dynamic data ingestion with real-time dashboard updates upon study file upload_
 ```bash
 # Clone the repository
 git clone "https://github.com/pranavbafna586/NEST-Dashboard"
-cd nest
+cd ./NEST-Dashboard
 
 # Install pnpm (if not already installed)
 npm install -g pnpm
@@ -148,9 +148,30 @@ npm install -g pnpm
 pnpm install
 ```
 
+**Configuration (Required)**
+
+Create a `.env` file in the root directory with the following configuration:
+
+```env
+GEMINI_API_KEY=your_api_key
+GEMINI_MODEL=gemini-2.5-flash
+CACHE_TTL_MINUTES=15
+MAX_CACHE_SIZE_KB=500
+RATE_LIMIT_PER_MINUTE=10
+DB_PATH=/database/edc_metrics.db
+```
+
+**Database Setup (Required)**
+
+```bash
+# Generate the database from study files
+python main.py
+```
+
 ### Development
 
 ```bash
+# Start the development server
 pnpm dev
 ```
 
