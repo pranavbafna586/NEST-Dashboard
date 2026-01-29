@@ -141,6 +141,9 @@ _Dynamic data ingestion with real-time dashboard updates upon study file upload_
 git clone "https://github.com/pranavbafna586/NEST-Dashboard"
 cd nest
 
+# Install pnpm (if not already installed)
+npm install -g pnpm
+
 # Install dependencies
 pnpm install
 ```
