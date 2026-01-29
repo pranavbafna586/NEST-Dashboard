@@ -158,6 +158,19 @@ export default function Chatbot() {
       // Get session ID from localStorage
       const sessionId = localStorage.getItem("dashboardSessionId") || "";
 
+      if (!sessionId) {
+        // Remove typing indicator
+        setMessages((prev) => prev.filter((m) => m.id !== typingId));
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "Please wait for the dashboard to initialize. The chat will be ready in a moment.",
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+        return;
+      }
+
       // Call Gemini API
       const response = await fetch("/api/chat", {
         method: "POST",

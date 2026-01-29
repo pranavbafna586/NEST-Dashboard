@@ -15,7 +15,7 @@ if (!apiKey) {
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Get the model configuration
-const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 /**
  * Generate an AI-powered insight based on user query and dashboard context
@@ -71,11 +71,17 @@ export async function generateInsight(
     return text;
   } catch (error: any) {
     console.error("Error generating insight with Gemini:", error);
+    console.error("Error details:", {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      errorDetails: error.errorDetails,
+    });
 
     // Handle specific error cases
-    if (error.message?.includes("API key")) {
+    if (error.message?.includes("API key") || error.status === 400) {
       throw new Error("Invalid API key. Please check your configuration.");
-    } else if (error.message?.includes("quota")) {
+    } else if (error.message?.includes("quota") || error.status === 429) {
       throw new Error(
         "API quota exceeded. Please try again later or upgrade your plan.",
       );
@@ -83,11 +89,19 @@ export async function generateInsight(
       throw new Error(
         "Your request was blocked by safety filters. Please rephrase your question.",
       );
+    } else if (
+      error.message?.includes("model") ||
+      error.message?.includes("not found")
+    ) {
+      throw new Error(
+        `Model error: ${error.message}. Please check your GEMINI_MODEL configuration.`,
+      );
     }
 
-    // Generic error
+    // Generic error with actual message
     throw new Error(
-      "I'm having trouble generating insights right now. Please try again in a moment.",
+      error.message ||
+        "I'm having trouble generating insights right now. Please try again in a moment.",
     );
   }
 }

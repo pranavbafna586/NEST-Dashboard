@@ -154,10 +154,12 @@ export async function POST(request: Request) {
     }
 
     if (!dashboardContext) {
+      console.log(`[Chat API] No cached context found for session ${sessionId}`);
+      console.log(`[Chat API] Available sessions:`, Array.from(cache.keys ? [] : []));
       return NextResponse.json(
         {
           error:
-            "No dashboard data available. Please refresh the dashboard and try again.",
+            "Dashboard data is still loading. Please wait a moment for the dashboard to fully load, then try again.",
           requiresRefresh: true,
         },
         { status: 404 },

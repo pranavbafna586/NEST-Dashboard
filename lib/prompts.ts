@@ -56,12 +56,15 @@ Dataset Overview:
 ${freshnessNote}
 `.trim();
 
-  // Regional Data Entry Progress (complete breakdown)
+  // Regional Data Entry Progress (limited to top 20 by missing data)
   let regionalDataNote = "";
   if (data.regional && data.regional.length > 0) {
+    const topRegions = data.regional
+      .sort((a: any, b: any) => b.missing - a.missing)
+      .slice(0, 20);
     regionalDataNote = `
-Regional Data Entry Progress (${data.regional.length} regions):
-${data.regional
+Regional Data Entry Progress (showing top 20 of ${data.regional.length} regions with most missing data):
+${topRegions
   .map(
     (r: any) =>
       `- ${r.region}: Expected=${r.expected}, Entered=${r.entered}, Signed=${r.signed}, Missing=${r.missing}, Progress=${((r.entered / r.expected) * 100).toFixed(1)}%`,
@@ -70,12 +73,18 @@ ${data.regional
 `.trim();
   }
 
-  // Country Performance (complete breakdown)
+  // Country Performance (limited to top 30 by queries + deviations)
   let countryPerformanceNote = "";
   if (data.countryPerformance && data.countryPerformance.length > 0) {
+    const topCountries = data.countryPerformance
+      .sort(
+        (a: any, b: any) =>
+          b.queries + b.deviations - (a.queries + a.deviations),
+      )
+      .slice(0, 30);
     countryPerformanceNote = `
-Country Performance Metrics (${data.countryPerformance.length} countries):
-${data.countryPerformance
+Country Performance Metrics (showing top 30 of ${data.countryPerformance.length} countries with most queries and deviations):
+${topCountries
   .map(
     (c: any) =>
       `- ${c.country}: Subjects=${c.subjects}, Enrollment=${c.enrollment}%, SDV=${c.sdv}%, Queries=${c.queries}, Deviations=${c.deviations}`,
@@ -84,12 +93,21 @@ ${data.countryPerformance
 `.trim();
   }
 
-  // Subject Performance Grid (complete breakdown)
+  // Subject Performance Grid (top 30 only to avoid overwhelming the API)
   let subjectPerformanceNote = "";
   if (data.subjectPerformance && data.subjectPerformance.length > 0) {
+    const topSubjects = data.subjectPerformance
+      .sort(
+        (a: any, b: any) =>
+          b.total_queries +
+          b.missing_visits -
+          (a.total_queries + a.missing_visits),
+      )
+      .slice(0, 30);
+
     subjectPerformanceNote = `
-Subject Performance Details (${data.subjectPerformance.length} subjects):
-${data.subjectPerformance
+Subject Performance Details (showing top 30 of ${data.subjectPerformance.length} subjects with most issues):
+${topSubjects
   .map(
     (s: any) =>
       `- ${s.subject_id}: Status="${s.subject_status}", LatestVisit="${s.latest_visit}", PagesEntered=${s.pages_entered}, MissingPages=${s.missing_page}, Queries=${s.total_queries}, CleanCRF=${s.percentage_clean_crf}%, MissingVisits=${s.missing_visits}, FormsVerified=${s.forms_verified}`,
@@ -135,32 +153,64 @@ ${topSubjects
     }
   }
 
-  // ALL Subjects Overview (complete list with details)
+  // Subject Overview (top 50 with issues only to avoid overwhelming the API)
   let subjectsDetailNote = "";
   if (data.subjectOverview && data.subjectOverview.length > 0) {
-    subjectsDetailNote = `
-Complete Subject List (${data.subjectOverview.length} subjects):
-${data.subjectOverview
+    // Get subjects with at least one issue
+    const subjectsWithIssues = data.subjectOverview
+      .filter(
+        (s: any) =>
+          s.missing_visits > 0 || s.open_queries > 0 || s.sae_count > 0,
+      )
+      .sort(
+        (a: any, b: any) =>
+          b.missing_visits +
+          b.open_queries +
+          b.sae_count -
+          (a.missing_visits + a.open_queries + a.sae_count),
+      )
+      .slice(0, 50);
+
+    if (subjectsWithIssues.length > 0) {
+      subjectsDetailNote = `
+Subject Overview (showing top 50 of ${data.subjectOverview.length} total subjects - filtered to show those with issues):
+${subjectsWithIssues
   .map(
     (s: any) =>
       `- ${s.subject_id}: Status="${s.status}", Latest Visit="${s.latest_visit}", Pages Entered=${s.pages_entered}, Missing Visits=${s.missing_visits}, Queries=${s.open_queries}, SAEs=${s.sae_count}`,
   )
   .join("\n")}
 `.trim();
+    } else {
+      subjectsDetailNote = `
+Subject Overview: All ${data.subjectOverview.length} subjects are performing well with no missing visits, open queries, or SAEs.
+`.trim();
+    }
   }
 
-  // Site performance highlight (if available)
+  // Site performance highlight (top 50 sites with issues)
   let sitePerformanceNote = "";
   if (data.sitePerformance && data.sitePerformance.length > 0) {
-    sitePerformanceNote = `
-Site Performance - Signature Backlog (${data.sitePerformance.length} sites):
-${data.sitePerformance
+    const sitesWithBacklog = data.sitePerformance
+      .filter((site: any) => site.pending_signatures > 0)
+      .sort((a: any, b: any) => b.pending_signatures - a.pending_signatures)
+      .slice(0, 50);
+
+    if (sitesWithBacklog.length > 0) {
+      sitePerformanceNote = `
+Site Performance - Signature Backlog (showing top 50 of ${data.sitePerformance.length} sites with pending signatures):
+${sitesWithBacklog
   .map(
     (site: any) =>
       `- ${site.site_id} (${site.country}): Pending Signatures=${site.pending_signatures}, Total Forms=${site.total_forms || "N/A"}, Backlog Rate=${site.backlog_rate || "N/A"}%`,
   )
   .join("\n")}
 `.trim();
+    } else {
+      sitePerformanceNote = `
+Site Performance: All ${data.sitePerformance.length} sites have no pending signature backlogs.
+`.trim();
+    }
   }
 
   // SAE breakdown (if available)
@@ -214,13 +264,33 @@ QUERIES BREAKDOWN:
 - Field Monitor Queries: ${p.queries?.byType?.fieldMonitorQueries || 0}
 - Coding Queries: ${p.queries?.byType?.codingQueries || 0}
 - Safety Queries: ${p.queries?.byType?.safetyQueries || 0}
-${p.queries?.openQueryDetails && p.queries.openQueryDetails.length > 0 ? `\nOpen Query Details (Top 10):\n${p.queries.openQueryDetails.map((q: any) => `- ${q.formName} (${q.visitName}): ${q.markingGroupName} - ${q.queryStatus} - Owner: ${q.actionOwner} - ${q.daysOpen} days open`).join("\n")}` : ""}
+${
+  p.queries?.openQueryDetails && p.queries.openQueryDetails.length > 0
+    ? `\nOpen Query Details (Top 5):\n${p.queries.openQueryDetails
+        .slice(0, 5)
+        .map(
+          (q: any) =>
+            `- ${q.formName} (${q.visitName}): ${q.markingGroupName} - ${q.queryStatus} - Owner: ${q.actionOwner} - ${q.daysOpen} days open`,
+        )
+        .join("\n")}`
+    : ""
+}
 
 SAFETY ISSUES (SAEs):
 - Total SAEs: ${p.safetyIssues?.totalSAEs || 0}
 - Open SAEs: ${p.safetyIssues?.openSAEs || 0}
 - SAEs by Status: Open=${p.safetyIssues?.saesByStatus?.open || 0}, Closed=${p.safetyIssues?.saesByStatus?.closed || 0}, Locked=${p.safetyIssues?.saesByStatus?.locked || 0}
-${p.safetyIssues?.recentSAEs && p.safetyIssues.recentSAEs.length > 0 ? `\nRecent SAEs:\n${p.safetyIssues.recentSAEs.map((s: any) => `- ${s.formName}: ${s.caseStatus} - Review: ${s.reviewStatus} - Action: ${s.actionStatus} - Owner: ${s.responsibleLF}`).join("\n")}` : ""}
+${
+  p.safetyIssues?.recentSAEs && p.safetyIssues.recentSAEs.length > 0
+    ? `\nRecent SAEs (Top 3):\n${p.safetyIssues.recentSAEs
+        .slice(0, 3)
+        .map(
+          (s: any) =>
+            `- ${s.formName}: ${s.caseStatus} - Review: ${s.reviewStatus} - Action: ${s.actionStatus} - Owner: ${s.responsibleLF}`,
+        )
+        .join("\n")}`
+    : ""
+}
 
 DATA QUALITY:
 - Data Quality Score: ${p.dataQuality?.score || 0}%
