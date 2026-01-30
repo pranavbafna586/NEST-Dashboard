@@ -6,7 +6,7 @@ from datetime import datetime
 
 load_dotenv()
 # Database file path
-DB_PATH = os.getcwd() + os.getenv("DB_PATH", "database/edc_metrics.db")
+DB_PATH = os.getcwd() + os.getenv("DB_PATH", "/database/edc_metrics.db")
 
 def get_db_connection():
     """Create and return a database connection"""

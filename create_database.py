@@ -10,12 +10,10 @@ DB_PATH = os.getcwd() + os.getenv("DB_PATH", "/database/edc_metrics.db")
 def create_database():
     """Create SQLite database and all required tables"""
     
-    # Only remove existing database if explicitly needed
-    # For appending data from multiple studies, skip deletion
+    # Remove existing database if it exists
     if os.path.exists(DB_PATH):
-        print(f"Database already exists: {DB_PATH}")
-        print("Skipping database recreation to preserve existing data")
-        return
+        print(f"Removing existing database: {DB_PATH}")
+        os.remove(DB_PATH)
     
     # Create connection
     conn = sqlite3.connect(DB_PATH)
@@ -343,6 +341,33 @@ def create_database():
     """)
     print("Created table: missing_visits")
     
+    # 17) Subject DQI and Clean Status
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subject_dqi_clean_status (
+            project_name TEXT NOT NULL,
+            site_id TEXT NOT NULL,
+            subject_id TEXT NOT NULL,
+            dqi_score REAL DEFAULT 0.0,
+            dqi_category TEXT,
+            norm_safety_issues REAL DEFAULT 0.0,
+            norm_open_queries REAL DEFAULT 0.0,
+            norm_missing_visits REAL DEFAULT 0.0,
+            norm_missing_pages REAL DEFAULT 0.0,
+            norm_non_conformant REAL DEFAULT 0.0,
+            norm_unsigned_crfs REAL DEFAULT 0.0,
+            norm_unverified_forms REAL DEFAULT 0.0,
+            norm_uncoded_terms REAL DEFAULT 0.0,
+            norm_protocol_deviations REAL DEFAULT 0.0,
+            clean_status TEXT,
+            criteria_met INTEGER DEFAULT 0,
+            criteria_total INTEGER DEFAULT 11,
+            failing_criteria TEXT,
+            calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(project_name, site_id, subject_id)
+        )
+    """)
+    print("Created table: subject_dqi_clean_status")
+    
     # Create indexes for better query performance
     print("\nCreating indexes...")
     
@@ -373,6 +398,11 @@ def create_database():
     
     # Indexes for missing_visits
     cursor.execute("CREATE INDEX idx_mv_project_site_subject ON missing_visits(project_name, site_id, subject_id)")
+    
+    # Indexes for subject_dqi_clean_status
+    cursor.execute("CREATE INDEX idx_dqi_project_site_subject ON subject_dqi_clean_status(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX idx_dqi_category ON subject_dqi_clean_status(dqi_category)")
+    cursor.execute("CREATE INDEX idx_clean_status ON subject_dqi_clean_status(clean_status)")
     
     print("Indexes created successfully")
     
