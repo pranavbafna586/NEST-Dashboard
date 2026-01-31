@@ -25,6 +25,7 @@ import QueryResponseTimeTable from "@/components/dashboard/QueryResponseTimeTabl
 import SAEDistributionChart from "@/components/dashboard/SAEDistributionChart";
 import ConformantPagesChart from "@/components/dashboard/ConformantPagesChart";
 import ProtocolDeviationChart from "@/components/dashboard/ProtocolDeviationChart";
+import NonConformantPagesChart from "@/components/dashboard/NonConformantPagesChart";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState<FilterState>({
@@ -37,6 +38,9 @@ export default function DashboardPage() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    null,
+  );
+  const [selectedSubjectProject, setSelectedSubjectProject] = useState<string | null>(
     null,
   );
   const [lastUpdated, setLastUpdated] = useState<string>("");
@@ -131,7 +135,9 @@ export default function DashboardPage() {
       kpiSummary.totalMissingVisits ||
       kpiSummary.openQueries ||
       kpiSummary.seriousAdverseEvents ||
-      kpiSummary.uncodedTerms
+      kpiSummary.uncodedTerms ||
+      kpiSummary.averageDQI ||
+      kpiSummary.cleanPatientCount
     );
 
     // Study Pulse validation - early return on first truthy value
@@ -366,12 +372,38 @@ export default function DashboardPage() {
           params.append("subjectId", filters.subjectId);
         }
 
-        const url = `/api/kpi${params.toString() ? `?${params.toString()}` : ""}`;
-        const response = await fetch(url);
-        const data = await response.json();
+        const paramsString = params.toString();
+        const kpiUrl = `/api/kpi${paramsString ? `?${paramsString}` : ""}`;
+        const dqiUrl = `/api/dqi-metrics${paramsString ? `?${paramsString}` : ""}`;
+        const pdUrl = `/api/protocol-deviation-details${paramsString ? `?${paramsString}` : ""}`;
+        const ncpUrl = `/api/non-conformant-pages${paramsString ? `?${paramsString}` : ""}`;
+        
+        // Fetch KPI, DQI metrics, Protocol Deviation, and Non-Conformant Pages data in parallel
+        const [kpiResponse, dqiResponse, pdResponse, ncpResponse] = await Promise.all([
+          fetch(kpiUrl),
+          fetch(dqiUrl),
+          fetch(pdUrl),
+          fetch(ncpUrl),
+        ]);
+        
+        const kpiData = await kpiResponse.json();
+        const dqiData = await dqiResponse.json();
+        const pdData = await pdResponse.json();
+        const ncpData = await ncpResponse.json();
 
-        if (data && data.summary) {
-          setKpiSummary(data.summary);
+        console.log('DQI Metrics received:', dqiData);
+        console.log('Non-Conformant Pages received:', ncpData);
+
+        if (kpiData && kpiData.summary) {
+          setKpiSummary({
+            ...kpiData.summary,
+            averageDQI: dqiData.averageDQI || 0,
+            cleanPatientCount: dqiData.cleanPatientCount || 0,
+            totalPatients: dqiData.totalPatients || 0,
+            cleanPercentage: dqiData.cleanPercentage || 0,
+            totalProtocolDeviations: pdData.summary?.totalProtocolDeviations || 0,
+            totalNonConformantPages: ncpData.summary?.totalNonConformantPages || 0,
+          });
         }
       } catch (error) {
         console.error("Error fetching KPI data:", error);
@@ -717,8 +749,10 @@ export default function DashboardPage() {
         const params = new URLSearchParams();
         params.append("subjectId", selectedSubjectId);
 
-        if (filters.studyId !== "ALL") {
-          params.append("study", filters.studyId);
+        // Use the specific project from the clicked row, or fall back to filter
+        const studyToUse = selectedSubjectProject || filters.studyId;
+        if (studyToUse && studyToUse !== "ALL") {
+          params.append("study", studyToUse);
         }
 
         const response = await fetch(`/api/patient-360?${params}`);
@@ -736,7 +770,7 @@ export default function DashboardPage() {
     };
 
     fetchPatient360();
-  }, [selectedSubjectId, filters.studyId]);
+  }, [selectedSubjectId, selectedSubjectProject, filters.studyId]);
 
   // Fetch Subject Overview data from API when filters change
   useEffect(() => {
@@ -791,8 +825,10 @@ export default function DashboardPage() {
         const params = new URLSearchParams();
         params.append("subjectId", selectedSubjectId);
 
-        if (filters.studyId !== "ALL") {
-          params.append("study", filters.studyId);
+        // Use the specific project from the clicked row, or fall back to filter
+        const studyToUse = selectedSubjectProject || filters.studyId;
+        if (studyToUse && studyToUse !== "ALL") {
+          params.append("study", studyToUse);
         }
 
         const response = await fetch(`/api/patient-360?${params}`);
@@ -810,10 +846,11 @@ export default function DashboardPage() {
     };
 
     fetchPatient360();
-  }, [selectedSubjectId, filters.studyId]);
+  }, [selectedSubjectId, selectedSubjectProject, filters.studyId]);
 
-  const handleSubjectClick = (subjectId: string) => {
+  const handleSubjectClick = (subjectId: string, projectName?: string) => {
     setSelectedSubjectId(subjectId);
+    setSelectedSubjectProject(projectName || null);
   };
 
   const handleSiteClick = (siteId: string) => {
@@ -874,6 +911,9 @@ export default function DashboardPage() {
           break;
         case "protocolDeviations":
           endpoint = "/api/protocol-deviation-details";
+          break;
+        case "nonConformantPages":
+          endpoint = "/api/non-conformant-pages";
           break;
         default:
           setLoadingDrillDown(false);
@@ -1227,7 +1267,10 @@ export default function DashboardPage() {
       {patient360Data && (
         <Patient360
           data={patient360Data}
-          onClose={() => setSelectedSubjectId(null)}
+          onClose={() => {
+            setSelectedSubjectId(null);
+            setSelectedSubjectProject(null);
+          }}
         />
       )}
 
@@ -1342,6 +1385,8 @@ export default function DashboardPage() {
               componentVisibility.protocolDeviationChart && (
                 <ProtocolDeviationChart
                   byStudy={drillDownData.byStudy || []}
+                  bySite={drillDownData.bySite || []}
+                  summary={drillDownData.summary}
                   overall={
                     drillDownData.overall || {
                       confirmed: 0,
@@ -1349,6 +1394,12 @@ export default function DashboardPage() {
                       total: 0,
                     }
                   }
+                />
+              )}
+            {drillDownModal.type === "nonConformantPages" && (
+                <NonConformantPagesChart
+                  byStudy={drillDownData.byStudy || []}
+                  bySite={drillDownData.bySite || []}
                 />
               )}
           </>

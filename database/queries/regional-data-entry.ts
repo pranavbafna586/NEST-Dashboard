@@ -29,42 +29,55 @@ export function getRegionalDataEntryProgress(
     const database = getDatabase();
     const params: string[] = [];
 
-    // Build the base query
+    // Build the base query with region backfilling logic
+    // If region is null, try to get it from another row with the same project_name
     let query = `
+      WITH region_lookup AS (
+        SELECT DISTINCT project_name, region
+        FROM subject_level_metrics
+        WHERE region IS NOT NULL
+      )
       SELECT 
-        COALESCE(region, 'Unknown') as name,
+        COALESCE(
+          slm.region, 
+          (SELECT region FROM region_lookup WHERE region_lookup.project_name = slm.project_name LIMIT 1),
+          'Unknown'
+        ) as name,
         SUM(pages_entered) / 100.0 as completedPages,
         SUM(missing_page) as missingPages,
         SUM(pages_entered + missing_page) as totalExpectedPages
-      FROM subject_level_metrics
+      FROM subject_level_metrics slm
       WHERE 1=1
     `;
 
     // Add filters
     if (study && study !== "ALL") {
-      query += ` AND project_name = ?`;
+      query += ` AND slm.project_name = ?`;
       params.push(study);
     }
     if (region && region !== "ALL") {
-      query += ` AND region = ?`;
+      query += ` AND COALESCE(
+          slm.region, 
+          (SELECT region FROM region_lookup WHERE region_lookup.project_name = slm.project_name LIMIT 1)
+        ) = ?`;
       params.push(region);
     }
     if (country && country !== "ALL") {
-      query += ` AND country = ?`;
+      query += ` AND slm.country = ?`;
       params.push(country);
     }
     if (siteId && siteId !== "ALL") {
-      query += ` AND site_id = ?`;
+      query += ` AND slm.site_id = ?`;
       params.push(siteId);
     }
     if (subjectId && subjectId !== "ALL") {
-      query += ` AND subject_id = ?`;
+      query += ` AND slm.subject_id = ?`;
       params.push(subjectId);
     }
 
     // Group by region and order
     query += `
-      GROUP BY region
+      GROUP BY name
       ORDER BY name
     `;
 

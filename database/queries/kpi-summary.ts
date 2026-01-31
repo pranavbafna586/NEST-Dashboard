@@ -154,6 +154,9 @@ export function getKPISummaryWithTrends(
     const pdStmt = database.prepare(pdQuery);
     const pdResult = pdStmt.get(...pdParams) as { pdCount: number };
 
+    // Calculate total conformant pages
+    const totalConformantPages = Math.max(0, (metrics.totalPagesEntered || 0) - (metrics.totalNonConformantPages || 0));
+
     return {
       summary: {
         totalMissingVisits: metrics.totalMissingVisits || 0,
@@ -162,6 +165,7 @@ export function getKPISummaryWithTrends(
         seriousAdverseEvents: saeResult.saeCount || 0,
         totalSubjects: metrics.totalSubjects || 0,
         conformantPagesPercentage: conformantPagesPercentage,
+        totalConformantPages: totalConformantPages,
         protocolDeviationsConfirmed: pdResult.pdCount || 0,
       },
     };
@@ -175,6 +179,7 @@ export function getKPISummaryWithTrends(
         seriousAdverseEvents: 0,
         totalSubjects: 0,
         conformantPagesPercentage: 0,
+        totalConformantPages: 0,
         protocolDeviationsConfirmed: 0,
       },
     };

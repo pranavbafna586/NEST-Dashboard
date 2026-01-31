@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { getDQIConfig, getCleanStatusConfig, formatDQIScore } from "@/lib/dqi-utils";
 
 interface Patient360Props {
   data: {
@@ -79,6 +80,9 @@ interface Patient360Props {
       openLabIssues: number;
       openEDRRIssues: number;
       uncodedTerms: number;
+      dqiScore?: number | null;
+      dqiCategory?: string | null;
+      isClean?: boolean | null;
     };
     complianceStatus: {
       formsRequireVerification: number;
@@ -168,6 +172,13 @@ export default function Patient360({ data, onClose }: Patient360Props) {
                       High Risk
                     </span>
                   )}
+                  {/* Clean/Unclean Status Badge */}
+                  {dataQuality.isClean !== null && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getCleanStatusConfig(dataQuality.isClean).bgColor} ${getCleanStatusConfig(dataQuality.isClean).textColor} ${getCleanStatusConfig(dataQuality.isClean).borderColor} flex items-center gap-1`}>
+                      <span>{getCleanStatusConfig(dataQuality.isClean).icon}</span>
+                      {getCleanStatusConfig(dataQuality.isClean).label}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   {subject.siteName} • {subject.country} • {subject.region}
@@ -200,24 +211,45 @@ export default function Patient360({ data, onClose }: Patient360Props) {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Top Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
-                Data Quality
-              </p>
-              <div className="flex items-end gap-2">
-                <span
-                  className={`text-2xl font-bold ${
-                    dataQuality.score >= 90
-                      ? "text-emerald-600"
-                      : dataQuality.score >= 75
-                        ? "text-amber-600"
-                        : "text-red-600"
-                  }`}
-                >
-                  {dataQuality.score}%
-                </span>
+            {/* DQI Score */}
+            {dataQuality.dqiScore !== null && dataQuality.dqiScore !== undefined ? (
+              <div className={`border-2 rounded-lg p-4 ${getDQIConfig(dataQuality.dqiScore).borderColor} ${getDQIConfig(dataQuality.dqiScore).bgColor}`}>
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
+                  DQI Score
+                </p>
+                <div className="flex items-end gap-2">
+                  <span className={`text-2xl font-bold ${getDQIConfig(dataQuality.dqiScore).textColor}`}>
+                    {formatDQIScore(dataQuality.dqiScore)}
+                  </span>
+                  <span className="text-xs text-gray-500 mb-1">/ 100</span>
+                </div>
+                <p className={`text-xs font-medium mt-1 ${getDQIConfig(dataQuality.dqiScore).textColor}`}>
+                  {getDQIConfig(dataQuality.dqiScore).category}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {getDQIConfig(dataQuality.dqiScore).description}
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
+                  Data Quality
+                </p>
+                <div className="flex items-end gap-2">
+                  <span
+                    className={`text-2xl font-bold ${
+                      dataQuality.score >= 90
+                        ? "text-emerald-600"
+                        : dataQuality.score >= 75
+                          ? "text-amber-600"
+                          : "text-red-600"
+                    }`}
+                  >
+                    {dataQuality.score}%
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
                 Pages Entered

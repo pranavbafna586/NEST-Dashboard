@@ -82,6 +82,9 @@ export interface Patient360Data {
     openLabIssues: number;
     openEDRRIssues: number;
     uncodedTerms: number;
+    dqiScore?: number | null;
+    dqiCategory?: string | null;
+    isClean?: boolean | null;
   };
   // Verification & signature status
   complianceStatus: {
@@ -117,66 +120,74 @@ export function getPatient360Data(
   try {
     const database = getDatabase();
 
-    // Build WHERE clause
+    // Build WHERE clause with table aliases
     const params: string[] = [subjectId];
-    let whereClause = "WHERE subject_id = ?";
+    let whereClause = "WHERE slm.subject_id = ?";
     if (study && study !== "ALL") {
-      whereClause += " AND project_name = ?";
+      whereClause += " AND slm.project_name = ?";
       params.push(study);
     }
 
-    // 1. GET SUBJECT COMPREHENSIVE DATA from subject_level_metrics
+    // 1. GET SUBJECT COMPREHENSIVE DATA from subject_level_metrics with DQI JOIN
     const subjectQuery = `
       SELECT 
-        subject_id as subjectId,
-        site_id as siteId,
-        site_id as siteName,
-        country,
-        region,
-        project_name as projectName,
-        subject_status as status,
-        latest_visit as latestVisit,
+        slm.subject_id as subjectId,
+        slm.site_id as siteId,
+        slm.site_id as siteName,
+        slm.country,
+        slm.region,
+        slm.project_name as projectName,
+        slm.subject_status as status,
+        slm.latest_visit as latestVisit,
         -- Key metrics
-        total_queries as totalQueries,
-        missing_visits as missingVisits,
-        missing_page as missingPages,
-        pages_entered as pagesEntered,
-        expected_visits as expectedVisits,
+        slm.total_queries as totalQueries,
+        slm.missing_visits as missingVisits,
+        slm.missing_page as missingPages,
+        slm.pages_entered as pagesEntered,
+        slm.expected_visits as expectedVisits,
         -- Query breakdown
-        dm_queries as dmQueries,
-        clinical_queries as clinicalQueries,
-        medical_queries as medicalQueries,
-        site_queries as siteQueries,
-        field_monitor_queries as fieldMonitorQueries,
-        coding_queries as codingQueries,
-        safety_queries as safetyQueries,
+        slm.dm_queries as dmQueries,
+        slm.clinical_queries as clinicalQueries,
+        slm.medical_queries as medicalQueries,
+        slm.site_queries as siteQueries,
+        slm.field_monitor_queries as fieldMonitorQueries,
+        slm.coding_queries as codingQueries,
+        slm.safety_queries as safetyQueries,
         -- Data quality
-        percentage_clean_crf as dataQualityScore,
-        pages_non_conformant as nonConformantPages,
-        open_issues_in_lnr as openLabIssues,
-        open_issues_edrr as openEDRRIssues,
-        uncoded_terms as uncodedTerms,
+        slm.percentage_clean_crf as dataQualityScore,
+        slm.pages_non_conformant as nonConformantPages,
+        slm.open_issues_in_lnr as openLabIssues,
+        slm.open_issues_edrr as openEDRRIssues,
+        slm.uncoded_terms as uncodedTerms,
         -- Compliance
-        crfs_require_verification as formsRequireVerification,
-        forms_verified as formsVerified,
-        crfs_overdue_beyond_90_days as crfsOverdue90Days,
-        crfs_overdue_45_to_90_days as crfsOverdue45to90Days,
-        broken_signatures as brokenSignatures,
-        crfs_never_signed as crfsNeverSigned,
-        pds_confirmed as pdsConfirmed,
+        slm.crfs_require_verification as formsRequireVerification,
+        slm.forms_verified as formsVerified,
+        slm.crfs_overdue_beyond_90_days as crfsOverdue90Days,
+        slm.crfs_overdue_45_to_90_days as crfsOverdue45to90Days,
+        slm.broken_signatures as brokenSignatures,
+        slm.crfs_never_signed as crfsNeverSigned,
+        slm.pds_confirmed as pdsConfirmed,
         -- Form status
-        crfs_frozen as frozen,
-        crfs_locked as locked,
-        crfs_unlocked as unlocked,
+        slm.crfs_frozen as frozen,
+        slm.crfs_locked as locked,
+        slm.crfs_unlocked as unlocked,
         -- Safety
-        esae_dashboard_dm as esaeDM,
-        esae_dashboard_safety as esaeSafety,
+        slm.esae_dashboard_dm as esaeDM,
+        slm.esae_dashboard_safety as esaeSafety,
         -- High risk flag
         CASE 
-          WHEN missing_visits > 10 OR total_queries > 50 OR percentage_clean_crf < 75 
+          WHEN slm.missing_visits > 10 OR slm.total_queries > 50 OR slm.percentage_clean_crf < 75 
           THEN 1 ELSE 0 
-        END as isHighRisk
-      FROM subject_level_metrics
+        END as isHighRisk,
+        -- DQI Score and Clean Status from subject_dqi_clean_status table
+        dqi.dqi_score as dqiScore,
+        dqi.dqi_category as dqiCategory,
+        CASE WHEN dqi.clean_status = 'Clean' THEN 1 ELSE 0 END as isClean
+      FROM subject_level_metrics slm
+      LEFT JOIN subject_dqi_clean_status dqi 
+        ON slm.project_name = dqi.project_name 
+        AND slm.site_id = dqi.site_id 
+        AND slm.subject_id = dqi.subject_id
       ${whereClause}
       LIMIT 1
     `;
@@ -191,11 +202,12 @@ export function getPatient360Data(
     // 2. GET VISIT COUNTS & RECENT VISITS
     const completedVisitsQuery = `
       SELECT 
-        visit_name as visitName,
-        visit_date as visitDate
-      FROM completed_visits
-      ${whereClause}
-      ORDER BY visit_date DESC
+        cv.visit_name as visitName,
+        cv.visit_date as visitDate
+      FROM completed_visits cv
+      WHERE cv.subject_id = ?
+      ${study && study !== "ALL" ? "AND cv.project_name = ?" : ""}
+      ORDER BY cv.visit_date DESC
       LIMIT 5
     `;
     const completedVisitsStmt = database.prepare(completedVisitsQuery);
@@ -205,7 +217,9 @@ export function getPatient360Data(
     }>;
 
     const completedCountQuery = `
-      SELECT COUNT(*) as count FROM completed_visits ${whereClause}
+      SELECT COUNT(*) as count FROM completed_visits cv
+      WHERE cv.subject_id = ?
+      ${study && study !== "ALL" ? "AND cv.project_name = ?" : ""}
     `;
     const completedCountStmt = database.prepare(completedCountQuery);
     const completedCount =
@@ -214,12 +228,14 @@ export function getPatient360Data(
     // 3. GET CRITICAL MISSING VISITS (>30 days overdue only)
     const criticalMissingQuery = `
       SELECT 
-        visit_name as visitName,
-        days_outstanding as daysOutstanding,
-        projected_date as projectedDate
-      FROM missing_visits
-      ${whereClause} AND days_outstanding > 30
-      ORDER BY days_outstanding DESC
+        mv.visit_name as visitName,
+        mv.days_outstanding as daysOutstanding,
+        mv.projected_date as projectedDate
+      FROM missing_visits mv
+      WHERE mv.subject_id = ?
+      ${study && study !== "ALL" ? "AND mv.project_name = ?" : ""}
+        AND mv.days_outstanding > 30
+      ORDER BY mv.days_outstanding DESC
     `;
     const criticalMissingStmt = database.prepare(criticalMissingQuery);
     const criticalMissing = criticalMissingStmt.all(...params) as Array<{
@@ -231,15 +247,19 @@ export function getPatient360Data(
     // 4. GET OPEN QUERY DETAILS (Most recent 10)
     const queryDetailsQuery = `
       SELECT 
-        form_name as formName,
-        visit_name as visitName,
-        marking_group_name as markingGroupName,
-        query_status as queryStatus,
-        action_owner as actionOwner,
-        days_since_open as daysOpen
-      FROM query_report
-      ${whereClause} AND query_status = 'Open'
-      ORDER BY days_since_open DESC
+        qr.form_name as formName,
+        qr.visit_name as visitName,
+        qr.marking_group_name as markingGroupName,
+        qr.query_status as queryStatus,
+        qr.action_owner as actionOwner,
+        CAST(
+          julianday('2025-11-14') - julianday(qr.query_open_date)
+        AS INTEGER) as daysOpen
+      FROM query_report qr
+      WHERE qr.subject_id = ?
+      ${study && study !== "ALL" ? "AND qr.project_name = ?" : ""}
+        AND qr.query_status = 'Open'
+      ORDER BY daysOpen DESC
       LIMIT 10
     `;
     const queryDetailsStmt = database.prepare(queryDetailsQuery);
@@ -255,20 +275,21 @@ export function getPatient360Data(
     // 5. GET SAE DETAILS (Recent 10)
     const saesQuery = `
       SELECT 
-        discrepancy_id as discrepancyId,
-        form_name as formName,
+        sae.discrepancy_id as discrepancyId,
+        sae.form_name as formName,
         CASE 
-          WHEN case_status IS NULL OR case_status = '' OR case_status = '-' 
+          WHEN sae.case_status IS NULL OR sae.case_status = '' OR sae.case_status = '-' 
           THEN 'Open' 
-          ELSE case_status 
+          ELSE sae.case_status 
         END as caseStatus,
-        review_status as reviewStatus,
-        action_status as actionStatus,
-        responsible_lf as responsibleLF,
-        discrepancy_created_timestamp as createdTimestamp
-      FROM sae_issues
-      ${whereClause}
-      ORDER BY discrepancy_created_timestamp DESC
+        sae.review_status as reviewStatus,
+        sae.action_status as actionStatus,
+        sae.responsible_lf as responsibleLF,
+        sae.discrepancy_created_timestamp as createdTimestamp
+      FROM sae_issues sae
+      WHERE sae.subject_id = ?
+      ${study && study !== "ALL" ? "AND sae.project_name = ?" : ""}
+      ORDER BY sae.discrepancy_created_timestamp DESC
       LIMIT 10
     `;
     const saesStmt = database.prepare(saesQuery);
@@ -286,13 +307,14 @@ export function getPatient360Data(
     const saeCountQuery = `
       SELECT 
         CASE 
-          WHEN case_status IS NULL OR case_status = '' OR case_status = '-' 
+          WHEN sae.case_status IS NULL OR sae.case_status = '' OR sae.case_status = '-' 
           THEN 'Open' 
-          ELSE case_status 
+          ELSE sae.case_status 
         END as status,
         COUNT(*) as count
-      FROM sae_issues
-      ${whereClause}
+      FROM sae_issues sae
+      WHERE sae.subject_id = ?
+      ${study && study !== "ALL" ? "AND sae.project_name = ?" : ""}
       GROUP BY status
     `;
     const saeCountStmt = database.prepare(saeCountQuery);
@@ -368,6 +390,9 @@ export function getPatient360Data(
         openLabIssues: subjectData.openLabIssues || 0,
         openEDRRIssues: subjectData.openEDRRIssues || 0,
         uncodedTerms: subjectData.uncodedTerms || 0,
+        dqiScore: subjectData.dqiScore,
+        dqiCategory: subjectData.dqiCategory,
+        isClean: subjectData.isClean !== null ? Boolean(subjectData.isClean) : null,
       },
       complianceStatus: {
         formsRequireVerification: subjectData.formsRequireVerification || 0,

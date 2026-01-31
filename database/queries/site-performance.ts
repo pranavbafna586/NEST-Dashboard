@@ -85,19 +85,17 @@ export function getSitePerformanceData(
           END
         ) as avgDaysOutstanding,
         
-        -- Data Quality Score: Based on clean CRF percentage
-        ROUND(
-          CASE 
-            WHEN COUNT(slm.subject_id) > 0 THEN
-              AVG(slm.percentage_clean_crf)
-            ELSE 0
-          END
-        ) as dataQualityScore,
+        -- Data Quality Score: Average DQI from subject_dqi_clean_status table
+        COALESCE(ROUND(AVG(dqi.dqi_score)), 0) as dataQualityScore,
         
         -- Subject Count per site
         COUNT(DISTINCT slm.subject_id) as subjectCount
         
       FROM subject_level_metrics slm
+      LEFT JOIN subject_dqi_clean_status dqi 
+        ON slm.project_name = dqi.project_name 
+        AND slm.site_id = dqi.site_id 
+        AND slm.subject_id = dqi.subject_id
       ${whereClause}
       GROUP BY slm.site_id, slm.country, slm.region
       HAVING signatureBacklog > 0  -- Only show sites with signature backlog
