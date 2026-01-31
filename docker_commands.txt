@@ -1,3 +1,4 @@
 docker build -t gcr.io/healthcare-586/nest-dashboard .
 docker run gcr.io/healthcare-586/nest-dashboard
+docker push gcr.io/healthcare-586/nest-dashboard
 gcloud run deploy nest-dashboard --image gcr.io/healthcare-586/nest-dashboard --platform managed --region asia-south1 --allow-unauthenticated --port 3000 --cpu=2 --memory=4Gi
