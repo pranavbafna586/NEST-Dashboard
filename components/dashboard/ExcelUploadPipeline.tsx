@@ -17,6 +17,7 @@ type ProcessingStep =
   | "validating"
   | "renaming"
   | "importing"
+  | "calculating"
   | "complete"
   | "error";
 
@@ -150,6 +151,14 @@ export default function ExcelUploadPipeline() {
 
       const importResult = await importResponse.json();
       console.log("Import result:", importResult);
+      setProgress(85);
+
+      // Step 5: Calculate DQI and Clean Status
+      setCurrentStep("calculating");
+      setProgress(90);
+
+      // Wait for DQI calculations (they're done by main.py)
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setProgress(100);
 
       setCurrentStep("complete");
@@ -176,6 +185,7 @@ export default function ExcelUploadPipeline() {
       "validating",
       "renaming",
       "importing",
+      "calculating",
     ];
     const currentIndex = steps.indexOf(currentStep);
     const stepIndex = steps.indexOf(step);
@@ -316,6 +326,13 @@ export default function ExcelUploadPipeline() {
               title="3. Importing to Database"
               description="Creating database schema and importing Excel data"
               status={getStepStatus("importing")}
+            />
+
+            {/* Step 4: Calculate DQI and Clean Status */}
+            <ProcessingStepCard
+              title="4. Calculating DQI & Clean Status"
+              description="Computing Data Quality Index and patient clean status metrics"
+              status={getStepStatus("calculating")}
             />
           </div>
 
