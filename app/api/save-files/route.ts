@@ -74,6 +74,7 @@ import { writeFile, mkdir, access } from "fs/promises";
 import path from "path";
 import { constants } from "fs";
 import os from "os";
+import { renameStudyFolderWithAI } from "@/database/studyNameExtractor";
 
 /**
  * Helper: Extract study number from Excel file names
@@ -166,9 +167,17 @@ export async function POST(request: NextRequest) {
     // Extra wait to ensure all files are ready
     await new Promise((resolve) => setTimeout(resolve, 200));
 
+    console.log(`Files saved to temporary folder: ${uploadDir}`);
+    
+    // Use AI to detect correct study name from Excel data
+    console.log("\nDetecting study name from data...");
+    const renamedFolderPath = await renameStudyFolderWithAI(uploadDir);
+    
+    console.log(`Final folder path: ${renamedFolderPath}`);
+
     return NextResponse.json({
       success: true,
-      folderPath: uploadDir,
+      folderPath: renamedFolderPath,
       filesCount: files.length,
     });
   } catch (error) {

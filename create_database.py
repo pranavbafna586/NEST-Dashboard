@@ -8,18 +8,20 @@ load_dotenv()
 DB_PATH = os.getcwd() + os.getenv("DB_PATH", "/database/edc_metrics.db")
 
 def create_database():
-    """Create SQLite database and all required tables"""
+    """Create SQLite database and all required tables (if they don't exist)"""
     
-    # Remove existing database if it exists
-    if os.path.exists(DB_PATH):
-        print(f"Removing existing database: {DB_PATH}")
-        os.remove(DB_PATH)
+    # Check if database exists
+    db_exists = os.path.exists(DB_PATH)
+    
+    if db_exists:
+        print(f"Database already exists: {DB_PATH}")
+        print("Creating tables if they don't exist (existing data will be preserved)...")
+    else:
+        print(f"Creating new database: {DB_PATH}")
     
     # Create connection
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
-    print(f"Creating database: {DB_PATH}")
     
     # 1) Subject Level Metrics
     cursor.execute("""
@@ -372,37 +374,37 @@ def create_database():
     print("\nCreating indexes...")
     
     # Indexes for subject_level_metrics
-    cursor.execute("CREATE INDEX idx_slm_project_site_subject ON subject_level_metrics(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_slm_project_site_subject ON subject_level_metrics(project_name, site_id, subject_id)")
     
     # Indexes for query_report
-    cursor.execute("CREATE INDEX idx_qr_project_site_subject ON query_report(project_name, site_id, subject_id)")
-    cursor.execute("CREATE INDEX idx_qr_query_status ON query_report(query_status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_qr_project_site_subject ON query_report(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_qr_query_status ON query_report(query_status)")
     
     # Indexes for non_conformant
-    cursor.execute("CREATE INDEX idx_nc_project_site_subject ON non_conformant(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_nc_project_site_subject ON non_conformant(project_name, site_id, subject_id)")
     
     # Indexes for completed_visits
-    cursor.execute("CREATE INDEX idx_cv_project_site_subject ON completed_visits(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_cv_project_site_subject ON completed_visits(project_name, site_id, subject_id)")
     
     # Indexes for sae_issues
-    cursor.execute("CREATE INDEX idx_sae_project_subject ON sae_issues(project_name, subject_id)")
-    cursor.execute("CREATE INDEX idx_sae_responsible_lf ON sae_issues(responsible_lf)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sae_project_subject ON sae_issues(project_name, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_sae_responsible_lf ON sae_issues(responsible_lf)")
     
     # Indexes for global_coding_report
-    cursor.execute("CREATE INDEX idx_gcr_project_subject ON global_coding_report(project_name, subject_id)")
-    cursor.execute("CREATE INDEX idx_gcr_report_type ON global_coding_report(report_type)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_gcr_project_subject ON global_coding_report(project_name, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_gcr_report_type ON global_coding_report(report_type)")
     
     # Indexes for missing_pages
-    cursor.execute("CREATE INDEX idx_mp_project_site_subject ON missing_pages(project_name, site_id, subject_id)")
-    cursor.execute("CREATE INDEX idx_mp_page_type ON missing_pages(page_type)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_mp_project_site_subject ON missing_pages(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_mp_page_type ON missing_pages(page_type)")
     
     # Indexes for missing_visits
-    cursor.execute("CREATE INDEX idx_mv_project_site_subject ON missing_visits(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_mv_project_site_subject ON missing_visits(project_name, site_id, subject_id)")
     
     # Indexes for subject_dqi_clean_status
-    cursor.execute("CREATE INDEX idx_dqi_project_site_subject ON subject_dqi_clean_status(project_name, site_id, subject_id)")
-    cursor.execute("CREATE INDEX idx_dqi_category ON subject_dqi_clean_status(dqi_category)")
-    cursor.execute("CREATE INDEX idx_clean_status ON subject_dqi_clean_status(clean_status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_dqi_project_site_subject ON subject_dqi_clean_status(project_name, site_id, subject_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_dqi_category ON subject_dqi_clean_status(dqi_category)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_clean_status ON subject_dqi_clean_status(clean_status)")
     
     print("Indexes created successfully")
     

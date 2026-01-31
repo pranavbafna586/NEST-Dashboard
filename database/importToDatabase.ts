@@ -86,6 +86,7 @@ async function createDatabase(
   try {
     const { stdout, stderr } = await execAsync(`${pythonCmd} "${scriptPath}"`, {
       cwd: workspaceRoot,
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
 
     if (stdout) console.log(stdout);
@@ -152,21 +153,31 @@ async function runMainPythonScript(
 
   console.log(`✓ Copied ${files.length} files to Study Files directory`);
 
-  const scriptPath = path.join(workspaceRoot, "main.py");
+  // Use process_single_study.py to process only the newly uploaded study
+  const scriptPath = path.join(workspaceRoot, "process_single_study.py");
 
   if (!fs.existsSync(scriptPath)) {
-    throw new Error(`main.py not found at ${scriptPath}`);
+    throw new Error(`process_single_study.py not found at ${scriptPath}`);
   }
 
   try {
-    // Set environment variable for the study name if needed
-    const env = { ...process.env, STUDY_NAME: studyName };
+    // Set PYTHONIOENCODING to UTF-8 to handle Unicode characters on Windows
+    const env = { 
+      ...process.env, 
+      PYTHONIOENCODING: 'utf-8'
+    };
 
-    const { stdout, stderr } = await execAsync(`${pythonCmd} "${scriptPath}"`, {
-      cwd: workspaceRoot,
-      env: env,
-      maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large outputs
-    });
+    console.log(`\n📊 Processing study: ${studyName}`);
+    
+    // Pass study name as command line argument
+    const { stdout, stderr } = await execAsync(
+      `${pythonCmd} "${scriptPath}" "${studyName}"`, 
+      {
+        cwd: workspaceRoot,
+        env: env,
+        maxBuffer: 10 * 1024 * 1024, // 10MB buffer for large outputs
+      }
+    );
 
     if (stdout) {
       console.log(stdout);
@@ -177,7 +188,7 @@ async function runMainPythonScript(
 
     console.log("✓ Data processing and insertion completed");
   } catch (error: any) {
-    throw new Error(`Failed to run main script: ${error.message}`);
+    throw new Error(`Failed to run process_single_study.py: ${error.message}`);
   }
 }
 

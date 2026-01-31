@@ -13,6 +13,7 @@ type ProcessingStep =
   | "validating"
   | "renaming"
   | "importing"
+  | "calculating"
   | "complete"
   | "error";
 
@@ -173,23 +174,23 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
         500,
       );
       setTimeout(() => {
-        setProgress(75);
+        setProgress(72);
         setStatusMessage("Installing Python dependencies...");
       }, 1000);
       setTimeout(() => {
-        setProgress(80);
+        setProgress(74);
         setStatusMessage("Creating/verifying database schema...");
       }, 1500);
       setTimeout(() => {
-        setProgress(85);
+        setProgress(76);
         setStatusMessage("Copying files to Study Files directory...");
       }, 2000);
       setTimeout(() => {
-        setProgress(90);
+        setProgress(78);
         setStatusMessage("Extracting and processing Excel data...");
       }, 2500);
       setTimeout(() => {
-        setProgress(95);
+        setProgress(80);
         setStatusMessage("Inserting data into database...");
       }, 3000);
       const importResponse = await fetch("/api/import-to-database", {
@@ -206,8 +207,28 @@ export default function UploadDialog({ isOpen, onClose }: UploadDialogProps) {
 
       const importResult = await importResponse.json();
       console.log("Import result:", importResult);
-      setProgress(100);
-      setStatusMessage("Import complete! Reloading dashboard...");
+      setProgress(85);
+
+      // Step 5: Calculate DQI and Clean Status
+      setCurrentStep("calculating");
+      setStatusMessage("Calculating Data Quality Index (DQI)...");
+      
+      // Simulate progress for DQI calculation substeps
+      setTimeout(() => {
+        setProgress(90);
+        setStatusMessage("Calculating patient clean status...");
+      }, 1000);
+      setTimeout(() => {
+        setProgress(95);
+        setStatusMessage("Verifying DQI and clean status metrics...");
+      }, 2000);
+      setTimeout(() => {
+        setProgress(100);
+        setStatusMessage("Import complete! Reloading dashboard...");
+      }, 3000);
+
+      // Wait for all DQI calculations (they're done by main.py)
+      await new Promise(resolve => setTimeout(resolve, 3500));
 
       setCurrentStep("complete");
 
