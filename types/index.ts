@@ -76,7 +76,7 @@ export const ROLE_KPI_MAPPING: RoleKPIConfig[] = [
   {
     role: "DM",
     primaryResponsibility: "Data quality and external reconciliation",
-    criticalKPIs: ["queriesDM", "openEDRRIssues", "saeDMReview"],
+    criticalKPIs: ["queriesDM", "openEDRRIssues", "saeDMReview", "nonConformantPages"],
   },
   {
     role: "Safety Team",
@@ -91,12 +91,12 @@ export const ROLE_KPI_MAPPING: RoleKPIConfig[] = [
   {
     role: "CSE/CDD",
     primaryResponsibility: "Clinical data expertise and deep review",
-    criticalKPIs: ["pagesNonConformant", "queriesClinical"],
+    criticalKPIs: ["pagesNonConformant", "queriesClinical", "nonConformantPages"],
   },
   {
     role: "CD LF",
     primaryResponsibility: "Lead Function oversight and study progress",
-    criticalKPIs: ["studyPulse", "regionalProgress", "overallCompletion"],
+    criticalKPIs: ["studyPulse", "regionalProgress", "overallCompletion", "nonConformantPages"],
   },
 ];
 
@@ -388,6 +388,10 @@ export interface SubjectMetric {
   isHighRisk: boolean;
   dataQualityScore: number;
   responsibleFunction: ResponsibleFunction;
+  // DQI and Clean Status
+  dqiScore: number | null;
+  dqiCategory: string | null;
+  isClean: boolean | null;
 }
 
 // File 2: Visit Projection Tracker
@@ -551,6 +555,13 @@ export interface KPISummary {
   totalSubjects?: number;
   conformantPagesPercentage?: number;
   protocolDeviationsConfirmed?: number;
+  averageDQI?: number;
+  cleanPatientCount?: number;
+  totalPatients?: number;
+  cleanPercentage?: number;
+  totalConformantPages?: number;
+  totalProtocolDeviations?: number;
+  totalNonConformantPages?: number;
 }
 
 // Chart data types
@@ -572,6 +583,9 @@ export interface SitePerformanceData {
   signatureBacklog: number;
   dataQualityScore: number;
   subjectCount: number;
+  avgDQIScore?: number;
+  cleanSubjects?: number;
+  uncleanSubjects?: number;
 }
 
 export interface SAEChartData {

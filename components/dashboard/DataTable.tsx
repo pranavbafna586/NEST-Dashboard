@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { SitePerformanceData, SubjectMetric } from "@/types";
+import { getDQIConfig, getCleanStatusConfig, formatDQIScore } from "@/lib/dqi-utils";
 
 interface DataTableProps<T> {
   data: T[];
@@ -259,24 +260,25 @@ export function SitePerformanceTable({
         },
         {
           key: "dataQualityScore",
-          header: "Quality Score",
+          header: "DQI Score",
           render: (value) => (
             <div className="flex items-center gap-2">
-              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    (value as number) >= 90
-                      ? "bg-emerald-500"
-                      : (value as number) >= 75
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  }`}
-                  style={{ width: `${value}%` }}
-                />
-              </div>
-              <span className="text-xs font-medium text-gray-600">
-                {value}%
+              <span
+                className={`text-sm font-bold ${
+                  (value as number) >= 90
+                    ? "text-emerald-600"
+                    : (value as number) >= 75
+                      ? "text-lime-600"
+                      : (value as number) >= 60
+                        ? "text-yellow-600"
+                        : (value as number) >= 40
+                          ? "text-orange-600"
+                          : "text-red-600"
+                }`}
+              >
+                {value}
               </span>
+              <span className="text-xs text-gray-400">/100</span>
             </div>
           ),
         },
@@ -288,7 +290,7 @@ export function SitePerformanceTable({
 // Specialized Subject Table
 interface SubjectTableProps {
   data: SubjectMetric[];
-  onSubjectClick?: (subjectId: string) => void;
+  onSubjectClick?: (subjectId: string, projectName?: string) => void;
 }
 
 export function SubjectTable({ data, onSubjectClick }: SubjectTableProps) {
@@ -296,7 +298,7 @@ export function SubjectTable({ data, onSubjectClick }: SubjectTableProps) {
     <DataTable
       title="Subjects Overview"
       data={data}
-      onRowClick={(row) => onSubjectClick?.(row.subjectId)}
+      onRowClick={(row) => onSubjectClick?.(row.subjectId, row.projectName)}
       columns={[
         {
           key: "subjectId",
@@ -368,25 +370,41 @@ export function SubjectTable({ data, onSubjectClick }: SubjectTableProps) {
           ),
         },
         {
-          key: "dataQualityScore",
-          header: "Quality",
-          render: (value) => (
-            <div className="flex items-center gap-2">
-              <div className="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    (value as number) >= 90
-                      ? "bg-emerald-500"
-                      : (value as number) >= 75
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  }`}
-                  style={{ width: `${value}%` }}
-                />
+          key: "dqiScore",
+          header: "DQI",
+          render: (value, row) => {
+            if (value === null || value === undefined) {
+              return (
+                <span className="text-xs text-gray-400">N/A</span>
+              );
+            }
+            const config = getDQIConfig(value as number);
+            return (
+              <div className="flex items-center gap-1.5">
+                <span className={`px-2 py-0.5 rounded-md text-xs font-semibold border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+                  {formatDQIScore(value as number)}
+                </span>
               </div>
-              <span className="text-xs text-gray-600">{value}%</span>
-            </div>
-          ),
+            );
+          },
+        },
+        {
+          key: "isClean",
+          header: "Status",
+          render: (value) => {
+            if (value === null || value === undefined) {
+              return (
+                <span className="text-xs text-gray-400">N/A</span>
+              );
+            }
+            const config = getCleanStatusConfig(value as boolean);
+            return (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+                <span className="text-[10px]">{config.icon}</span>
+                {config.label}
+              </span>
+            );
+          },
         },
       ]}
     />

@@ -59,6 +59,11 @@
 
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/database/db";
+import {
+  getProtocolDeviationMetrics,
+  getProtocolDeviationByStudy,
+  getProtocolDeviationBySite,
+} from "@/database/queries/protocol-deviation-metrics";
 
 /**
  * GET /api/protocol-deviation-details
@@ -179,11 +184,13 @@ export async function GET(request: Request) {
          */
 
         return NextResponse.json({
-            byStudy: studyResults,
+            byStudy: getProtocolDeviationByStudy(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined),
+            bySite: getProtocolDeviationBySite(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined),
+            summary: getProtocolDeviationMetrics(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined),
             overall: {
-                confirmed: totals.confirmed || 0,
-                proposed: totals.proposed || 0,
-                total: totals.total || 0,
+                confirmed: getProtocolDeviationMetrics(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined).confirmedCount,
+                proposed: getProtocolDeviationMetrics(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined).proposedCount,
+                total: getProtocolDeviationMetrics(study || undefined, region || undefined, country || undefined, siteId || undefined, searchParams.get("subjectId") || undefined).totalProtocolDeviations,
             },
         });
     } catch (error) {
